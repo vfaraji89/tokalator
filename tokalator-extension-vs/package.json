@@ -9,7 +9,7 @@
     "type": "git",
     "url": "https://github.com/vfaraji89/tokalator"
   },
-  "icon": "media/icon.svg",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.99.0"
   },
