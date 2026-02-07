@@ -82,7 +82,7 @@
     },
     {
       "layer": "Token Estimator",
-      "purpose": "Counts tokens per file using tiktoken when available, falls back to ~4 chars/token",
+      "purpose": "Counts tokens per file using the VS Code Language Model API when available, falls back to ~4 chars/token",
       "number": 2
     },
     {
@@ -116,7 +116,7 @@
     "source": {
       "title": "Build from Source",
       "icon": "◆",
-      "command": "git clone https://github.com/vfaraji89/tokalator.git\ncd tokalator/copilot-context-monitor\nnpm install\nnpm run compile"
+      "command": "git clone https://github.com/vfaraji89/tokalator.git\ncd tokalator/tokalator-extension-vs\nnpm install\nnpm run compile"
     }
   }
 }
