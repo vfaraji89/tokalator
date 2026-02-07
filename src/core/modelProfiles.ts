@@ -24,17 +24,17 @@ export const MODEL_PROFILES: ModelProfile[] = [
   { id: 'claude-haiku-3.5',    label: 'Claude Haiku 3.5',    provider: 'anthropic', contextWindow: 200000,  maxOutput: 8192,  rotThreshold: 15 },
 
   // OpenAI
-  { id: 'gpt-4.1',             label: 'GPT-4.1',             provider: 'openai',    contextWindow: 1047576, maxOutput: 32768, rotThreshold: 30 },
-  { id: 'gpt-4.1-mini',        label: 'GPT-4.1 Mini',        provider: 'openai',    contextWindow: 1047576, maxOutput: 32768, rotThreshold: 25 },
+  { id: 'gpt-5.2',             label: 'GPT-5.2',             provider: 'openai',    contextWindow: 1047576, maxOutput: 32768, rotThreshold: 30 },
+  { id: 'gpt-5.1',             label: 'GPT-5.1',             provider: 'openai',    contextWindow: 1047576, maxOutput: 32768, rotThreshold: 25 },
   { id: 'gpt-4o',              label: 'GPT-4o',              provider: 'openai',    contextWindow: 128000,  maxOutput: 16384, rotThreshold: 20 },
   { id: 'gpt-4o-mini',         label: 'GPT-4o Mini',         provider: 'openai',    contextWindow: 128000,  maxOutput: 16384, rotThreshold: 15 },
   { id: 'o3',                  label: 'o3',                  provider: 'openai',    contextWindow: 200000,  maxOutput: 100000, rotThreshold: 20 },
   { id: 'o4-mini',             label: 'o4-mini',             provider: 'openai',    contextWindow: 200000,  maxOutput: 100000, rotThreshold: 15 },
 
   // Google
-  { id: 'gemini-2.5-pro',      label: 'Gemini 2.5 Pro',      provider: 'google',    contextWindow: 1048576, maxOutput: 65536, rotThreshold: 30 },
-  { id: 'gemini-2.5-flash',    label: 'Gemini 2.5 Flash',    provider: 'google',    contextWindow: 1048576, maxOutput: 65536, rotThreshold: 25 },
-  { id: 'gemini-2.0-flash',    label: 'Gemini 2.0 Flash',    provider: 'google',    contextWindow: 1048576, maxOutput: 8192,  rotThreshold: 20 },
+  { id: 'gemini-3-pro',        label: 'Gemini 3 Pro',        provider: 'google',    contextWindow: 1048576, maxOutput: 65536, rotThreshold: 30 },
+  { id: 'gemini-3-flash',      label: 'Gemini 3 Flash',      provider: 'google',    contextWindow: 1048576, maxOutput: 65536, rotThreshold: 25 },
+  { id: 'gemini-2.5-pro',      label: 'Gemini 2.5 Pro',      provider: 'google',    contextWindow: 1048576, maxOutput: 65536, rotThreshold: 20 },
 ];
 
 /** Default model when nothing is detected */
