@@ -138,6 +138,11 @@ pre {
   }
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+}
+
 @keyframes shimmer {
   from { background-position: -200% center; }
   to { background-position: 200% center; }
@@ -146,6 +151,10 @@ pre {
 /* Article entrance */
 .article {
   animation: fadeIn 0.4s ease-out both;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
 }
 
 /* Hero stagger — animations applied in the Hero layout section below */
@@ -212,7 +221,9 @@ pre {
 /* Layout */
 .layout { 
   display: flex; 
-  min-height: 100vh; 
+  min-height: 100vh;
+  max-width: 100vw;
+  overflow-x: hidden;
 }
 
 .sidebar {
@@ -236,6 +247,8 @@ pre {
   margin-left: 250px;
   padding: 2rem 3rem;
   max-width: 960px;
+  box-sizing: border-box;
+  overflow-x: hidden;
 }
 
 /* ── Demo Mockup ─────────────────────────────── */
@@ -456,9 +469,18 @@ pre {
   
   .main-content {
     margin-left: 0;
-    padding: 1rem 1.25rem;
+    padding: 1rem 1rem;
     min-width: 0;
+    max-width: 100vw;
     overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .article {
+    max-width: 100%;
+    overflow-x: hidden;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
   }
   
   .mobile-header {
@@ -517,6 +539,126 @@ pre {
   .demo-tab { padding: 4px 8px; font-size: 8px; }
   .demo-legend { gap: 1rem; margin-top: 1.5rem; }
   .demo-legend-item { font-size: 11px; }
+
+  /* ── Learn page mobile ── */
+  .learn-frame {
+    margin: 1rem 0;
+    border-radius: 8px;
+  }
+
+  .learn-lesson {
+    margin-bottom: 2rem;
+  }
+
+  .learn-lesson-title {
+    font-size: 1.0625rem;
+  }
+
+  .learn-lesson-desc {
+    font-size: 0.8125rem;
+  }
+
+  .learn-window-visual {
+    padding: 12px;
+  }
+
+  .learn-window-segments {
+    height: 40px;
+  }
+
+  .learn-segment-label {
+    font-size: 0.45rem;
+  }
+
+  .learn-segment-pct {
+    font-size: 0.5rem;
+  }
+
+  .learn-window-meta {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    font-size: 0.6875rem;
+  }
+
+  .learn-code-pre {
+    font-size: 0.625rem;
+    line-height: 1.6;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .learn-code-line {
+    gap: 0.5rem;
+    padding: 0 0.5rem;
+  }
+
+  .learn-compact-visual {
+    gap: 0.75rem;
+    padding: 12px;
+  }
+
+  .learn-compact-col {
+    max-width: 100px;
+  }
+
+  .learn-compact-val {
+    font-size: 0.5rem;
+  }
+
+  .learn-compact-strategies {
+    grid-template-columns: 1fr;
+    padding: 0 12px 12px;
+    font-size: 0.625rem;
+  }
+
+  .learn-frame-pad {
+    padding: 12px;
+  }
+
+  .learn-turns-row {
+    gap: 4px;
+    flex-wrap: wrap;
+  }
+
+  .learn-side-by-side {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .learn-side-by-side > div {
+    width: 100%;
+  }
+
+  .learn-side-by-side > div > svg {
+    transform: rotate(90deg);
+  }
+
+  .learn-compare-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .learn-compare-table table {
+    font-size: 0.6875rem;
+    min-width: 400px;
+  }
+
+  .learn-compare-table th,
+  .learn-compare-table td {
+    padding: 7px 10px;
+  }
+
+  .learn-nav {
+    padding: 1rem;
+  }
+
+  .learn-nav-item {
+    padding: 0.625rem 0.75rem;
+  }
+
+  .learn-badge {
+    font-size: 0.5rem;
+  }
 }
 
 @media (min-width: 769px) {
@@ -1748,6 +1890,23 @@ kbd {
   background: var(--white);
 }
 
+.learn-frame-pad {
+  padding: 16px 20px;
+}
+
+.learn-turns-row {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.learn-side-by-side {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
 /* Lessons */
 .learn-lesson {
   margin-bottom: 3rem;
@@ -2070,6 +2229,35 @@ kbd {
   display: block;
 }
 
+/* Learn — Comparison table */
+.learn-compare-table {
+  margin: 20px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--grey-200);
+}
+.learn-compare-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.8rem;
+}
+.learn-compare-table th {
+  padding: 10px 14px;
+  text-align: left;
+  background: var(--grey-050);
+  border-bottom: 1px solid var(--grey-200);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
+}
+.learn-compare-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid var(--grey-100);
+  line-height: 1.4;
+}
+.learn-compare-table tr:last-child td { border-bottom: none; }
+.learn-compare-table tr:hover td { background: var(--grey-050); }
+
 /* Scrollbar */
 ::-webkit-scrollbar { width: 8px; height: 8px; }
 ::-webkit-scrollbar-track { background: transparent; }
@@ -2353,6 +2541,68 @@ kbd {
   .demo-inline-chat { margin: 4px 6px 6px 18px; padding: 6px 8px; }
   .demo-legend { gap: 0.75rem; }
   .demo-legend-item { font-size: 10px; }
+
+  /* ── Learn page small phones ── */
+  .learn-lesson-num {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .learn-lesson-title {
+    font-size: 0.9375rem;
+  }
+
+  .learn-lesson-sub {
+    font-size: 0.6875rem;
+  }
+
+  .learn-lesson-desc {
+    font-size: 0.75rem;
+    line-height: 1.6;
+  }
+
+  .learn-window-segments {
+    height: 36px;
+  }
+
+  .learn-segment-label {
+    font-size: 0.375rem;
+  }
+
+  .learn-code-pre {
+    font-size: 0.5625rem;
+  }
+
+  .learn-compact-visual {
+    gap: 0.5rem;
+    padding: 10px;
+  }
+
+  .learn-compact-col {
+    max-width: 80px;
+  }
+
+  .learn-compact-bar {
+    border-radius: 4px;
+  }
+
+  .learn-compact-val {
+    font-size: 0.4375rem;
+  }
+
+  .learn-compact-detail {
+    font-size: 0.5625rem;
+  }
+
+  .learn-compact-label {
+    font-size: 0.5625rem;
+  }
+
+  .learn-compact-arrow svg {
+    width: 24px;
+    height: 24px;
+  }
 }
 
 /* Extra small phones (iPhone SE, Galaxy S, etc.) */
