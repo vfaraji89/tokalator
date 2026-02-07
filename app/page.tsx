@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import content from "../content/homepage.json";
+import { DemoMockup } from "../components/demo-mockup";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -72,6 +73,20 @@ export default function HomePage() {
         <div className="install-cmd">
           <code>{hero.installCmd}</code>
           <CopyButton text={hero.installCmd} />
+        </div>
+
+        {/* Interactive Demo Mockup */}
+        <DemoMockup />
+        <div className="demo-legend">
+          <span className="demo-legend-item">
+            <span className="demo-legend-num">1</span> Token Budget Panel
+          </span>
+          <span className="demo-legend-item">
+            <span className="demo-legend-num">2</span> Inline Token Count
+          </span>
+          <span className="demo-legend-item">
+            <span className="demo-legend-num">3</span> AI Context Command
+          </span>
         </div>
       </header>
 
