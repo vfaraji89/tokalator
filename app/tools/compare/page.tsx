@@ -9,9 +9,20 @@ export default function ComparePage() {
 
   return (
     <article className="article">
-      <header>
-        <h1>Model Comparison</h1>
-        <p className="tagline">
+      <header className="hero">
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="6" width="8" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <rect x="16" y="6" width="8" height="16" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <line x1="12" y1="11" x2="16" y2="11" stroke="#e3120b" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="12" y1="14" x2="16" y2="14" stroke="#e3120b" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="12" y1="17" x2="16" y2="17" stroke="#e3120b" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+        <h1 className="hero-headline">
+          <span className="hero-marker">Model Comparison</span>
+        </h1>
+        <p className="hero-description">
           Compare pricing, capabilities, and efficiency across AI providers.
         </p>
       </header>
