@@ -36,7 +36,6 @@ export function SideNav() {
         <Link href="/" className="mobile-logo text-motion" onClick={() => setOpen(false)}>
           {siteContent.name}
         </Link>
-        <span className="mobile-version">{siteContent.version}</span>
         <button
           className="menu-btn"
           onClick={() => setOpen(!open)}
