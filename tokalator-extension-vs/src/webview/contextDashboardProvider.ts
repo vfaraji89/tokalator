@@ -37,24 +37,28 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
       switch (message.command) {
-        case 'optimize':
+        case 'optimize': {
           const closed = await this.monitor.optimizeTabs();
           vscode.window.showInformationMessage(
             closed.length > 0
               ? `Closed ${closed.length} tabs: ${closed.join(', ')}`
               : 'All tabs are relevant'
           );
+          this.monitor.refresh();
           break;
+        }
 
-        case 'pin':
+        case 'pin': {
           this.monitor.pinFile(message.uri);
           break;
+        }
 
-        case 'unpin':
+        case 'unpin': {
           this.monitor.unpinFile(message.uri);
           break;
+        }
 
-        case 'closeTab':
+        case 'closeTab': {
           const allTabs = vscode.window.tabGroups.all.flatMap(g => g.tabs);
           const targetTab = allTabs.find(t => {
             if (t.input instanceof vscode.TabInputText) {
@@ -65,20 +69,25 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           if (targetTab) {
             await vscode.window.tabGroups.close(targetTab);
           }
+          this.monitor.refresh();
           break;
+        }
 
-        case 'openFile':
+        case 'openFile': {
           const doc = await vscode.workspace.openTextDocument(vscode.Uri.parse(message.uri));
           await vscode.window.showTextDocument(doc);
           break;
+        }
 
-        case 'refresh':
+        case 'refresh': {
           this.monitor.refresh();
           break;
+        }
 
-        case 'resetTurns':
+        case 'resetTurns': {
           this.monitor.resetChatTurns();
           break;
+        }
       }
     });
 
@@ -333,28 +342,29 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     }
 
     function renderTab(t) {
+      const safeUri = encodeURIComponent(t.uri);
       const pinBtn = t.isPinned
-        ? '<button title="Unpin" onclick="unpin(\\'' + t.uri + '\\')">\u{1F4CC}</button>'
-        : '<button title="Pin" onclick="pin(\\'' + t.uri + '\\')">\u{1F4CD}</button>';
+        ? '<button title="Unpin" onclick="event.stopPropagation(); unpin(\\'' + safeUri + '\\')">\u{1F4CC}</button>'
+        : '<button title="Pin" onclick="event.stopPropagation(); pin(\\'' + safeUri + '\\')">\u{1F4CD}</button>';
 
       return \`
-        <li class="tab-item" ondblclick="openFile('\${t.uri}')">
+        <li class="tab-item" ondblclick="openFile('\${safeUri}')">
           <div class="tab-dot \${relClass(t.relevanceScore)}"></div>
           <span class="tab-name \${t.isActive ? 'active' : ''}">\${t.label}\${t.isDirty ? ' •' : ''}</span>
           <span class="tab-tokens">~\${fmtTokens(t.estimatedTokens)}</span>
           <div class="tab-actions">
             \${pinBtn}
-            \${!t.isActive ? '<button title="Close" onclick="closeTab(\\'' + t.uri + '\\')">✕</button>' : ''}
+            \${!t.isActive ? '<button title="Close" onclick="event.stopPropagation(); closeTab(\\'' + safeUri + '\\')">✕</button>' : ''}
           </div>
         </li>
       \`;
     }
 
     function optimize() { vscode.postMessage({ command: 'optimize' }); }
-    function pin(uri) { vscode.postMessage({ command: 'pin', uri }); }
-    function unpin(uri) { vscode.postMessage({ command: 'unpin', uri }); }
-    function closeTab(uri) { vscode.postMessage({ command: 'closeTab', uri }); }
-    function openFile(uri) { vscode.postMessage({ command: 'openFile', uri }); }
+    function pin(uri) { vscode.postMessage({ command: 'pin', uri: decodeURIComponent(uri) }); }
+    function unpin(uri) { vscode.postMessage({ command: 'unpin', uri: decodeURIComponent(uri) }); }
+    function closeTab(uri) { vscode.postMessage({ command: 'closeTab', uri: decodeURIComponent(uri) }); }
+    function openFile(uri) { vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(uri) }); }
     function resetTurns() { vscode.postMessage({ command: 'resetTurns' }); }
 
     window.addEventListener('message', e => {
