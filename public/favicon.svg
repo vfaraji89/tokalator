@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- Abacus frame -->
+  <rect x="4" y="3" width="2" height="26" rx="1" fill="#111"/>
+  <rect x="26" y="3" width="2" height="26" rx="1" fill="#111"/>
+  <rect x="3" y="3" width="26" height="2" rx="1" fill="#111"/>
+  <rect x="3" y="27" width="26" height="2" rx="1" fill="#111"/>
+  <!-- Row 1 - rods and beads -->
+  <rect x="6" y="8.5" width="20" height="1" fill="#bbb"/>
+  <circle cx="10" cy="9" r="2.5" fill="#e3120b"/>
+  <circle cx="16" cy="9" r="2.5" fill="#e3120b"/>
+  <circle cx="22" cy="9" r="2.5" fill="#333"/>
+  <!-- Row 2 -->
+  <rect x="6" y="15.5" width="20" height="1" fill="#bbb"/>
+  <circle cx="10" cy="16" r="2.5" fill="#e3120b"/>
+  <circle cx="16" cy="16" r="2.5" fill="#333"/>
+  <circle cx="22" cy="16" r="2.5" fill="#333"/>
+  <!-- Row 3 -->
+  <rect x="6" y="22.5" width="20" height="1" fill="#bbb"/>
+  <circle cx="10" cy="23" r="2.5" fill="#333"/>
+  <circle cx="16" cy="23" r="2.5" fill="#e3120b"/>
+  <circle cx="22" cy="23" r="2.5" fill="#e3120b"/>
+</svg>
