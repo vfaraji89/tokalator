@@ -86,6 +86,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| **Tabs open** | ${snapshot.tabs.length} |\n`);
     stream.markdown(`| **Tokens used** | ~${this.fmtTokens(snapshot.totalEstimatedTokens)} |\n`);
     stream.markdown(`| **Window size** | ${this.fmtTokens(snapshot.windowCapacity)} |\n`);
+    stream.markdown(`| **Tokenizer** | ${snapshot.tokenizerLabel} |\n`);
     stream.markdown(`| **Chat turns** | ${snapshot.chatTurnCount} |\n\n`);
 
     // Health notes
@@ -260,7 +261,9 @@ export class ContextChatParticipant implements vscode.Disposable {
         for (const uri of files) {
           try {
             const doc = await vscode.workspace.openTextDocument(uri);
-            const tokens = Math.ceil(doc.getText().length / 4);
+            const model = this.monitor.getActiveModel();
+            const tokenizer = this.monitor.getTokenizer();
+            const tokens = tokenizer.countTokens(doc.getText(), model.provider);
             allFiles.push({
               path: vscode.workspace.asRelativePath(uri),
               tokens,
@@ -319,8 +322,10 @@ export class ContextChatParticipant implements vscode.Disposable {
       // Show current model and list all
       stream.markdown(`## Active Model: ${currentModel.label}\n\n`);
       stream.markdown(`| | |\n|---|---|\n`);
+      const tokenizer = this.monitor.getTokenizer();
       stream.markdown(`| **Context window** | ${this.fmtTokens(currentModel.contextWindow)} |\n`);
       stream.markdown(`| **Max output** | ${this.fmtTokens(currentModel.maxOutput)} |\n`);
+      stream.markdown(`| **Tokenizer** | ${tokenizer.getTokenizerLabel(currentModel.provider)} |\n`);
       stream.markdown(`| **Rot threshold** | ${currentModel.rotThreshold} turns |\n`);
       stream.markdown(`| **Provider** | ${currentModel.provider} |\n\n`);
 
