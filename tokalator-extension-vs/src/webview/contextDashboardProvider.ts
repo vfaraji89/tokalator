@@ -219,9 +219,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .tab-actions {
       display: flex;
       gap: 2px;
-      opacity: 0;
     }
-    .tab-item:hover .tab-actions { opacity: 1; }
     .tab-actions button {
       background: none;
       border: none;
