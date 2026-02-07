@@ -1,9 +1,9 @@
 {
-  "version": "0.1.0",
+  "version": "0.2.3",
   "icon": "⬡",
   "headline": "Real-time context monitoring.\nInside your editor.",
   "highlightPhrase": "context monitoring",
-  "tagline": "Track token budgets, score tab relevance, and manage context — a VS Code sidebar that pays for itself.",
+  "tagline": "Track token budgets with real tokenizers, score tab relevance, and manage context — a VS Code sidebar that pays for itself.",
   "installCmd": "ext install vfaraji89.tokalator",
   "vsCodeMinVersion": "1.99",
   "githubUrl": "https://github.com/vfaraji89/tokalator",
@@ -12,15 +12,15 @@
     {
       "icon": "▣",
       "name": "Token Budget Dashboard",
-      "description": "Activity bar sidebar panel showing real-time token usage, budget meter, and per-file breakdown.",
+      "description": "Activity bar sidebar panel showing real-time token usage, budget meter, per-file breakdown, and active tokenizer info.",
       "command": "View via sidebar icon",
       "number": 1
     },
     {
       "icon": "◎",
-      "name": "@tokens Chat Participant",
-      "description": "Integrated chat commands for inline budget management directly in Copilot Chat.",
-      "command": "@tokens /count, /optimize, /pin, /breakdown",
+      "name": "@tokalator Chat Participant",
+      "description": "Six chat commands for inline budget management directly in Copilot Chat.",
+      "command": "@tokalator /count, /optimize, /breakdown, /pin, /instructions, /model",
       "number": 2
     },
     {
@@ -31,42 +31,56 @@
       "number": 3
     },
     {
-      "icon": "◆",
-      "name": "Status Bar Indicator",
-      "description": "Quick-glance budget status (LOW / MEDIUM / HIGH) in the bottom-right corner.",
-      "command": "Always visible",
+      "icon": "⊕",
+      "name": "Model-Specific Tokenizers",
+      "description": "Real BPE tokenizers per provider — Claude BPE for Anthropic, o200k_base for OpenAI. No more guessing at 4 chars per token.",
+      "command": "@tokalator /model",
       "number": 4
+    },
+    {
+      "icon": "◇",
+      "name": "13 Model Profiles",
+      "description": "Built-in profiles for Opus 4.6, Sonnet 4.5/4, GPT-5.2, GPT-5.1, o3, o4-mini, Gemini 3 Pro/Flash, and more. Context windows and rot thresholds auto-configured.",
+      "command": "Settings: tokalator.model",
+      "number": 5
     },
     {
       "icon": "⚠",
       "name": "Context Rot Warnings",
-      "description": "Warns when conversation turns exceed threshold. Helps you know when to start a fresh chat.",
+      "description": "Warns when conversation turns exceed the model's threshold. Each model has its own rot limit based on benchmarks.",
       "command": "Automatic",
-      "number": 5
+      "number": 6
     },
     {
-      "icon": "📌",
+      "icon": "⊕",
       "name": "Pinned Files",
       "description": "Pin important files so they are always treated as high-relevance in context scoring.",
-      "command": "@tokens /pin <file>",
-      "number": 6
+      "command": "@tokalator /pin <file>",
+      "number": 7
+    },
+    {
+      "icon": "◈",
+      "name": "Instruction File Scanner",
+      "description": "Finds all instruction files in your workspace (.instructions.md, .prompt.md, AGENTS.md, .cursorrules) and counts their real token cost.",
+      "command": "@tokalator /instructions",
+      "number": 8
     }
   ],
   "settings": [
     {
+      "key": "tokalator.model",
+      "default": "claude-opus-4.6",
+      "description": "AI model to calculate context budget against. Sets tokenizer, context window, and rot threshold automatically."
+    },
+    {
       "key": "tokalator.relevanceThreshold",
       "default": "0.3",
-      "description": "Tabs below this relevance score are marked as distractors (0\u20131)"
+      "description": "Tabs below this relevance score are marked as distractors (0–1)"
     },
     {
       "key": "tokalator.windowSize",
       "default": "1,000,000",
-      "description": "Context window size in tokens"
-    },
-    {
-      "key": "tokalator.contextRotWarningTurns",
-      "default": "20",
-      "description": "Warn about context rot after this many turns"
+      "description": "Override context window size in tokens. Leave at default to use the selected model's window."
     },
     {
       "key": "tokalator.autoRefreshInterval",
@@ -77,23 +91,43 @@
   "architecture": [
     {
       "layer": "Core Engine",
-      "purpose": "Subscribes to editor events, builds context snapshots, manages pinned files",
+      "purpose": "Subscribes to editor events, builds context snapshots, manages pinned files and model selection",
       "number": 1
     },
     {
-      "layer": "Token Estimator",
-      "purpose": "Counts tokens per file using the VS Code Language Model API when available, falls back to ~4 chars/token",
+      "layer": "Tokenizer Service",
+      "purpose": "Real BPE tokenizers — Claude BPE for Anthropic, o200k_base for OpenAI, heuristic fallback for Gemini",
       "number": 2
     },
     {
       "layer": "Relevance Scorer",
-      "purpose": "Scores tabs 0\u20131 based on language, imports, path, recency, diagnostics",
+      "purpose": "Scores tabs 0–1 based on language, imports, path, recency, diagnostics",
       "number": 3
     },
     {
       "layer": "Chat Participant",
-      "purpose": "@tokens chat commands; read-only commands don't inflate turn counter",
+      "purpose": "@tokalator chat commands — /count, /optimize, /breakdown, /pin, /instructions, /model",
       "number": 4
+    }
+  ],
+  "tokenizers": [
+    {
+      "provider": "Anthropic",
+      "models": "Opus 4.6, Sonnet 4.5, Sonnet 4, Haiku 3.5",
+      "tokenizer": "Claude BPE",
+      "source": "@anthropic-ai/tokenizer"
+    },
+    {
+      "provider": "OpenAI",
+      "models": "GPT-5.2, GPT-5.1, GPT-4o, o3, o4-mini",
+      "tokenizer": "o200k_base",
+      "source": "js-tiktoken"
+    },
+    {
+      "provider": "Google",
+      "models": "Gemini 3 Pro, 3 Flash, 2.5 Pro",
+      "tokenizer": "Heuristic",
+      "source": "~4 chars/token (no official JS tokenizer)"
     }
   ],
   "installMethods": {
@@ -107,11 +141,11 @@
       "title": "VSIX",
       "icon": "◇",
       "steps": [
-        "Download tokalator-0.1.0.vsix from releases",
-        "Cmd+Shift+P \u2192 Extensions: Install from VSIX...",
+        "Download tokalator-0.2.3.vsix from releases",
+        "Cmd+Shift+P → Extensions: Install from VSIX...",
         "Select the downloaded .vsix file"
       ],
-      "command": "code --install-extension tokalator-0.1.0.vsix"
+      "command": "code --install-extension tokalator-0.2.3.vsix"
     },
     "source": {
       "title": "Build from Source",
