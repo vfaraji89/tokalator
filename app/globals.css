@@ -99,6 +99,116 @@ pre {
   margin: 0;
 }
 
+/* ─── Page Load Animations ─── */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer {
+  from { background-position: -200% center; }
+  to { background-position: 200% center; }
+}
+
+/* Article entrance */
+.article {
+  animation: fadeIn 0.4s ease-out both;
+}
+
+/* Hero stagger — animations applied in the Hero layout section below */
+
+/* Section entrance — staggered */
+.article > section {
+  animation: fadeInUp 0.5s ease-out both;
+}
+
+.article > section:nth-child(2) { animation-delay: 0.1s; }
+.article > section:nth-child(3) { animation-delay: 0.15s; }
+.article > section:nth-child(4) { animation-delay: 0.2s; }
+.article > section:nth-child(5) { animation-delay: 0.25s; }
+.article > section:nth-child(6) { animation-delay: 0.3s; }
+.article > section:nth-child(7) { animation-delay: 0.35s; }
+
+/* Cards & grid items — stagger children */
+.feature-grid > *,
+.tool-grid > *,
+.wiki-grid > *,
+.why-stats > * {
+  animation: scaleIn 0.35s ease-out both;
+}
+
+.feature-grid > *:nth-child(1),
+.tool-grid > *:nth-child(1),
+.wiki-grid > *:nth-child(1),
+.why-stats > *:nth-child(1) { animation-delay: 0.1s; }
+
+.feature-grid > *:nth-child(2),
+.tool-grid > *:nth-child(2),
+.wiki-grid > *:nth-child(2),
+.why-stats > *:nth-child(2) { animation-delay: 0.18s; }
+
+.feature-grid > *:nth-child(3),
+.tool-grid > *:nth-child(3),
+.wiki-grid > *:nth-child(3),
+.why-stats > *:nth-child(3) { animation-delay: 0.26s; }
+
+.feature-grid > *:nth-child(4),
+.tool-grid > *:nth-child(4),
+.wiki-grid > *:nth-child(4) { animation-delay: 0.34s; }
+
+/* Stat numbers pulse */
+.why-stat-number {
+  background: linear-gradient(90deg, var(--accent), var(--text-primary), var(--accent));
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 3s linear infinite;
+}
+
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
 /* Layout */
 .layout { 
   display: flex; 
@@ -116,6 +226,7 @@ pre {
   overflow-y: auto;
   background: var(--bg);
   z-index: 100;
+  animation: slideInLeft 0.35s ease-out both;
 }
 
 .main-content {
@@ -333,11 +444,13 @@ pre {
   margin-bottom: 2.5rem;
   padding-bottom: 2rem;
   border-bottom: 1px solid var(--border);
+  animation: fadeInUp 0.5s ease-out both;
 }
 
 .hero-icon {
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
+  animation: scaleIn 0.4s ease-out 0.15s both;
 }
 
 .hero-headline {
@@ -346,6 +459,7 @@ pre {
   letter-spacing: -0.03em;
   line-height: 1.15;
   margin-bottom: 1rem;
+  animation: fadeInUp 0.5s ease-out 0.1s both;
 }
 
 .hero-description {
@@ -353,6 +467,7 @@ pre {
   line-height: 1.7;
   color: var(--text-secondary);
   margin-bottom: 1.5rem;
+  animation: fadeInUp 0.5s ease-out 0.2s both;
 }
 
 .accent-highlight {
@@ -361,6 +476,7 @@ pre {
   padding: 0.1em 0.4em;
   border-radius: 4px;
   font-weight: 600;
+  animation: scaleIn 0.4s ease-out 0.25s both;
 }
 
 .hero-ctas {
@@ -368,6 +484,7 @@ pre {
   gap: 0.75rem;
   margin-bottom: 1.25rem;
   flex-wrap: wrap;
+  animation: fadeInUp 0.4s ease-out 0.3s both;
 }
 
 .cta-primary {
@@ -418,6 +535,7 @@ pre {
   background: var(--grey-900);
   border-radius: 8px;
   padding: 0.5rem 0.75rem;
+  animation: fadeInUp 0.4s ease-out 0.4s both;
 }
 
 .install-cmd code {
@@ -1158,6 +1276,7 @@ kbd {
   border: 1px solid var(--border);
   border-radius: 12px;
   transition: border-color 0.15s ease;
+  animation: fadeIn 0.3s ease-out both;
 }
 
 .dict-term:hover {
