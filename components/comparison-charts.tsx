@@ -70,10 +70,11 @@ export function CostComparisonChart({
           />
           <Tooltip
             contentStyle={{
-              background: '#1a1a1a',
-              border: '1px solid #333',
-              borderRadius: 0,
+              background: '#fff',
+              border: '1px solid #ccc',
+              borderRadius: 4,
               fontSize: 12,
+              color: '#111',
             }}
             formatter={(value, name, props) => [
               `$${Number(value).toFixed(4)}`,
@@ -153,10 +154,11 @@ export function ContextWindowChart() {
           />
           <Tooltip
             contentStyle={{
-              background: '#1a1a1a',
-              border: '1px solid #333',
-              borderRadius: 0,
+              background: '#fff',
+              border: '1px solid #ccc',
+              borderRadius: 4,
               fontSize: 12,
+              color: '#111',
             }}
             formatter={(value) => [`${Number(value)}K tokens`]}
           />
@@ -246,10 +248,11 @@ export function PriceQualityChart() {
           />
           <Tooltip
             contentStyle={{
-              background: '#1a1a1a',
-              border: '1px solid #333',
-              borderRadius: 0,
+              background: '#fff',
+              border: '1px solid #ccc',
+              borderRadius: 4,
               fontSize: 12,
+              color: '#111',
             }}
             formatter={(value, name, props) => {
               const payload = props?.payload as PriceQualityData & { efficiency: number };

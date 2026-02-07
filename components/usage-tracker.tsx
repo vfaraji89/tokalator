@@ -1,303 +1,204 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { calculateCost, formatCost } from '@/lib/pricing';
+import { useState, useMemo } from "react";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+} from "recharts";
+import { calculateCost, formatCost } from "@/lib/pricing";
 
-type ModelId = 'claude-opus-4.6' | 'claude-sonnet-4.5' | 'claude-haiku-4.5';
+type ModelId = "claude-opus-4.6" | "claude-sonnet-4.5" | "claude-haiku-4.5";
+
+const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
+const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 interface UsageRecord {
-  id: string;
-  date: string;
-  model: ModelId;
-  project: string;
-  inputTokens: number;
-  outputTokens: number;
-  cacheWriteTokens: number;
-  cacheReadTokens: number;
-  cost: number;
+  id: string; date: string; model: ModelId; project: string;
+  inputTokens: number; outputTokens: number;
+  cacheWriteTokens: number; cacheReadTokens: number; cost: number;
 }
 
-// Sample data - in production this would come from the database
 const sampleUsage: UsageRecord[] = [
-  {
-    id: '1',
-    date: '2026-01-31',
-    model: 'claude-haiku-4.5',
-    project: 'Default Project',
-    inputTokens: 20000,
-    outputTokens: 10000,
-    cacheWriteTokens: 5000,
-    cacheReadTokens: 10000,
-    cost: 0.08,
-  },
-  {
-    id: '2',
-    date: '2026-01-30',
-    model: 'claude-opus-4.6',
-    project: 'Default Project',
-    inputTokens: 20000,
-    outputTokens: 25000,
-    cacheWriteTokens: 2000,
-    cacheReadTokens: 5000,
-    cost: 0.68,
-  },
-  {
-    id: '3',
-    date: '2026-01-29',
-    model: 'claude-sonnet-4.5',
-    project: 'Default Project',
-    inputTokens: 80000,
-    outputTokens: 35000,
-    cacheWriteTokens: 20000,
-    cacheReadTokens: 10000,
-    cost: 1.34,
-  },
-  {
-    id: '4',
-    date: '2026-01-28',
-    model: 'claude-sonnet-4.5',
-    project: 'Default Project',
-    inputTokens: 250000,
-    outputTokens: 60000,
-    cacheWriteTokens: 50000,
-    cacheReadTokens: 30000,
-    cost: 3.68,
-  },
+  { id: "1", date: "2026-01-31", model: "claude-haiku-4.5", project: "Default Project", inputTokens: 20000, outputTokens: 10000, cacheWriteTokens: 5000, cacheReadTokens: 10000, cost: 0.08 },
+  { id: "2", date: "2026-01-30", model: "claude-opus-4.6", project: "Default Project", inputTokens: 20000, outputTokens: 25000, cacheWriteTokens: 2000, cacheReadTokens: 5000, cost: 0.68 },
+  { id: "3", date: "2026-01-29", model: "claude-sonnet-4.5", project: "Default Project", inputTokens: 80000, outputTokens: 35000, cacheWriteTokens: 20000, cacheReadTokens: 10000, cost: 1.34 },
+  { id: "4", date: "2026-01-28", model: "claude-sonnet-4.5", project: "Default Project", inputTokens: 250000, outputTokens: 60000, cacheWriteTokens: 50000, cacheReadTokens: 30000, cost: 3.68 },
 ];
 
 const MODEL_LABELS: Record<ModelId, string> = {
-  'claude-opus-4.6': 'Claude Opus 4.6',
-  'claude-sonnet-4.5': 'Claude Sonnet 4.5',
-  'claude-haiku-4.5': 'Claude Haiku 4.5',
+  "claude-opus-4.6": "Opus 4.6",
+  "claude-sonnet-4.5": "Sonnet 4.5",
+  "claude-haiku-4.5": "Haiku 4.5",
 };
 
 const MODEL_COLORS: Record<ModelId, string> = {
-  'claude-opus-4.6': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
-  'claude-sonnet-4.5': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
-  'claude-haiku-4.5': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  "claude-opus-4.6": P.black,
+  "claude-sonnet-4.5": P.red,
+  "claude-haiku-4.5": P.g5,
 };
 
 export function UsageTracker() {
   const [usage, setUsage] = useState<UsageRecord[]>(sampleUsage);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newRecord, setNewRecord] = useState({
-    model: 'claude-sonnet-4.5' as ModelId,
-    inputTokens: 0,
-    outputTokens: 0,
-    cacheWriteTokens: 0,
-    cacheReadTokens: 0,
-  });
+  const [newRecord, setNewRecord] = useState({ model: "claude-sonnet-4.5" as ModelId, inputTokens: 0, outputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0 });
 
-  const totalCost = usage.reduce((sum, record) => sum + record.cost, 0);
-  const totalTokens = usage.reduce(
-    (sum, record) =>
-      sum + record.inputTokens + record.outputTokens + record.cacheWriteTokens + record.cacheReadTokens,
-    0
-  );
+  const totalCost = usage.reduce((s, r) => s + r.cost, 0);
+  const totalTokens = usage.reduce((s, r) => s + r.inputTokens + r.outputTokens + r.cacheWriteTokens + r.cacheReadTokens, 0);
+
+  // Chart data
+  const costByDate = useMemo(() => usage.map(r => ({ date: r.date.slice(5), cost: r.cost, model: MODEL_LABELS[r.model] })).reverse(), [usage]);
+
+  const costByModel = useMemo(() => {
+    const map: Record<string, number> = {};
+    usage.forEach(r => { map[MODEL_LABELS[r.model]] = (map[MODEL_LABELS[r.model]] || 0) + r.cost; });
+    return Object.entries(map).map(([name, value]) => ({ name, value: +value.toFixed(4) }));
+  }, [usage]);
+
+  const tokenBreakdown = useMemo(() => {
+    let inp = 0, out = 0, cw = 0, cr = 0;
+    usage.forEach(r => { inp += r.inputTokens; out += r.outputTokens; cw += r.cacheWriteTokens; cr += r.cacheReadTokens; });
+    return [
+      { name: "Input", value: inp },
+      { name: "Output", value: out },
+      { name: "Cache Write", value: cw },
+      { name: "Cache Read", value: cr },
+    ];
+  }, [usage]);
+
+  const pieColors = [P.black, P.red, P.g5, P.g3];
 
   const handleAddRecord = () => {
-    const costBreakdown = calculateCost(
-      newRecord.model,
-      {
-        inputTokens: newRecord.inputTokens,
-        outputTokens: newRecord.outputTokens,
-        cacheWriteTokens: newRecord.cacheWriteTokens,
-        cacheReadTokens: newRecord.cacheReadTokens,
-        promptLength: newRecord.inputTokens, // For tiered pricing
-      }
-    );
-    const cost = costBreakdown.totalCost;
-
-    const record: UsageRecord = {
-      ...newRecord,
-      id: Date.now().toString(),
-      date: new Date().toISOString().split('T')[0],
-      project: 'Default Project',
-      cost,
-    };
-
+    const costBreakdown = calculateCost(newRecord.model, { inputTokens: newRecord.inputTokens, outputTokens: newRecord.outputTokens, cacheWriteTokens: newRecord.cacheWriteTokens, cacheReadTokens: newRecord.cacheReadTokens, promptLength: newRecord.inputTokens });
+    const record: UsageRecord = { ...newRecord, id: Date.now().toString(), date: new Date().toISOString().split("T")[0], project: "Default Project", cost: costBreakdown.totalCost };
     setUsage([record, ...usage]);
     setShowAddForm(false);
-    setNewRecord({
-      model: 'claude-sonnet-4.5',
-      inputTokens: 0,
-      outputTokens: 0,
-      cacheWriteTokens: 0,
-      cacheReadTokens: 0,
-    });
+    setNewRecord({ model: "claude-sonnet-4.5", inputTokens: 0, outputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0 });
   };
 
   return (
-    <div className="space-y-6">
+    <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
       {/* Summary Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Cost</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {formatCost(totalCost)}
+      <div className="feature-grid" style={{ gridTemplateColumns: "1fr 1fr 1fr" }}>
+        {[
+          ["Total Cost", formatCost(totalCost)],
+          ["Total Tokens", `${(totalTokens / 1000).toFixed(1)}K`],
+          ["Records", String(usage.length)],
+        ].map(([label, value]) => (
+          <div key={label} className="feature-card" style={{ textAlign: "center" }}>
+            <p style={{ fontSize: "0.875rem", color: P.g7 }}>{label}</p>
+            <p style={{ fontSize: "1.5rem", fontWeight: 700 }}>{value}</p>
           </div>
+        ))}
+      </div>
+
+      {/* Charts Row */}
+      <div className="feature-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div className="eco-card-flat">
+          <h3 className="section-header">Cost by Date</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={costByDate} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.g3} />
+              <XAxis dataKey="date" stroke={P.g7} tick={{ fontSize: 10 }} />
+              <YAxis stroke={P.g7} tick={{ fontSize: 10 }} tickFormatter={(v) => `$${v}`} />
+              <Tooltip {...tt} formatter={(v) => [`$${Number(v).toFixed(4)}`]} />
+              <Bar dataKey="cost" radius={[3, 3, 0, 0]}>
+                {costByDate.map((entry, i) => {
+                  const m = usage.find(u => u.date.slice(5) === entry.date)?.model || "claude-sonnet-4.5";
+                  return <Cell key={i} fill={MODEL_COLORS[m]} />;
+                })}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
         </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Total Tokens</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {(totalTokens / 1000).toFixed(1)}K
-          </div>
-        </div>
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-          <div className="text-sm text-gray-500 dark:text-gray-400">Records</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {usage.length}
-          </div>
+
+        <div className="eco-card-flat">
+          <h3 className="section-header">Token Breakdown</h3>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie data={tokenBreakdown} cx="50%" cy="50%" outerRadius={80} dataKey="value" label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`} labelLine={false} style={{ fontSize: 10 }}>
+                {tokenBreakdown.map((_, i) => (<Cell key={i} fill={pieColors[i]} />))}
+              </Pie>
+              <Tooltip {...tt} formatter={(v) => [`${(Number(v) / 1000).toFixed(1)}K tokens`]} />
+            </PieChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="flex gap-4">
-        <button
-          onClick={() => setShowAddForm(!showAddForm)}
-          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-        >
-          {showAddForm ? 'Cancel' : 'Add Usage Record'}
+      {/* Cost by Model */}
+      <div className="eco-card-flat">
+        <h3 className="section-header">Cost by Model</h3>
+        <ResponsiveContainer width="100%" height={150}>
+          <BarChart data={costByModel} layout="vertical" margin={{ top: 0, right: 30, left: 80, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" stroke={P.g3} horizontal={false} />
+            <XAxis type="number" stroke={P.g7} tick={{ fontSize: 10 }} tickFormatter={(v) => `$${v}`} />
+            <YAxis type="category" dataKey="name" stroke={P.g7} tick={{ fontSize: 10 }} width={70} />
+            <Tooltip {...tt} formatter={(v) => [`$${Number(v).toFixed(4)}`]} />
+            <Bar dataKey="value" radius={[0, 3, 3, 0]}>
+              {costByModel.map((entry, i) => {
+                const color = entry.name.includes("Opus") ? P.black : entry.name.includes("Sonnet") ? P.red : P.g5;
+                return <Cell key={i} fill={color} />;
+              })}
+            </Bar>
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+
+      {/* Add Record */}
+      <div style={{ display: "flex", gap: "0.5rem" }}>
+        <button onClick={() => setShowAddForm(!showAddForm)} style={{ padding: "0.5rem 1rem", background: P.black, color: P.white, border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.875rem" }}>
+          {showAddForm ? "Cancel" : "Add Usage Record"}
         </button>
       </div>
 
-      {/* Add Form */}
       {showAddForm && (
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
-            Add Usage Record
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="eco-card-flat">
+          <h3 style={{ marginBottom: "1rem" }}>Add Usage Record</h3>
+          <div className="feature-grid" style={{ gridTemplateColumns: "1fr 1fr 1fr 1fr 1fr" }}>
             <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Model
-              </label>
-              <select
-                value={newRecord.model}
-                onChange={(e) => setNewRecord({ ...newRecord, model: e.target.value as ModelId })}
-                className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              >
-                <option value="claude-opus-4.6">Claude Opus 4.6</option>
-                <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
-                <option value="claude-haiku-4.5">Claude Haiku 4.5</option>
+              <label style={{ display: "block", fontSize: "0.75rem", color: P.g7, marginBottom: "0.25rem" }}>Model</label>
+              <select value={newRecord.model} onChange={(e) => setNewRecord({ ...newRecord, model: e.target.value as ModelId })} style={{ width: "100%", padding: "0.375rem", border: `1px solid ${P.g3}`, borderRadius: "4px" }}>
+                <option value="claude-opus-4.6">Opus 4.6</option>
+                <option value="claude-sonnet-4.5">Sonnet 4.5</option>
+                <option value="claude-haiku-4.5">Haiku 4.5</option>
               </select>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Input Tokens
-              </label>
-              <input
-                type="number"
-                value={newRecord.inputTokens}
-                onChange={(e) => setNewRecord({ ...newRecord, inputTokens: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Output Tokens
-              </label>
-              <input
-                type="number"
-                value={newRecord.outputTokens}
-                onChange={(e) => setNewRecord({ ...newRecord, outputTokens: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Cache Write
-              </label>
-              <input
-                type="number"
-                value={newRecord.cacheWriteTokens}
-                onChange={(e) => setNewRecord({ ...newRecord, cacheWriteTokens: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Cache Read
-              </label>
-              <input
-                type="number"
-                value={newRecord.cacheReadTokens}
-                onChange={(e) => setNewRecord({ ...newRecord, cacheReadTokens: parseInt(e.target.value) || 0 })}
-                className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
-              />
-            </div>
+            {[["Input", "inputTokens"], ["Output", "outputTokens"], ["Cache Write", "cacheWriteTokens"], ["Cache Read", "cacheReadTokens"]].map(([label, key]) => (
+              <div key={key}>
+                <label style={{ display: "block", fontSize: "0.75rem", color: P.g7, marginBottom: "0.25rem" }}>{label}</label>
+                <input type="number" value={(newRecord as unknown as Record<string, number>)[key]} onChange={(e) => setNewRecord({ ...newRecord, [key]: parseInt(e.target.value) || 0 })} style={{ width: "100%", padding: "0.375rem", border: `1px solid ${P.g3}`, borderRadius: "4px" }} />
+              </div>
+            ))}
           </div>
-          <div className="mt-4">
-            <button
-              onClick={handleAddRecord}
-              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              Save Record
-            </button>
-          </div>
+          <button onClick={handleAddRecord} style={{ marginTop: "1rem", padding: "0.5rem 1rem", background: P.red, color: P.white, border: "none", borderRadius: "4px", cursor: "pointer", fontSize: "0.875rem" }}>Save Record</button>
         </div>
       )}
 
       {/* Usage Table */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Date
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Model
-                </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Project
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Input
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Output
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Cache
-                </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
-                  Cost
-                </th>
+      <div className="eco-card-flat" style={{ overflow: "hidden" }}>
+        <table className="settings-table">
+          <thead>
+            <tr>
+              <th style={{ textAlign: "left" }}>Date</th>
+              <th style={{ textAlign: "left" }}>Model</th>
+              <th style={{ textAlign: "right" }}>Input</th>
+              <th style={{ textAlign: "right" }}>Output</th>
+              <th style={{ textAlign: "right" }}>Cache</th>
+              <th style={{ textAlign: "right" }}>Cost</th>
+            </tr>
+          </thead>
+          <tbody>
+            {usage.map((r) => (
+              <tr key={r.id}>
+                <td>{r.date}</td>
+                <td><span style={{ display: "inline-block", padding: "0.125rem 0.5rem", borderRadius: "999px", fontSize: "0.75rem", fontWeight: 500, background: P.g1, border: `1px solid ${P.g3}` }}>{MODEL_LABELS[r.model]}</span></td>
+                <td style={{ textAlign: "right" }}>{(r.inputTokens / 1000).toFixed(1)}K</td>
+                <td style={{ textAlign: "right" }}>{(r.outputTokens / 1000).toFixed(1)}K</td>
+                <td style={{ textAlign: "right", fontSize: "0.8125rem", color: P.g7 }}>W:{(r.cacheWriteTokens / 1000).toFixed(1)}K R:{(r.cacheReadTokens / 1000).toFixed(1)}K</td>
+                <td style={{ textAlign: "right", fontWeight: 600 }}>{formatCost(r.cost)}</td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              {usage.map((record) => (
-                <tr key={record.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50">
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">
-                    {record.date}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${MODEL_COLORS[record.model]}`}>
-                      {MODEL_LABELS[record.model]}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
-                    {record.project}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
-                    {(record.inputTokens / 1000).toFixed(1)}K
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100 text-right">
-                    {(record.outputTokens / 1000).toFixed(1)}K
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400 text-right">
-                    W: {(record.cacheWriteTokens / 1000).toFixed(1)}K / R: {(record.cacheReadTokens / 1000).toFixed(1)}K
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-gray-100 text-right">
-                    {formatCost(record.cost)}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

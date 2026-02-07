@@ -1,41 +1,27 @@
-import { ANTHROPIC_PRICING, formatCost } from '@/lib/pricing';
+"use client";
+
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, Legend,
+} from "recharts";
+
+const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
+const tt = { contentStyle: { background: P.white, border: "1px solid " + P.g3, borderRadius: 4, fontSize: 12, color: P.black } };
 
 const models = [
+  { name: "Claude Opus 4.5", tier: "Most Capable", input: "$5.00", output: "$25.00", cacheWrite: "$6.25", cacheRead: "$0.50", ratio: "5.0x", inputNum: 5, outputNum: 25 },
   {
-    name: "Claude Opus 4.5",
-    tier: "Most Capable",
-    input: "$5.00",
-    output: "$25.00",
-    cacheWrite: "$6.25",
-    cacheRead: "$0.50",
-    ratio: "5.0x",
+    name: "Claude Sonnet 4.5", tier: "Best Value", input: "$3.00", output: "$15.00", cacheWrite: "$3.75", cacheRead: "$0.30", ratio: "5.0x", inputNum: 3, outputNum: 15,
+    extended: { input: "$6.00", output: "$22.50", cacheWrite: "$7.50", cacheRead: "$0.60", ratio: "3.75x" },
   },
-  {
-    name: "Claude Sonnet 4.5",
-    tier: "Best Value",
-    input: "$3.00",
-    output: "$15.00",
-    cacheWrite: "$3.75",
-    cacheRead: "$0.30",
-    ratio: "5.0x",
-    extended: {
-      input: "$6.00",
-      output: "$22.50",
-      cacheWrite: "$7.50",
-      cacheRead: "$0.60",
-      ratio: "3.75x",
-    },
-  },
-  {
-    name: "Claude Haiku 4.5",
-    tier: "Most Efficient",
-    input: "$1.00",
-    output: "$5.00",
-    cacheWrite: "$1.25",
-    cacheRead: "$0.10",
-    ratio: "5.0x",
-  },
+  { name: "Claude Haiku 4.5", tier: "Most Efficient", input: "$1.00", output: "$5.00", cacheWrite: "$1.25", cacheRead: "$0.10", ratio: "5.0x", inputNum: 1, outputNum: 5 },
 ];
+
+const chartData = models.map((m) => ({
+  name: m.name.replace("Claude ", ""),
+  input: m.inputNum,
+  output: m.outputNum,
+}));
 
 const services = [
   { name: "Web Search", desc: "Real-time web search capability", price: "$10.00 / 1K searches" },
@@ -45,7 +31,7 @@ const services = [
 
 const tiers = [
   { name: "Free", context: "200K", rateLimit: "Low", features: "Basic models, limited usage" },
-  { name: "Pro ($20/mo)", context: "200K", rateLimit: "Higher", features: "All models, more usage, extended thinking" },
+  { name: "Pro ($20/mo)", context: "200K", rateLimit: "Higher", features: "All models, higher limits" },
   { name: "Max ($100/mo)", context: "200K", rateLimit: "Highest", features: "Unlimited usage, priority access" },
   { name: "Team ($30/seat/mo)", context: "200K", rateLimit: "Higher", features: "Admin tools, shared workspaces" },
   { name: "Enterprise", context: "200K", rateLimit: "Custom", features: "SSO, audit logs, custom terms" },
@@ -55,11 +41,30 @@ export default function PricingPage() {
   return (
     <article className="article">
       <header>
-        <h1>\u25ca Pricing Reference</h1>
+        <h1>Pricing Reference</h1>
         <p className="tagline">
           Current pricing for Claude models and services (January 2026). All prices per million tokens.
         </p>
       </header>
+
+      {/* Price Visualization */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Price Comparison</h2>
+        <div className="eco-card-flat">
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke={P.g3} />
+              <XAxis dataKey="name" stroke={P.g7} tick={{ fontSize: 12 }} />
+              <YAxis stroke={P.g7} tick={{ fontSize: 11 }} tickFormatter={(v) => "$" + v} />
+              <Tooltip {...tt} formatter={(v) => ["$" + Number(v).toFixed(2) + "/MTok"]} />
+              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
+              <Bar dataKey="input" name="Input Cost" radius={[4, 4, 0, 0]} fill={P.black} />
+              <Bar dataKey="output" name="Output Cost" radius={[4, 4, 0, 0]} fill={P.red} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+      </section>
 
       {/* Model Cards */}
       <section>
@@ -67,27 +72,29 @@ export default function PricingPage() {
         <h2 className="section-header">Model Pricing</h2>
         <div className="feature-grid">
           {models.map((m) => (
-            <div key={m.name} className="feature-card">
-              <h3>{m.name}</h3>
-              <span className="source-badge">{m.tier}</span>
-              <table className="settings-table">
+            <div key={m.name} className="eco-card-flat">
+              <h3 style={{ margin: "0 0 4px" }}>{m.name}</h3>
+              <span className="badge">{m.tier}</span>
+              <table className="settings-table" style={{ marginTop: 12 }}>
                 <tbody>
                   <tr><td>Input</td><td><strong>{m.input}</strong></td></tr>
                   <tr><td>Output</td><td><strong>{m.output}</strong></td></tr>
                   <tr><td>Cache Write</td><td><strong>{m.cacheWrite}</strong></td></tr>
                   <tr><td>Cache Read</td><td><strong>{m.cacheRead}</strong></td></tr>
-                  <tr><td>Output Ratio</td><td><strong>{m.ratio}</strong></td></tr>
+                  <tr><td>Output/Input</td><td><strong>{m.ratio}</strong></td></tr>
                 </tbody>
               </table>
               {m.extended && (
                 <>
-                  <p style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>
-                    Extended Thinking (128K context):
+                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 12 }}>
+                    Extended Thinking (128K budget):
                   </p>
                   <table className="settings-table">
                     <tbody>
                       <tr><td>Input</td><td><strong>{m.extended.input}</strong></td></tr>
                       <tr><td>Output</td><td><strong>{m.extended.output}</strong></td></tr>
+                      <tr><td>Cache Write</td><td><strong>{m.extended.cacheWrite}</strong></td></tr>
+                      <tr><td>Cache Read</td><td><strong>{m.extended.cacheRead}</strong></td></tr>
                     </tbody>
                   </table>
                 </>
@@ -97,25 +104,25 @@ export default function PricingPage() {
         </div>
       </section>
 
-      {/* Additional Services */}
+      {/* Services */}
       <section>
         <div className="section-divider" />
         <h2 className="section-header">Additional Services</h2>
         <div className="feature-grid">
           {services.map((s) => (
-            <div key={s.name} className="feature-card">
-              <h3>{s.name}</h3>
-              <p>{s.desc}</p>
-              <span className="source-badge">{s.price}</span>
+            <div key={s.name} className="eco-card-flat">
+              <h3 style={{ margin: "0 0 4px" }}>{s.name}</h3>
+              <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", margin: "4px 0 8px" }}>{s.desc}</p>
+              <strong>{s.price}</strong>
             </div>
           ))}
         </div>
       </section>
 
-      {/* Subscription Tiers */}
+      {/* Tiers */}
       <section>
         <div className="section-divider" />
-        <h2 className="section-header">Subscription Tiers</h2>
+        <h2 className="section-header">API Tiers</h2>
         <table className="settings-table">
           <thead>
             <tr>

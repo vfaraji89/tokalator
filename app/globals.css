@@ -282,22 +282,23 @@ pre {
   .mobile-version {
     font-size: 0.625rem;
     color: var(--text-muted);
-    margin-left: auto;
+    margin-right: auto;
   }
   
   .menu-btn {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 36px;
-    height: 36px;
+    width: 32px;
+    height: 32px;
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: 6px;
     background: var(--bg);
     cursor: pointer;
     color: var(--text-primary);
     flex-shrink: 0;
     transition: border-color 0.15s ease;
+    margin-left: auto;
   }
 
   .menu-btn:hover {
@@ -410,9 +411,10 @@ pre {
   font-size: 0.8125rem;
   font-weight: 400;
   color: var(--text-secondary);
-  transition: all 0.15s ease;
+  transition: all 0.2s ease;
   text-decoration: none;
   border-left: 3px solid transparent;
+  border-radius: 0 6px 6px 0;
 }
 
 .nav-link:hover {
@@ -420,6 +422,7 @@ pre {
   background: var(--bg-subtle);
   border-left-color: var(--grey-300);
   text-decoration: none;
+  box-shadow: 0 2px 12px rgba(227, 18, 11, 0.12), 0 0 0 1px rgba(227, 18, 11, 0.06);
 }
 
 .nav-link.active {
@@ -427,6 +430,7 @@ pre {
   font-weight: 600;
   background: var(--bg-muted);
   border-left-color: var(--accent);
+  box-shadow: 0 2px 8px rgba(227, 18, 11, 0.10);
 }
 
 .nav-icon {
@@ -476,6 +480,28 @@ pre {
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
   animation: scaleIn 0.4s ease-out 0.15s both;
+}
+
+/* @Tokalator text-motion animation */
+@keyframes textMotionReveal {
+  0% { clip-path: inset(0 100% 0 0); opacity: 0; }
+  30% { opacity: 1; }
+  100% { clip-path: inset(0 0 0 0); opacity: 1; }
+}
+
+@keyframes textMotionGlow {
+  0%, 100% { text-shadow: none; }
+  50% { text-shadow: 0 0 8px rgba(227, 18, 11, 0.25); }
+}
+
+.text-motion {
+  display: inline-block;
+  animation: textMotionReveal 0.8s cubic-bezier(0.16, 1, 0.3, 1) both,
+             textMotionGlow 3s ease-in-out 1s infinite;
+}
+
+.text-motion:hover {
+  text-shadow: 0 0 12px rgba(227, 18, 11, 0.3);
 }
 
 .hero-headline {

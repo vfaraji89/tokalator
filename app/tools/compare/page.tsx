@@ -10,7 +10,7 @@ export default function ComparePage() {
   return (
     <article className="article">
       <header>
-        <h1>&#9670; Model Comparison</h1>
+        <h1>Model Comparison</h1>
         <p className="tagline">
           Compare pricing, capabilities, and efficiency across AI providers.
         </p>
