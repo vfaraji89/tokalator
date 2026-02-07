@@ -1,4 +1,4 @@
-export type Locale = "en" | "tr";
+export type Locale = "en";
 
 export const translations = {
   en: {
@@ -69,76 +69,8 @@ export const translations = {
     promptStructure: "Prompt Structure for Coding Agents",
     promptStructureDesc: "For high-quality requests, system prompts should be organized into distinct sections using XML tagging or Markdown headers (e.g., <background_information>, ## Tool guidance). The objective is to provide the smallest possible set of high-signal tokens that maximize the likelihood of the correct code generation.",
   },
-  tr: {
-    // Navigation
-    overview: "Genel Bakış",
-    about: "Hakkında",
-    extension: "Uzantı",
-    install: "Kurulum",
-    tools: "Araçlar",
-    costCalculator: "Maliyet Hesaplayıcı",
-    contextOptimizer: "Bağlam Optimize Edici",
-    modelComparison: "Model Karşılaştırma",
-    cachingRoi: "Önbellekleme ROI",
-    conversationCost: "Konuşma Maliyeti",
-    economicAnalysis: "Ekonomik Analiz",
-    pricingReference: "Fiyat Referansı",
-    wiki: "Wiki",
-    jargon: "Bağlam Jargonu",
-    
-    // About page
-    aboutTitle: "Tokalator Hakkında",
-    aboutTagline: "Yapay zeka kodlama asistanları için token bütçe yönetim araçları",
-    author: "Geliştirici",
-    authorName: "Vahid Faraji",
-    authorBio: "Tokalator'un yaratıcısı ve geliştiricisi — geliştiricilerin yapay zeka bağlam tüketimini anlamalarına ve optimize etmelerine yardımcı olan araçlar geliştiriyor.",
-    project: "Proje",
-    projectDesc: "Tokalator açık kaynaklı bir projedir. Kod tabanı şunları içerir:",
-    vsCodeExtension: "VS Code Uzantısı",
-    vsCodeExtensionDesc: "Gerçek zamanlı token bütçe panosu, sekme alaka puanlaması ve @tokens sohbet katılımcısı",
-    webTools: "Web Araçları",
-    webToolsDesc: "Maliyet hesaplayıcıları, model karşılaştırma, önbellekleme ROI analizi ve bağlam optimizasyon kılavuzları",
-    contextLibrary: "Bağlam Mühendisliği Kütüphanesi",
-    contextLibraryDesc: "Daha iyi yapay zeka etkileşimleri için seçilmiş ajanlar, talimatlar ve istemler",
-    viewOnGithub: "GitHub'da Görüntüle",
-    license: "Lisans",
-    licenseText: "MIT Lisansı — kişisel ve ticari kullanım için ücretsiz.",
-    
-    // Wiki page
-    wikiTitle: "Bağlam Mühendisliği Wiki",
-    wikiTagline: "Yapay zeka kodlama asistanları için temel jargon ve kavramlar",
-    
-    // Sections
-    jitContext: "IDE ve Anında (JIT) Bağlam",
-    jitContextDesc: "Kodlama asistanları genellikle ortamınızla etkileşim kurmak için eğik çizgi komutları ve IDE komutları gibi belirli özellikleri kullanan IDE uzantıları veya CLI araçları aracılığıyla çalışır.",
-    progressiveDisclosure: "Aşamalı Açıklama",
-    progressiveDisclosureDesc: "Dikkat bütçesini hemen dolduracak olan tüm kod tabanını yüklemek yerine, modern ajanlar JIT bağlamını kullanır.",
-    lightweightIdentifiers: "Hafif Tanımlayıcılar",
-    lightweightIdentifiersDesc: "Asistan referansları (dosya yolları, saklanan sorgular) korur ve grep, head veya tail gibi araçları kullanarak çalışma zamanında yalnızca gerekli verileri dinamik olarak yükler.",
-    
-    longHorizon: "Uzun Ufuk Görevlerini Yönetme",
-    longHorizonDesc: "Kodlama görevleri genellikle \"on dakikadan birkaç saate\" kadar sürer ve bağlam çürümesini önlemek için özel kalıcılık stratejileri gerektirir.",
-    compaction: "Sıkıştırma",
-    compactionDesc: "Bir oturum token sınırına yaklaştığında, asistan mimari kararlar ve çözülmemiş hatalar gibi kritik ayrıntıları özetlerken gereksiz araç çıktılarını atar.",
-    toolResultClearing: "Araç Sonucu Temizleme",
-    toolResultClearingDesc: "Önceki araç çağrılarının ham sonuçlarının (uzun terminal çıktıları gibi) yer kazanmak için temizlendiği hafif bir sıkıştırma biçimi.",
-    structuredNoteTaking: "Yapılandırılmış Not Alma",
-    structuredNoteTakingDesc: "Ajan, binlerce adım boyunca bağımlılıkları ve ilerlemeyi izlemek için harici bir NOTES.md veya yapılacaklar listesi tutabilir ve bunu sıfırlamadan sonra bağlamına geri okuyabilir.",
-    
-    contextPollution: "Bağlam Kirliliğinden Kaçınma",
-    contextPollutionDesc: "Kodlama bağlamında hassasiyet kritiktir. Performans çeşitli faktörlerle düşürülebilir.",
-    distractors: "Dikkat Dağıtıcılar",
-    distractorsDesc: "Sorguyla konusal olarak ilgili ancak cevabı içermeyen dosyalar veya kod parçacıkları, modelin odağını kaybetmesine veya halüsinasyon görmesine neden olabilir.",
-    contextRot: "Bağlam Çürümesi",
-    contextRotDesc: "Daha fazla token eklendikçe (örn. uzun geçmişler veya büyük dosyalar), modelin kod tabanının \"samanlığından\" bilgi \"iğnelerini\" doğru bir şekilde alma yeteneği azalır.",
-    structuralPatterns: "Yapısal Kalıplar",
-    structuralPatternsDesc: "Araştırmalar, modellerin genellikle karıştırılmış veya yapılandırılmamış bağlamda mantıksal olarak yapılandırılmış samanlıklardan daha iyi performans gösterdiğini ve bunun uzun, tutarlı dosyaları nasıl işlediklerini etkileyebileceğini göstermektedir.",
-    
-    promptStructure: "Kodlama Ajanları için İstem Yapısı",
-    promptStructureDesc: "Yüksek kaliteli istekler için, sistem istemleri XML etiketleme veya Markdown başlıkları (örn. <background_information>, ## Araç rehberliği) kullanılarak ayrı bölümlere düzenlenmelidir. Amaç, doğru kod üretimi olasılığını en üst düzeye çıkaran en küçük yüksek sinyalli token setini sağlamaktır.",
-  },
 } as const;
 
 export function t(locale: Locale, key: keyof typeof translations.en): string {
-  return translations[locale][key] || translations.en[key];
+  return translations[locale][key];
 }

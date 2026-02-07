@@ -1,8 +1,3 @@
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
-
 const GitHubIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
@@ -15,62 +10,20 @@ const GitHubIcon = () => (
   </svg>
 );
 
-function AboutContent() {
-  const searchParams = useSearchParams();
-  const lang = searchParams.get("lang") === "tr" ? "tr" : "en";
-
-  const content = {
-    en: {
-      title: "About Tokalator",
-      tagline: "Token budget management tools for AI coding assistants",
-      author: "Author",
-      authorName: "Vahid Faraji",
-      authorBio: "Creator and maintainer of Tokalator — building tools that help developers understand and optimize their AI context consumption.",
-      project: "Project",
-      projectDesc: "Tokalator is an open-source project. The codebase includes:",
-      items: [
-        { title: "VS Code Extension", desc: "Real-time token budget dashboard, tab relevance scoring, and @tokens chat participant" },
-        { title: "Web Tools", desc: "Cost calculators, model comparison, caching ROI analysis, and context optimization guides" },
-        { title: "Context Engineering Library", desc: "Curated agents, instructions, and prompts for better AI interactions" },
-      ],
-      viewOnGithub: "View on GitHub",
-      license: "License",
-      licenseText: "MIT License — free for personal and commercial use.",
-    },
-    tr: {
-      title: "Tokalator Hakkında",
-      tagline: "Yapay zeka kodlama asistanları için token bütçe yönetim araçları",
-      author: "Geliştirici",
-      authorName: "Vahid Faraji",
-      authorBio: "Tokalator'un yaratıcısı ve geliştiricisi — geliştiricilerin yapay zeka bağlam tüketimini anlamalarına ve optimize etmelerine yardımcı olan araçlar geliştiriyor.",
-      project: "Proje",
-      projectDesc: "Tokalator açık kaynaklı bir projedir. Kod tabanı şunları içerir:",
-      items: [
-        { title: "VS Code Uzantısı", desc: "Gerçek zamanlı token bütçe panosu, sekme alaka puanlaması ve @tokens sohbet katılımcısı" },
-        { title: "Web Araçları", desc: "Maliyet hesaplayıcıları, model karşılaştırma, önbellekleme ROI analizi ve bağlam optimizasyon kılavuzları" },
-        { title: "Bağlam Mühendisliği Kütüphanesi", desc: "Daha iyi yapay zeka etkileşimleri için seçilmiş ajanlar, talimatlar ve istemler" },
-      ],
-      viewOnGithub: "GitHub'da Görüntüle",
-      license: "Lisans",
-      licenseText: "MIT Lisansı — kişisel ve ticari kullanım için ücretsiz.",
-    },
-  };
-
-  const c = content[lang];
-
+export default function AboutPage() {
   return (
     <article className="article">
       <header>
-        <h1>{c.title}</h1>
-        <p className="tagline">{c.tagline}</p>
+        <h1>About Tokalator</h1>
+        <p className="tagline">Token budget management tools for AI coding assistants</p>
       </header>
 
       <section>
-        <h2>{c.author}</h2>
+        <h2>Author</h2>
         <div className="author-card">
           <div className="author-info">
-            <h3>{c.authorName}</h3>
-            <p>{c.authorBio}</p>
+            <h3>Vahid Faraji</h3>
+            <p>Creator and maintainer of Tokalator — building tools that help developers understand and optimize their AI context consumption.</p>
             <a
               href="https://github.com/vfaraji89"
               target="_blank"
@@ -85,14 +38,12 @@ function AboutContent() {
       </section>
 
       <section>
-        <h2>{c.project}</h2>
-        <p>{c.projectDesc}</p>
+        <h2>Project</h2>
+        <p>Tokalator is an open-source project. The codebase includes:</p>
         <ul>
-          {c.items.map((item) => (
-            <li key={item.title}>
-              <strong>{item.title}</strong> — {item.desc}
-            </li>
-          ))}
+          <li><strong>VS Code Extension</strong> — Real-time token budget dashboard, tab relevance scoring, and @tokens chat participant</li>
+          <li><strong>Web Tools</strong> — Cost calculators, model comparison, caching ROI analysis, and context optimization guides</li>
+          <li><strong>Context Engineering Library</strong> — Curated agents, instructions, and prompts for better AI interactions</li>
         </ul>
         <a
           href="https://github.com/vfaraji89/tokalator"
@@ -102,22 +53,14 @@ function AboutContent() {
           style={{ marginTop: "1.5rem", display: "inline-flex" }}
         >
           <GitHubIcon />
-          {c.viewOnGithub}
+          View on GitHub
         </a>
       </section>
 
       <section>
-        <h2>{c.license}</h2>
-        <p>{c.licenseText}</p>
+        <h2>License</h2>
+        <p>MIT License — free for personal and commercial use.</p>
       </section>
     </article>
-  );
-}
-
-export default function AboutPage() {
-  return (
-    <Suspense fallback={<div className="article"><p>Loading...</p></div>}>
-      <AboutContent />
-    </Suspense>
   );
 }
