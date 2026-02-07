@@ -41,7 +41,6 @@ function GitHubIcon() {
 
 export function SideNav() {
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
 
   // Track which collapsible sections are open
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -62,30 +61,15 @@ export function SideNav() {
     setCollapsed((prev) => ({ ...prev, ...expanded }));
   }, [pathname]);
 
-  // Close sidebar on route change
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
-
-  // Prevent body scroll when mobile menu is open
-  useEffect(() => {
-    if (open) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "";
-    }
-    return () => { document.body.style.overflow = ""; };
-  }, [open]);
-
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   return (
     <>
-      {/* Mobile header — Agentation style: icon + /name left, = right */}
+      {/* Mobile header — logo + desktop hint, no hamburger */}
       <div className="mobile-header">
-        <Link href="/" className="mobile-logo" onClick={() => setOpen(false)}>
+        <Link href="/" className="mobile-logo">
           <svg className="mobile-logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none">
             <path d="M4 4 L4 24 L24 24 L24 4 Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
             <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1" />
@@ -100,37 +84,20 @@ export function SideNav() {
           </svg>
           <span className="mobile-logo-text">/Tokalator</span>
         </Link>
-        <button
-          className="menu-btn"
-          onClick={() => setOpen(!open)}
-          aria-label="Toggle menu"
-        >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
-            {open ? (
-              <>
-                <line x1="5" y1="5" x2="15" y2="15" />
-                <line x1="15" y1="5" x2="5" y2="15" />
-              </>
-            ) : (
-              <>
-                <line x1="3" y1="7" x2="17" y2="7" />
-                <line x1="3" y1="13" x2="17" y2="13" />
-              </>
-            )}
+        <span className="mobile-desktop-hint">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" />
+            <line x1="8" y1="21" x2="16" y2="21" />
+            <line x1="12" y1="17" x2="12" y2="21" />
           </svg>
-        </button>
+          Desktop is better
+        </span>
       </div>
 
-      {/* Overlay */}
-      <div
-        className={`overlay ${open ? "open" : ""}`}
-        onClick={() => setOpen(false)}
-      />
-
       {/* Sidebar */}
-      <nav className={`sidebar ${open ? "open" : ""}`}>
+      <nav className="sidebar">
         <div className="sidebar-header">
-          <Link href="/" className="sidebar-logo" onClick={() => setOpen(false)}>
+          <Link href="/" className="sidebar-logo">
             <span className="sidebar-slash">/</span>
             <span className="sidebar-logo-text text-motion">{siteContent.name.replace("@", "")}</span>
           </Link>
@@ -167,7 +134,6 @@ export function SideNav() {
                         key={item.href}
                         href={item.href}
                         className={`nav-link ${isActive ? "active" : ""} ${isCollapsible ? "nav-link--nested" : ""}`}
-                        onClick={() => setOpen(false)}
                       >
                         {item.label}
                         {item.badge && <span className="nav-badge">{item.badge}</span>}
