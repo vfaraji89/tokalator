@@ -1,4 +1,10 @@
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Tools",
+  description: "AI token management tools — cost calculator, context optimizer, model comparison, caching ROI, and pricing reference.",
+};
 
 const tools = [
   {

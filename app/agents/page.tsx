@@ -1,5 +1,11 @@
 import { getCatalogByKind } from '@/lib/catalog';
 import { CatalogGrid } from '@/components/catalog/catalog-grid';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Agents",
+  description: "Browse AI agent definitions for context engineering, coding assistants, and token optimization workflows.",
+};
 
 export default function AgentsPage() {
   const agents = getCatalogByKind('agent');

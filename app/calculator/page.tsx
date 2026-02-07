@@ -1,4 +1,10 @@
 import { CostCalculator } from "@/components/cost-calculator";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Token Cost Calculator",
+  description: "Calculate token costs across AI models — Claude, GPT-4, Gemini and more. Compare input/output pricing instantly.",
+};
 
 export default function CalculatorPage() {
   return (

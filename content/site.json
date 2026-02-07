@@ -72,6 +72,10 @@
         {
           "href": "/tools/pricing",
           "label": "Pricing Reference"
+        },
+        {
+          "href": "/tools/usage",
+          "label": "Usage Tracker"
         }
       ]
     },

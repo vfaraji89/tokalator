@@ -1,3 +1,10 @@
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "About",
+  description: "About Tokalator — token budget management tools for AI coding assistants. Built by Vahid Faraji from Istanbul.",
+};
+
 const GitHubIcon = () => (
   <svg
     xmlns="http://www.w3.org/2000/svg"
