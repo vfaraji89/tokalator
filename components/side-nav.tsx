@@ -45,6 +45,9 @@ export function SideNav() {
   // Track which collapsible sections are open
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
 
+  // Mobile menu open state
+  const [menuOpen, setMenuOpen] = useState(false);
+
   // Auto-expand sections containing the active route
   useEffect(() => {
     const expanded: Record<string, boolean> = {};
@@ -61,25 +64,86 @@ export function SideNav() {
     setCollapsed((prev) => ({ ...prev, ...expanded }));
   }, [pathname]);
 
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [pathname]);
+
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }));
   };
 
   return (
     <>
-      {/* Mobile header — logo + desktop hint, no hamburger */}
+      {/* Mobile header — icon logo + hamburger */}
       <div className="mobile-header">
         <Link href="/" className="mobile-logo">
-          <span className="mobile-logo-text">/Tokalator</span>
+          <span className="mobile-logo-slash">/</span>
+          <span className="mobile-logo-text">Tokalator</span>
         </Link>
-        <span className="mobile-desktop-hint">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-            <rect x="2" y="3" width="20" height="14" rx="2" />
-            <line x1="8" y1="21" x2="16" y2="21" />
-            <line x1="12" y1="17" x2="12" y2="21" />
+        <button
+          className="mobile-menu-btn"
+          onClick={() => setMenuOpen((v) => !v)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          type="button"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+            {menuOpen ? (
+              <>
+                <line x1="4" y1="4" x2="16" y2="16" />
+                <line x1="16" y1="4" x2="4" y2="16" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="5" x2="17" y2="5" />
+                <line x1="3" y1="10" x2="17" y2="10" />
+                <line x1="3" y1="15" x2="17" y2="15" />
+              </>
+            )}
           </svg>
-          Desktop is better
-        </span>
+        </button>
+      </div>
+
+      {/* Mobile overlay */}
+      {menuOpen && (
+        <div className="mobile-overlay" onClick={() => setMenuOpen(false)} />
+      )}
+
+      {/* Mobile slide-down menu */}
+      <div className={`mobile-menu ${menuOpen ? "mobile-menu--open" : ""}`}>
+        {nav.map((section) => (
+          <div key={section.section} className="mobile-menu-section">
+            <div className="mobile-menu-section-label">{section.section}</div>
+            {section.items.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`mobile-menu-link ${isActive ? "mobile-menu-link--active" : ""}`}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  {item.label}
+                  {item.badge && <span className="nav-badge">{item.badge}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+        <div className="mobile-menu-footer">
+          <a
+            href={siteContent.authorGithub}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="sidebar-github-link"
+            aria-label="GitHub Profile"
+          >
+            <GitHubIcon />
+          </a>
+          <span className="mobile-menu-version">{siteContent.version}</span>
+        </div>
       </div>
 
       {/* Sidebar */}
