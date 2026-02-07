@@ -243,7 +243,7 @@ pre {
   .sidebar {
     position: fixed;
     left: -100%;
-    width: 280px;
+    width: min(280px, 85vw);
     transition: left 0.3s ease;
     box-shadow: 2px 0 10px rgba(0,0,0,0.1);
   }
@@ -255,6 +255,8 @@ pre {
   .main-content {
     margin-left: 0;
     padding: 1rem 1.25rem;
+    min-width: 0;
+    overflow-x: hidden;
   }
   
   .mobile-header {
@@ -1508,6 +1510,11 @@ kbd {
     font-size: 2rem;
   }
 
+  .hero-outline-icon svg {
+    width: 36px;
+    height: 36px;
+  }
+
   .hero-ctas {
     flex-direction: column;
   }
@@ -1515,10 +1522,17 @@ kbd {
   .hero-ctas .cta-primary,
   .hero-ctas .cta-secondary {
     width: 100%;
+    text-align: center;
+  }
+
+  .coming-soon-badge {
+    width: 100%;
+    justify-content: center;
   }
 
   .install-cmd {
     width: 100%;
+    justify-content: space-between;
   }
 
   .why-stats {
@@ -1526,7 +1540,11 @@ kbd {
   }
 
   .main-content {
-    padding: 1rem;
+    padding: 0.875rem;
+  }
+
+  .article {
+    max-width: 100%;
   }
 
   .article header {
@@ -1535,7 +1553,7 @@ kbd {
   }
 
   .article section {
-    margin-top: 2rem;
+    margin-top: 1.75rem;
   }
 
   .feature-grid,
@@ -1560,12 +1578,283 @@ kbd {
   .section-header {
     font-size: 1rem;
   }
+
+  .section-divider {
+    margin-bottom: 1rem;
+  }
+
+  .hero {
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .hero-description {
+    font-size: 0.875rem;
+  }
+
+  .why-stat-card {
+    padding: 1rem;
+  }
+
+  .why-stat-number {
+    font-size: 1.125rem;
+  }
+
+  /* Tables horizontal scroll on small screens */
+  .settings-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    font-size: 0.75rem;
+  }
+
+  .settings-table th,
+  .settings-table td {
+    padding: 0.5rem 0.625rem;
+    white-space: nowrap;
+  }
+
+  /* Chart containers */
+  .eco-card-flat {
+    padding: 0.75rem;
+    overflow-x: auto;
+  }
+
+  /* Nav link sizing */
+  .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .nav-section-label {
+    padding: 0.625rem 1rem 0.375rem;
+  }
+
+  /* Dictionary on small screens */
+  .dict-letter-link {
+    width: 1.75rem;
+    height: 1.75rem;
+    font-size: 0.6875rem;
+  }
+
+  .dict-term {
+    padding: 0.75rem 1rem;
+  }
+
+  /* How-to steps */
+  .how-to-step {
+    gap: 0.625rem;
+    font-size: 0.8125rem;
+  }
+
+  .how-to-num {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.625rem;
+  }
+
+  /* Footer */
+  .footer {
+    margin-top: 2.5rem;
+    padding-top: 1.25rem;
+  }
+
+  /* Wiki */
+  .wiki-term {
+    padding: 0.75rem 1rem;
+  }
+
+  .wiki-filters {
+    margin-bottom: 1rem;
+  }
+
+  .wiki-filter-row {
+    gap: 0.25rem;
+  }
+
+  .source-pill,
+  .category-pill {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.5rem;
+  }
+}
+
+/* Extra small phones (iPhone SE, Galaxy S, etc.) */
+@media (max-width: 360px) {
+  body {
+    font-size: 0.75rem;
+  }
+
+  h1 { font-size: 1rem; }
+  h2 { font-size: 0.875rem; }
+
+  .hero-headline {
+    font-size: 1.25rem;
+    line-height: 1.2;
+  }
+
+  .hero-outline-icon svg {
+    width: 32px;
+    height: 32px;
+  }
+
+  .hero-description {
+    font-size: 0.8125rem;
+    line-height: 1.6;
+  }
+
+  .main-content {
+    padding: 0.75rem;
+  }
+
+  .mobile-header {
+    padding: 0.625rem 0.75rem;
+    gap: 0.5rem;
+  }
+
+  .mobile-logo {
+    font-size: 0.875rem;
+  }
+
+  .cta-primary,
+  .cta-secondary {
+    padding: 0.5rem 1rem;
+    font-size: 0.8125rem;
+  }
+
+  .install-cmd {
+    padding: 0.375rem 0.625rem;
+  }
+
+  .install-cmd code {
+    font-size: 0.75rem;
+  }
+
+  .copy-btn {
+    font-size: 0.625rem;
+    padding: 0.2rem 0.5rem;
+  }
+
+  .feature-item,
+  .tool-card {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .feature-item h3,
+  .tool-card h3 {
+    font-size: 0.8125rem;
+  }
+
+  .feature-item p,
+  .tool-card p {
+    font-size: 0.75rem;
+  }
+
+  .feature-number {
+    width: 1.25rem;
+    height: 1.25rem;
+    font-size: 0.5625rem;
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+
+  .why-stat-card {
+    padding: 0.75rem;
+    border-radius: 8px;
+  }
+
+  .why-stat-number {
+    font-size: 1rem;
+  }
+
+  .why-stat-label {
+    font-size: 0.6875rem;
+  }
+
+  .section-header {
+    font-size: 0.9375rem;
+  }
+
+  .accent-highlight {
+    font-size: 0.8125rem;
+    padding: 0.05em 0.3em;
+  }
+
+  .nav-link {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+  }
+
+  .nav-section-label {
+    padding: 0.5rem 0.75rem 0.25rem;
+    font-size: 0.625rem;
+  }
+
+  .sidebar {
+    width: 250px;
+  }
+
+  .settings-table th,
+  .settings-table td {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.6875rem;
+  }
+
+  .dict-letter-link {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 0.625rem;
+  }
+
+  .dict-letter-index {
+    gap: 0.25rem;
+  }
+
+  .how-to-step {
+    gap: 0.5rem;
+    padding: 0.5rem 0;
+    font-size: 0.75rem;
+  }
+
+  .how-to-num {
+    width: 1.125rem;
+    height: 1.125rem;
+    font-size: 0.5625rem;
+  }
+
+  .coming-soon-badge {
+    font-size: 0.5625rem;
+    padding: 0.2em 0.5em;
+  }
 }
 
 /* Tablet responsive */
 @media (max-width: 768px) {
   .hero-headline {
     font-size: 1.75rem;
+  }
+
+  .article {
+    max-width: 100%;
+  }
+
+  /* Tables scroll horizontally */
+  .settings-table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Recharts containers: prevent overflow */
+  .eco-card-flat {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .hero-outline-icon svg {
+    width: 40px;
+    height: 40px;
   }
 }
 
