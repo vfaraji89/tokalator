@@ -1,5 +1,11 @@
 import { getCatalogByKind } from '@/lib/catalog';
 import { CatalogGrid } from '@/components/catalog/catalog-grid';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Instructions",
+  description: "Browse custom instruction files for AI coding assistants — Copilot, Claude, Cursor, and more.",
+};
 
 export default function InstructionsPage() {
   const instructions = getCatalogByKind('instruction');

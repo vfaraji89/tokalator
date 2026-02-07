@@ -1,4 +1,10 @@
 import { EconomicAnalysis } from '@/components/economic-analysis';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Economic Analysis",
+  description: "Analyze the economics of AI token usage — cost breakdowns, ROI projections, and efficiency metrics.",
+};
 
 export default function AnalysisPage() {
   return (

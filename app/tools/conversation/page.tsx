@@ -1,4 +1,10 @@
 import { ConversationEstimator } from '@/components/conversation-estimator';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Conversation Cost Estimator",
+  description: "Estimate the total token cost of multi-turn AI conversations across different models and turn counts.",
+};
 
 export default function ConversationPage() {
   return (

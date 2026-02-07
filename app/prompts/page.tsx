@@ -1,5 +1,11 @@
 import { getCatalogByKind } from '@/lib/catalog';
 import { CatalogGrid } from '@/components/catalog/catalog-grid';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Prompts",
+  description: "Reusable prompt files for context engineering — context maps, refactor plans, and optimization workflows.",
+};
 
 export default function PromptsPage() {
   const prompts = getCatalogByKind('prompt');

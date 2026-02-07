@@ -1,10 +1,24 @@
 import Link from "next/link";
 import wikiData from "../../../content/wiki/articles.json";
+import type { Metadata } from "next";
 
 type WikiArticle = (typeof wikiData.articles)[number];
 
 export function generateStaticParams() {
   return wikiData.articles.map((a) => ({ slug: a.slug }));
+}
+
+interface PageProps {
+  params: Promise<{ slug: string }>;
+}
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = wikiData.articles.find((a) => a.slug === slug);
+  return {
+    title: article ? article.title : "Wiki Article",
+    description: article ? `${article.title} — ${article.source} wiki article on Tokalator` : "Wiki article",
+  };
 }
 
 function renderMarkdownToHtml(md: string): string {

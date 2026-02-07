@@ -1,4 +1,10 @@
 import { ContextOptimizer } from "@/components/context-optimizer";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Context Window Optimizer",
+  description: "Optimize your AI context window usage. Analyze token distribution and reduce context pollution.",
+};
 
 export default function ContextPage() {
   return (
