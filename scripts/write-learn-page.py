@@ -1,4 +1,16 @@
-"use client";
+#!/usr/bin/env python3
+"""Write the updated Learn page with:
+1. Reframed narrative: Prompt = instructions (series of tokens), Context Management = token optimization & economy
+2. Black-bg frames with red/white inside (no grey)
+3. All course material incorporated (10 lessons)
+4. Better comparison visuals
+"""
+
+import os
+
+LEARN_PAGE = os.path.join(os.path.dirname(__file__), "..", "app", "learn", "page.tsx")
+
+content = r'''"use client";
 
 import Link from "next/link";
 
@@ -918,3 +930,9 @@ export default function LearnPage() {
     </article>
   );
 }
+'''
+
+with open(LEARN_PAGE, "w") as f:
+    f.write(content)
+
+print(f"Wrote {len(content)} chars to {LEARN_PAGE}")
