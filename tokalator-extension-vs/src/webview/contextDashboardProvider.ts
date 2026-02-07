@@ -116,6 +116,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
         ? { ...snapshot.activeFile, uri: snapshot.activeFile.uri.toString() }
         : null,
       models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow })),
+      tokenizerType: snapshot.tokenizerType,
+      tokenizerLabel: snapshot.tokenizerLabel,
     };
 
     this.view.webview.postMessage({ type: 'snapshot', data: serialized });
@@ -311,6 +313,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     }
     .ws-warn { color: #f59e0b; }
     .ws-ok { color: #22c55e; opacity: 0.8; }
+    .tokenizer { color: #60a5fa; font-style: italic; }
   </style>
 </head>
 <body>
@@ -334,7 +337,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     function render(s) {
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
               healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
-              models, workspaceFileCount, workspaceFileTokens } = s;
+              models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel } = s;
 
       const threshold = 0.3;
       const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
@@ -369,6 +372,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           <div class="stat">\${chatTurnCount} turns</div>
           \${workspaceFileCount > 0 ? '<div class="stat">' + workspaceFileCount + ' in project</div>' : ''}
           \${diagnosticsSummary.errors > 0 ? '<div class="stat">' + diagnosticsSummary.errors + ' errors</div>' : ''}
+          \${tokenizerLabel ? '<div class="stat tokenizer">' + tokenizerLabel + '</div>' : ''}
         </div>
 
         \${workspaceFileCount > 0 ? \`

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { TabInfo, ContextSnapshot } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
+import { TokenizerService } from './tokenizerService';
 import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './modelProfiles';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
@@ -25,7 +26,8 @@ export class ContextMonitor implements vscode.Disposable {
   readonly onDidUpdateSnapshot = this._onDidUpdateSnapshot.event;
 
   private readonly scorer = new TabRelevanceScorer();
-  private readonly estimator = new TokenBudgetEstimator();
+  private readonly tokenizer = new TokenizerService();
+  private readonly estimator = new TokenBudgetEstimator(this.tokenizer);
 
   private pinnedFiles = new Set<string>();
   private chatTurnCount = 0;
@@ -51,6 +53,7 @@ export class ContextMonitor implements vscode.Disposable {
     // Load persisted model selection
     const savedModelId = workspaceState?.get<string>(SELECTED_MODEL_KEY, DEFAULT_MODEL_ID) || DEFAULT_MODEL_ID;
     this.activeModel = getModel(savedModelId);
+    this.estimator.setProvider(this.activeModel.provider);
 
     // Scan workspace files on startup
     this.scanWorkspaceFiles();
@@ -296,6 +299,8 @@ export class ContextMonitor implements vscode.Disposable {
       modelLabel: this.activeModel.label,
       workspaceFileCount: this.workspaceFileCount,
       workspaceFileTokens: this.workspaceFileTokens,
+      tokenizerType: this.tokenizer.getTokenizerType(this.activeModel.provider),
+      tokenizerLabel: this.tokenizer.getTokenizerLabel(this.activeModel.provider),
     };
   }
 
@@ -402,9 +407,12 @@ export class ContextMonitor implements vscode.Disposable {
    */
   setModel(modelId: string): void {
     this.activeModel = getModel(modelId);
+    this.estimator.setProvider(this.activeModel.provider);
     if (this.workspaceState) {
       this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
     }
+    // Rescan workspace with new tokenizer ratios
+    this.scanWorkspaceFiles();
     this.refresh();
   }
 
@@ -423,6 +431,13 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   /**
+   * Get the tokenizer service for direct token counting.
+   */
+  getTokenizer(): TokenizerService {
+    return this.tokenizer;
+  }
+
+  /**
    * Scan workspace files to estimate total project token count.
    * This runs once on startup and on workspace change.
    */
@@ -435,17 +450,17 @@ export class ContextMonitor implements vscode.Disposable {
       );
       this.workspaceFileCount = files.length;
 
-      // Estimate total workspace tokens from file sizes (rough: 1 token per 4 bytes)
-      let totalChars = 0;
+      // Estimate total workspace tokens using provider-specific byte ratios
+      let totalBytes = 0;
       for (const uri of files) {
         try {
           const stat = await vscode.workspace.fs.stat(uri);
-          totalChars += stat.size;
+          totalBytes += stat.size;
         } catch {
           // skip unreadable files
         }
       }
-      this.workspaceFileTokens = Math.ceil(totalChars / 4);
+      this.workspaceFileTokens = this.tokenizer.estimateFromBytes(totalBytes, this.activeModel.provider);
     } catch {
       this.workspaceFileCount = 0;
       this.workspaceFileTokens = 0;
@@ -456,6 +471,7 @@ export class ContextMonitor implements vscode.Disposable {
     if (this.refreshTimer) { clearInterval(this.refreshTimer); }
     if (this.debounceTimer) { clearTimeout(this.debounceTimer); }
     this._onDidUpdateSnapshot.dispose();
+    this.tokenizer.dispose();
     this.disposables.forEach(d => d.dispose());
   }
 }
