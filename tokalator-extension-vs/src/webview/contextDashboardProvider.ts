@@ -88,6 +88,11 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           this.monitor.resetChatTurns();
           break;
         }
+
+        case 'setModel': {
+          this.monitor.setModel(message.modelId);
+          break;
+        }
       }
     });
 
@@ -110,6 +115,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       activeFile: snapshot.activeFile
         ? { ...snapshot.activeFile, uri: snapshot.activeFile.uri.toString() }
         : null,
+      models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow })),
     };
 
     this.view.webview.postMessage({ type: 'snapshot', data: serialized });
@@ -266,6 +272,45 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .notes li { margin-bottom: 2px; }
 
     .empty { text-align: center; opacity: 0.4; padding: 20px; font-size: 12px; }
+
+    .model-selector {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      padding: 0 2px;
+    }
+    .model-selector label {
+      font-size: 11px;
+      opacity: 0.6;
+      white-space: nowrap;
+    }
+    .model-selector select {
+      flex: 1;
+      background: var(--card-bg);
+      color: var(--fg);
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 4px;
+      padding: 4px 6px;
+      font-size: 11px;
+      cursor: pointer;
+      outline: none;
+    }
+    .model-selector select:hover { border-color: rgba(255,255,255,0.25); }
+    .model-selector select:focus { border-color: var(--accent); }
+
+    .workspace-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding: 6px 8px;
+      background: var(--card-bg);
+      border-radius: 6px;
+      font-size: 11px;
+      margin-top: 6px;
+    }
+    .ws-warn { color: #f59e0b; }
+    .ws-ok { color: #22c55e; opacity: 0.8; }
   </style>
 </head>
 <body>
@@ -288,16 +333,28 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
     function render(s) {
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
-              healthReasons, pinnedFiles, diagnosticsSummary } = s;
+              healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
+              models, workspaceFileCount, workspaceFileTokens } = s;
 
       const threshold = 0.3;
       const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
       const distractors = tabs.filter(t => t.relevanceScore < threshold && !t.isActive && !t.isPinned);
 
+      const modelOptions = (models || []).map(m =>
+        '<option value="' + m.id + '"' + (m.id === modelId ? ' selected' : '') + '>' + m.label + ' (' + fmtTokens(m.contextWindow) + ')' + '</option>'
+      ).join('');
+
       app.innerHTML = \`
         <div class="header">
           <span class="header-icon">🧮</span>
           <span class="header-title">Tokalator</span>
+        </div>
+
+        <div class="model-selector">
+          <label>Model</label>
+          <select onchange="setModel(this.value)">
+            \${modelOptions}
+          </select>
         </div>
 
         <div class="budget-level \${budgetLevel}">
@@ -307,11 +364,22 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
         </div>
 
         <div class="stats">
-          <div class="stat">\${tabs.length} tabs</div>
+          <div class="stat">\${tabs.length} open</div>
           <div class="stat">\${pinnedFiles.length} pinned</div>
           <div class="stat">\${chatTurnCount} turns</div>
+          \${workspaceFileCount > 0 ? '<div class="stat">' + workspaceFileCount + ' in project</div>' : ''}
           \${diagnosticsSummary.errors > 0 ? '<div class="stat">' + diagnosticsSummary.errors + ' errors</div>' : ''}
         </div>
+
+        \${workspaceFileCount > 0 ? \`
+          <div class="workspace-info">
+            <span>Project: ~\${fmtTokens(workspaceFileTokens)} tokens across \${workspaceFileCount} files</span>
+            \${workspaceFileTokens > windowCapacity
+              ? '<span class="ws-warn">Exceeds context window — not all files can be attached</span>'
+              : '<span class="ws-ok">Fits in context window</span>'
+            }
+          </div>
+        \` : ''}
 
         <div class="section">
           <div class="section-title">Files (\${relevant.length})</div>
@@ -366,6 +434,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     function closeTab(uri) { vscode.postMessage({ command: 'closeTab', uri: decodeURIComponent(uri) }); }
     function openFile(uri) { vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(uri) }); }
     function resetTurns() { vscode.postMessage({ command: 'resetTurns' }); }
+    function setModel(modelId) { vscode.postMessage({ command: 'setModel', modelId }); }
 
     window.addEventListener('message', e => {
       if (e.data.type === 'snapshot') render(e.data.data);

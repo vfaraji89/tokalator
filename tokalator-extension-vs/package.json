@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
@@ -123,7 +123,42 @@
         "tokalator.windowSize": {
           "type": "number",
           "default": 1000000,
-          "description": "Context window size in tokens (1M for Opus 4.6, 128K for older models)"
+          "description": "Override context window size in tokens. Leave at default to use the selected model's window."
+        },
+        "tokalator.model": {
+          "type": "string",
+          "default": "claude-opus-4.6",
+          "enum": [
+            "claude-opus-4.6",
+            "claude-sonnet-4.5",
+            "claude-sonnet-4",
+            "claude-haiku-3.5",
+            "gpt-4.1",
+            "gpt-4.1-mini",
+            "gpt-4o",
+            "gpt-4o-mini",
+            "o3",
+            "o4-mini",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash",
+            "gemini-2.0-flash"
+          ],
+          "enumDescriptions": [
+            "Claude Opus 4.6 — 1M tokens",
+            "Claude Sonnet 4.5 — 200K tokens",
+            "Claude Sonnet 4 — 200K tokens",
+            "Claude Haiku 3.5 — 200K tokens",
+            "GPT-4.1 — 1M tokens",
+            "GPT-4.1 Mini — 1M tokens",
+            "GPT-4o — 128K tokens",
+            "GPT-4o Mini — 128K tokens",
+            "o3 — 200K tokens",
+            "o4-mini — 200K tokens",
+            "Gemini 2.5 Pro — 1M tokens",
+            "Gemini 2.5 Flash — 1M tokens",
+            "Gemini 2.0 Flash — 1M tokens"
+          ],
+          "description": "AI model to calculate context budget against"
         },
         "tokalator.contextRotWarningTurns": {
           "type": "number",
