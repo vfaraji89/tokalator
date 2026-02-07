@@ -578,6 +578,47 @@ pre {
   border-top: 1px solid var(--border);
 }
 
+.sidebar-footer-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.sidebar-github-link {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+.sidebar-github-link:hover {
+  color: var(--text-primary);
+}
+
+.sidebar-made-by {
+  font-size: 0.6875rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+.sidebar-made-by a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.sidebar-made-by a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+.sidebar-heart {
+  color: var(--accent);
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+@keyframes heartbeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+
 /* Coming Soon Badge */
 .coming-soon-badge {
   display: inline-flex;
@@ -651,6 +692,43 @@ pre {
   background: var(--bg-muted);
   border-left-color: var(--accent);
   box-shadow: 0 2px 8px rgba(227, 18, 11, 0.10);
+}
+
+/* Collapsible nav section toggle */
+.nav-section-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+.nav-section-toggle:hover {
+  color: var(--text-secondary);
+}
+
+/* Nested submenu */
+.nav-submenu {
+  animation: navSlideIn 0.2s ease-out;
+}
+.nav-link--nested {
+  padding-left: 1.75rem;
+  font-size: 0.775rem;
+  border-left: 1px solid var(--grey-200);
+  margin-left: 1.25rem;
+  border-radius: 0;
+}
+.nav-link--nested.active {
+  border-left-color: var(--accent);
+}
+
+@keyframes navSlideIn {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .nav-icon {
@@ -1126,8 +1204,8 @@ pre {
 }
 
 .feature-badge--web {
-  background: rgba(100, 100, 100, 0.08);
-  color: var(--grey-600);
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
 .feature-item h3 {
@@ -1602,6 +1680,62 @@ kbd {
   border-top: 1px solid var(--border);
   font-size: 0.8125rem;
   color: var(--text-muted);
+}
+
+.footer-main {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.footer-brand {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.footer-divider {
+  color: var(--grey-300);
+}
+
+.footer-author a {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-weight: 500;
+}
+.footer-author a:hover {
+  color: var(--accent);
+  text-decoration: underline;
+}
+
+.footer-heart {
+  color: var(--accent);
+  display: inline-block;
+  animation: heartbeat 1.5s ease-in-out infinite;
+}
+
+.footer-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.footer-github {
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
+  transition: color 0.15s ease;
+}
+.footer-github:hover {
+  color: var(--text-primary);
+}
+
+.footer-clock {
+  font-size: 0.6875rem;
+  font-family: var(--font-mono);
+  color: var(--text-muted);
+  letter-spacing: 0.02em;
 }
 
 .footer a { color: var(--text-secondary); }

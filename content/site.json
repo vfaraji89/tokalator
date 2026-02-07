@@ -1,8 +1,9 @@
 {
   "name": "@Tokalator",
   "version": "v0.1",
-  "footer": "© 2026 Tokalator. Built by vfaraji89.",
+  "footer": "\u00a9 2026 @Tokalator. Made by Vahid Faraji with love from Istanbul.",
   "github": "https://github.com/vfaraji89/tokalator",
+  "authorGithub": "https://github.com/vfaraji89",
   "nav": [
     {
       "section": "Overview",
@@ -37,6 +38,7 @@
     },
     {
       "section": "Tools",
+      "collapsible": true,
       "items": [
         {
           "href": "/calculator",
@@ -70,6 +72,7 @@
     },
     {
       "section": "Catalog",
+      "collapsible": true,
       "items": [
         {
           "href": "/agents",
