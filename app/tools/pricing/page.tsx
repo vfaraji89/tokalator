@@ -1,274 +1,170 @@
 import { ANTHROPIC_PRICING, formatCost } from '@/lib/pricing';
 
+const models = [
+  {
+    name: "Claude Opus 4.5",
+    tier: "Most Capable",
+    input: "$5.00",
+    output: "$25.00",
+    cacheWrite: "$6.25",
+    cacheRead: "$0.50",
+    ratio: "5.0x",
+  },
+  {
+    name: "Claude Sonnet 4.5",
+    tier: "Best Value",
+    input: "$3.00",
+    output: "$15.00",
+    cacheWrite: "$3.75",
+    cacheRead: "$0.30",
+    ratio: "5.0x",
+    extended: {
+      input: "$6.00",
+      output: "$22.50",
+      cacheWrite: "$7.50",
+      cacheRead: "$0.60",
+      ratio: "3.75x",
+    },
+  },
+  {
+    name: "Claude Haiku 4.5",
+    tier: "Most Efficient",
+    input: "$1.00",
+    output: "$5.00",
+    cacheWrite: "$1.25",
+    cacheRead: "$0.10",
+    ratio: "5.0x",
+  },
+];
+
+const services = [
+  { name: "Web Search", desc: "Real-time web search capability", price: "$10.00 / 1K searches" },
+  { name: "Code Execution", desc: "Sandbox code execution environment", price: "$0.05 / execution" },
+  { name: "MCP Connectors", desc: "Model Context Protocol integrations", price: "Varies by connector" },
+];
+
+const tiers = [
+  { name: "Free", context: "200K", rateLimit: "Low", features: "Basic models, limited usage" },
+  { name: "Pro ($20/mo)", context: "200K", rateLimit: "Higher", features: "All models, more usage, extended thinking" },
+  { name: "Max ($100/mo)", context: "200K", rateLimit: "Highest", features: "Unlimited usage, priority access" },
+  { name: "Team ($30/seat/mo)", context: "200K", rateLimit: "Higher", features: "Admin tools, shared workspaces" },
+  { name: "Enterprise", context: "200K", rateLimit: "Custom", features: "SSO, audit logs, custom terms" },
+];
+
 export default function PricingPage() {
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
-          Anthropic Pricing
-        </h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
-          Current pricing for Claude models and services (January 2026).
+    <article className="article">
+      <header>
+        <h1>\u25ca Pricing Reference</h1>
+        <p className="tagline">
+          Current pricing for Claude models and services (January 2026). All prices per million tokens.
         </p>
-      </div>
+      </header>
 
-      {/* Model Pricing Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-        {/* Opus 4.5 */}
-        <div className="bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 text-white">
-            <div className="text-sm font-medium opacity-80">Most Capable</div>
-            <h2 className="text-2xl font-bold mt-1">Claude Opus 4.5</h2>
-            <p className="text-sm opacity-80 mt-2">
-              Best for complex analysis, research, and creative tasks
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-6 space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Input</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$5.00 / MTok</span>
+      {/* Model Cards */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Model Pricing</h2>
+        <div className="feature-grid">
+          {models.map((m) => (
+            <div key={m.name} className="feature-card">
+              <h3>{m.name}</h3>
+              <span className="source-badge">{m.tier}</span>
+              <table className="settings-table">
+                <tbody>
+                  <tr><td>Input</td><td><strong>{m.input}</strong></td></tr>
+                  <tr><td>Output</td><td><strong>{m.output}</strong></td></tr>
+                  <tr><td>Cache Write</td><td><strong>{m.cacheWrite}</strong></td></tr>
+                  <tr><td>Cache Read</td><td><strong>{m.cacheRead}</strong></td></tr>
+                  <tr><td>Output Ratio</td><td><strong>{m.ratio}</strong></td></tr>
+                </tbody>
+              </table>
+              {m.extended && (
+                <>
+                  <p style={{ color: "var(--text-muted)", marginTop: "0.5rem" }}>
+                    Extended Thinking (128K context):
+                  </p>
+                  <table className="settings-table">
+                    <tbody>
+                      <tr><td>Input</td><td><strong>{m.extended.input}</strong></td></tr>
+                      <tr><td>Output</td><td><strong>{m.extended.output}</strong></td></tr>
+                    </tbody>
+                  </table>
+                </>
+              )}
             </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Output</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$25.00 / MTok</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Cache Write</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$6.25 / MTok</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Cache Read</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$0.50 / MTok</span>
-            </div>
-          </div>
+          ))}
         </div>
-
-        {/* Sonnet 4.5 */}
-        <div className="bg-gradient-to-br from-blue-500 to-blue-700 rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 text-white">
-            <div className="text-sm font-medium opacity-80">Best Value</div>
-            <h2 className="text-2xl font-bold mt-1">Claude Sonnet 4.5</h2>
-            <p className="text-sm opacity-80 mt-2">
-              Ideal balance of performance and cost
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-6">
-            <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-              Standard (≤200K context)
-            </div>
-            <div className="space-y-2 mb-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Input</span>
-                <span className="font-semibold text-gray-900 dark:text-white">$3.00 / MTok</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Output</span>
-                <span className="font-semibold text-gray-900 dark:text-white">$15.00 / MTok</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Cache Write</span>
-                <span className="font-semibold text-gray-900 dark:text-white">$3.75 / MTok</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600 dark:text-gray-400">Cache Read</span>
-                <span className="font-semibold text-gray-900 dark:text-white">$0.30 / MTok</span>
-              </div>
-            </div>
-            <div className="border-t dark:border-gray-700 pt-4">
-              <div className="text-xs font-semibold text-gray-500 dark:text-gray-400 mb-2">
-                Extended (&gt;200K context)
-              </div>
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Input</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">$6.00 / MTok</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Output</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">$22.50 / MTok</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Cache Write</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">$7.50 / MTok</span>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span className="text-gray-600 dark:text-gray-400">Cache Read</span>
-                  <span className="font-semibold text-gray-900 dark:text-white">$0.60 / MTok</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Haiku 4.5 */}
-        <div className="bg-gradient-to-br from-green-500 to-green-700 rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6 text-white">
-            <div className="text-sm font-medium opacity-80">Most Efficient</div>
-            <h2 className="text-2xl font-bold mt-1">Claude Haiku 4.5</h2>
-            <p className="text-sm opacity-80 mt-2">
-              Fast and cost-effective for simpler tasks
-            </p>
-          </div>
-          <div className="bg-white dark:bg-gray-800 p-6 space-y-3">
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Input</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$1.00 / MTok</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Output</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$5.00 / MTok</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Cache Write</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$1.25 / MTok</span>
-            </div>
-            <div className="flex justify-between">
-              <span className="text-gray-600 dark:text-gray-400">Cache Read</span>
-              <span className="font-semibold text-gray-900 dark:text-white">$0.10 / MTok</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      </section>
 
       {/* Additional Services */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 mb-8">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          Additional Services
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="border dark:border-gray-700 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
-                <svg className="w-6 h-6 text-orange-600 dark:text-orange-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Web Search</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Real-time web search capability</p>
-              </div>
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Additional Services</h2>
+        <div className="feature-grid">
+          {services.map((s) => (
+            <div key={s.name} className="feature-card">
+              <h3>{s.name}</h3>
+              <p>{s.desc}</p>
+              <span className="source-badge">{s.price}</span>
             </div>
-            <div className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-              $10.00 <span className="text-sm font-normal text-gray-500">/ 1K searches</span>
-            </div>
-          </div>
-          <div className="border dark:border-gray-700 rounded-lg p-4">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-cyan-100 dark:bg-cyan-900/30 rounded-lg">
-                <svg className="w-6 h-6 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
-                </svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-gray-900 dark:text-white">Code Execution</h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Sandbox code execution environment</p>
-              </div>
-            </div>
-            <div className="mt-4 text-2xl font-bold text-gray-900 dark:text-white">
-              $0.05 <span className="text-sm font-normal text-gray-500">/ hour</span>
-            </div>
-            <p className="text-xs text-green-600 dark:text-green-400 mt-1">
-              50 free hours/day/organization
-            </p>
-          </div>
+          ))}
         </div>
-      </div>
+      </section>
 
-      {/* Service Tiers */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
-          Service Tiers
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="border dark:border-gray-700 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Priority</h3>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              High availability and predictable pricing for mission-critical workloads.
-            </p>
-          </div>
-          <div className="border dark:border-gray-700 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Standard</h3>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Default tier for piloting and scaling. Balanced performance and cost.
-            </p>
-          </div>
-          <div className="border dark:border-gray-700 rounded-lg p-4">
-            <div className="flex items-center gap-2 mb-2">
-              <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-              <h3 className="font-semibold text-gray-900 dark:text-white">Batch</h3>
-            </div>
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              Async workloads with better efficiency. Ideal for non-time-sensitive tasks.
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Subscription Tiers */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Subscription Tiers</h2>
+        <table className="settings-table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Context</th>
+              <th>Rate Limit</th>
+              <th>Features</th>
+            </tr>
+          </thead>
+          <tbody>
+            {tiers.map((t) => (
+              <tr key={t.name}>
+                <td><strong>{t.name}</strong></td>
+                <td>{t.context}</td>
+                <td>{t.rateLimit}</td>
+                <td>{t.features}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </section>
 
       {/* Comparison Table */}
-      <div className="mt-8 bg-white dark:bg-gray-800 rounded-xl shadow overflow-hidden">
-        <div className="p-6 border-b dark:border-gray-700">
-          <h2 className="text-xl font-bold text-gray-900 dark:text-white">
-            Price Comparison Table
-          </h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 dark:bg-gray-700">
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Model</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Input</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Output</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Cache Write</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Cache Read</th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">Output/Input Ratio</th>
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Quick Comparison</h2>
+        <table className="settings-table">
+          <thead>
+            <tr>
+              <th>Model</th>
+              <th>Input</th>
+              <th>Output</th>
+              <th>Cache Write</th>
+              <th>Cache Read</th>
+            </tr>
+          </thead>
+          <tbody>
+            {models.map((m) => (
+              <tr key={m.name}>
+                <td><strong>{m.name}</strong></td>
+                <td>{m.input}</td>
+                <td>{m.output}</td>
+                <td>{m.cacheWrite}</td>
+                <td>{m.cacheRead}</td>
               </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap font-medium text-purple-600 dark:text-purple-400">Opus 4.5</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$5.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$25.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$6.25</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$0.50</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 dark:text-gray-400">5.0x</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600 dark:text-blue-400">Sonnet 4.5 (≤200K)</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$3.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$15.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$3.75</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$0.30</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 dark:text-gray-400">5.0x</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap font-medium text-blue-600 dark:text-blue-400">Sonnet 4.5 (&gt;200K)</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$6.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$22.50</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$7.50</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$0.60</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 dark:text-gray-400">3.75x</td>
-              </tr>
-              <tr>
-                <td className="px-6 py-4 whitespace-nowrap font-medium text-green-600 dark:text-green-400">Haiku 4.5</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$1.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$5.00</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$1.25</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-900 dark:text-white">$0.10</td>
-                <td className="px-6 py-4 whitespace-nowrap text-right text-gray-500 dark:text-gray-400">5.0x</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-        <div className="p-4 text-xs text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50">
-          All prices are per million tokens (MTok). Cache read prices show significant savings vs. standard input pricing.
-        </div>
-      </div>
-    </div>
+            ))}
+          </tbody>
+        </table>
+      </section>
+    </article>
   );
 }
