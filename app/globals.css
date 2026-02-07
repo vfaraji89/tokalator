@@ -450,13 +450,19 @@ html, body {
 @media (max-width: 768px) {
   .sidebar {
     display: none !important;
+    width: 0 !important;
+  }
+
+  .layout {
+    display: block;
   }
   
   .main-content {
-    margin-left: 0;
+    margin-left: 0 !important;
     padding: 1rem 1rem;
     min-width: 0;
     max-width: 100vw;
+    width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
   }
