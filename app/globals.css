@@ -860,6 +860,39 @@ html, body {
   50% { transform: scale(1.15); }
 }
 
+/* Update Pill */
+.update-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  font-size: 0.8125rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  transition: border-color 0.2s, color 0.2s;
+  margin-bottom: 1.25rem;
+}
+.update-pill:hover {
+  border-color: var(--accent);
+  color: var(--text-primary);
+}
+.update-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
+}
+.update-arrow {
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.update-pill:hover .update-arrow {
+  transform: translateX(2px);
+}
+
 /* Coming Soon Badge */
 .coming-soon-badge {
   display: inline-flex;
