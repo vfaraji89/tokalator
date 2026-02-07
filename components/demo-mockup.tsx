@@ -40,31 +40,6 @@ function Annotation({ n, style }: { n: number; style: React.CSSProperties }) {
   );
 }
 
-/** Skeleton bar placeholder */
-function Bar({
-  w,
-  h = 6,
-  color = P.g2,
-  style,
-}: {
-  w: string;
-  h?: number;
-  color?: string;
-  style?: React.CSSProperties;
-}) {
-  return (
-    <div
-      style={{
-        width: w,
-        height: h,
-        borderRadius: h / 2,
-        background: color,
-        ...style,
-      }}
-    />
-  );
-}
-
 export function DemoMockup() {
   return (
     <div className="demo-mockup-wrapper">
@@ -75,177 +50,166 @@ export function DemoMockup() {
           <span style={{ background: "#febc2e" }} />
           <span style={{ background: "#28c840" }} />
         </div>
-        <div className="demo-url">VS Code — project/src</div>
+        <div className="demo-url">VS Code &mdash; tokalator</div>
       </div>
 
-      {/* Editor body */}
+      {/* Editor body — 3 columns: explorer | editor | chat panel */}
       <div className="demo-body">
-        {/* Sidebar panel — Token Budget */}
-        <div className="demo-sidebar">
+        {/* Left: File Explorer */}
+        <div className="demo-sidebar demo-explorer-col">
           <Annotation n={1} style={{ top: -8, right: -8 }} />
-          <div
-            style={{
-              fontSize: 9,
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.06em",
-              color: P.g5,
-              marginBottom: 8,
-            }}
-          >
-            Token Budget
+          <div style={{ fontSize: 8, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: P.g5, marginBottom: 6 }}>
+            Explorer
           </div>
-
-          {/* Budget bar */}
-          <div
-            style={{
-              height: 8,
-              borderRadius: 4,
-              background: P.g1,
-              overflow: "hidden",
-              marginBottom: 6,
-            }}
-          >
+          <div style={{ fontSize: 7.5, fontWeight: 600, color: P.g6, marginBottom: 4 }}>TOKALATOR</div>
+          {[
+            { name: "app/", indent: 0, isDir: true },
+            { name: "page.tsx", indent: 1, active: true },
+            { name: "layout.tsx", indent: 1 },
+            { name: "globals.css", indent: 1 },
+            { name: "components/", indent: 0, isDir: true },
+            { name: "demo-mockup.tsx", indent: 1 },
+            { name: "navigation.tsx", indent: 1 },
+            { name: "content/", indent: 0, isDir: true },
+          ].map((f, i) => (
             <div
-              className="demo-budget-fill"
+              key={i}
               style={{
-                height: "100%",
-                width: "68%",
-                borderRadius: 4,
-                background: `linear-gradient(90deg, ${P.red}, ${P.black})`,
+                padding: "2px 0",
+                paddingLeft: f.indent ? 12 : 0,
+                fontSize: 7,
+                fontFamily: "monospace",
+                color: f.active ? P.red : f.isDir ? P.g6 : P.g5,
+                fontWeight: f.active ? 600 : 400,
+                background: f.active ? "rgba(227,18,11,0.06)" : "transparent",
+                borderRadius: 2,
               }}
-            />
+            >
+              {f.isDir ? "\u25BE " : "  "}{f.name}
+            </div>
+          ))}
+
+          {/* Token Budget mini panel */}
+          <div style={{ marginTop: 8, borderTop: `1px solid ${P.g1}`, paddingTop: 6 }}>
+            <div style={{ fontSize: 7, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: P.g5, marginBottom: 4 }}>
+              Token Budget
+            </div>
+            <div style={{ height: 6, borderRadius: 3, background: P.g1, overflow: "hidden", marginBottom: 3 }}>
+              <div className="demo-budget-fill" style={{ height: "100%", width: "68%", borderRadius: 3, background: `linear-gradient(90deg, ${P.red}, ${P.black})` }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: 7, color: P.g5 }}>
+              <span>136K / 200K</span>
+              <span style={{ color: P.red, fontWeight: 600 }}>68%</span>
+            </div>
           </div>
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              fontSize: 8,
-              color: P.g5,
-            }}
-          >
-            <span>136K / 200K</span>
-            <span style={{ color: P.red, fontWeight: 600 }}>68%</span>
+        </div>
+
+        {/* Center: Code editor */}
+        <div className="demo-editor">
+          <div className="demo-tabs">
+            <span className="demo-tab demo-tab--active">page.tsx</span>
+            <span className="demo-tab">layout.tsx</span>
+            <span className="demo-tab">globals.css</span>
           </div>
 
-          {/* File list */}
-          <div style={{ marginTop: 10 }}>
+          <div className="demo-code">
+            <Annotation n={2} style={{ top: 26, right: 8 }} />
             {[
-              { name: "app.tsx", tokens: "12.4K", pct: 62 },
-              { name: "utils.ts", tokens: "8.1K", pct: 40 },
-              { name: "hooks.ts", tokens: "5.2K", pct: 26 },
-              { name: "api.ts", tokens: "3.8K", pct: 19 },
-            ].map((f) => (
-              <div
-                key={f.name}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "3px 0",
-                  fontSize: 8,
-                  color: P.g6,
-                }}
-              >
-                <span style={{ flex: 1, fontFamily: "monospace" }}>
-                  {f.name}
+              { num: 1, parts: [{ t: '"use client"', c: P.red }, { t: ";", c: P.g5 }] },
+              { num: 2, parts: [] },
+              { num: 3, parts: [{ t: "import", c: P.red }, { t: " Link ", c: P.g7 }, { t: "from", c: P.red }, { t: " 'next/link';", c: P.g5 }] },
+              { num: 4, parts: [{ t: "import", c: P.red }, { t: " { useState } ", c: P.g7 }, { t: "from", c: P.red }, { t: " 'react';", c: P.g5 }] },
+              { num: 5, parts: [{ t: "import", c: P.red }, { t: " content ", c: P.g7 }, { t: "from", c: P.red }, { t: " '../content/homepage.json';", c: P.g5 }] },
+              { num: 6, parts: [] },
+              { num: 7, parts: [{ t: "export default function", c: P.red }, { t: " HomePage() {", c: P.g7 }] },
+              { num: 8, parts: [{ t: "  const", c: P.red }, { t: " { hero } = content;", c: P.g5 }] },
+              { num: 9, parts: [{ t: "  return", c: P.red }, { t: " (", c: P.g5 }] },
+              { num: 10, parts: [{ t: '    <article className=', c: P.g7 }, { t: '"article"', c: P.red }, { t: ">", c: P.g7 }] },
+            ].map((line) => (
+              <div key={line.num} className="demo-code-line">
+                <span className="demo-line-num">{line.num}</span>
+                <span>
+                  {line.parts.map((p, j) => (
+                    <span key={j} style={{ color: p.c }}>{p.t}</span>
+                  ))}
                 </span>
-                <span style={{ color: P.g5, fontSize: 7 }}>{f.tokens}</span>
-                <div
-                  style={{
-                    width: 32,
-                    height: 4,
-                    borderRadius: 2,
-                    background: P.g1,
-                    overflow: "hidden",
-                  }}
-                >
-                  <div
-                    style={{
-                      width: `${f.pct}%`,
-                      height: "100%",
-                      borderRadius: 2,
-                      background: f.pct > 50 ? P.red : P.black,
-                    }}
-                  />
-                </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Main editor area */}
-        <div className="demo-editor">
-          {/* Tab bar */}
-          <div className="demo-tabs">
-            <span className="demo-tab demo-tab--active">app.tsx</span>
-            <span className="demo-tab">utils.ts</span>
-            <span className="demo-tab">hooks.ts</span>
+        {/* Right: Chat / Claude Code Panel */}
+        <div className="demo-chat-panel">
+          <Annotation n={3} style={{ top: -8, left: -8 }} />
+
+          {/* Panel tabs: Chat | Claude Code */}
+          <div style={{ display: "flex", borderBottom: `1px solid ${P.g2}`, fontSize: 8 }}>
+            <div style={{ padding: "5px 8px", fontWeight: 600, color: P.g5 }}>Chat</div>
+            <div style={{ padding: "5px 8px", fontWeight: 700, color: P.red, borderBottom: `2px solid ${P.red}` }}>Claude Code</div>
           </div>
 
-          {/* Code lines */}
-          <div className="demo-code">
-            <Annotation n={2} style={{ top: 28, right: 8 }} />
+          {/* Model selector */}
+          <div style={{ padding: "5px 8px", borderBottom: `1px solid ${P.g1}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 7.5, color: P.g6 }}>
+              <span style={{ fontWeight: 600 }}>Agent</span>
+              <span style={{ color: P.g3 }}>&rsaquo;</span>
+              <span style={{ fontWeight: 700, color: P.black }}>Claude Opus 4.6</span>
+              <span style={{ marginLeft: "auto", color: P.g3, fontSize: 7 }}>{"\u25BE"}</span>
+            </div>
+          </div>
+
+          {/* Sessions */}
+          <div style={{ padding: "4px 8px", borderBottom: `1px solid ${P.g1}` }}>
+            <div style={{ fontSize: 6.5, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", color: P.g5, marginBottom: 3 }}>Sessions</div>
             {[
-              { num: 1, text: "import { useState } from", trail: "'react';" },
-              { num: 2, text: "import { calculate }", trail: "from './utils';" },
-              { num: 3, text: "" },
-              { num: 4, text: "export function App() {" },
-              { num: 5, text: "  const [tokens, set]", trail: "= useState(0);" },
-              { num: 6, text: "  const cost =", trail: "calculate(tokens);" },
-              { num: 7, text: "  return <div>{cost}", trail: "</div>;" },
-              { num: 8, text: "}" },
-            ].map((line) => (
-              <div key={line.num} className="demo-code-line">
-                <span className="demo-line-num">{line.num}</span>
-                <span style={{ color: P.g7 }}>
-                  {line.text}
-                  {line.trail && (
-                    <span style={{ color: P.g5 }}> {line.trail}</span>
-                  )}
-                </span>
+              { label: "Pushing Changes to Repo...", active: true, time: "4 min" },
+              { label: "Context Engineering Exten...", active: false, time: "7 hrs" },
+            ].map((s, i) => (
+              <div key={i} style={{ display: "flex", alignItems: "center", gap: 4, padding: "2px 0", fontSize: 7 }}>
+                <span style={{ width: 5, height: 5, borderRadius: "50%", background: s.active ? P.red : P.g3, flexShrink: 0 }} />
+                <span style={{ flex: 1, color: s.active ? P.black : P.g5, fontWeight: s.active ? 600 : 400, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{s.label}</span>
+                <span style={{ fontSize: 6, color: P.g5, flexShrink: 0 }}>{s.time}</span>
               </div>
             ))}
+          </div>
 
-            {/* Inline chat annotation — dashed selection */}
-            <div className="demo-inline-chat">
-              <Annotation n={3} style={{ top: -10, right: -10 }} />
-              <div
-                style={{
-                  fontSize: 8,
-                  color: P.g6,
-                  marginBottom: 4,
-                  fontFamily: "monospace",
-                }}
-              >
-                @tokens /optimize
+          {/* Chat content */}
+          <div style={{ padding: "5px 8px", flex: 1, overflow: "hidden" }}>
+            <div style={{ marginBottom: 5 }}>
+              <div style={{ fontSize: 6.5, fontWeight: 600, color: P.g5, marginBottom: 2 }}>Claude</div>
+              <div style={{ fontSize: 7, color: P.g6, lineHeight: 1.5 }}>
+                Checked for pending changes and confirmed deployment.
               </div>
-              <div style={{ display: "flex", gap: 4 }}>
-                <Bar w="60%" h={5} color={P.g2} />
-                <Bar w="30%" h={5} color={P.g2} />
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  gap: 4,
-                  marginTop: 4,
-                }}
-              >
-                <Bar w="45%" h={5} color={P.g2} />
-                <Bar w="35%" h={5} color={P.g2} />
-              </div>
+            </div>
+            <div style={{ background: P.g05, borderRadius: 3, padding: "3px 5px", marginBottom: 5, fontSize: 6.5, fontFamily: "monospace", color: P.g6, border: `1px solid ${P.g1}` }}>
+              <div style={{ color: P.g5, marginBottom: 1 }}>$ git status</div>
+              <div style={{ color: P.g7 }}>On branch main</div>
+              <div style={{ color: P.g7 }}>nothing to commit</div>
+            </div>
+            <div style={{ fontSize: 7, color: P.g5, lineHeight: 1.5 }}>
+              Auto-deploying to{" "}
+              <span style={{ color: P.red, fontWeight: 600 }}>tokalator.wiki</span>
+            </div>
+          </div>
+
+          {/* Input bar */}
+          <div style={{ padding: "4px 8px", borderTop: `1px solid ${P.g2}` }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 4, background: P.g05, borderRadius: 4, padding: "3px 6px", border: `1px solid ${P.g2}` }}>
+              <span style={{ fontSize: 7, color: P.g3, flex: 1 }}>Describe what to build next</span>
+              <span style={{ fontSize: 8, color: P.g3 }}>&rsaquo;</span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Floating toolbar at bottom — Agentation-style */}
+      {/* Status bar */}
       <div className="demo-toolbar">
-        {["||", "\u25CB", "\u25A1", "\u2715"].map((icon, i) => (
-          <span key={i} className="demo-toolbar-btn">
-            {icon}
-          </span>
-        ))}
+        <span className="demo-toolbar-btn" style={{ fontSize: 7 }}>{"\u25CB"} main</span>
+        <span className="demo-toolbar-btn" style={{ fontSize: 7 }}>{"\u26A0"} 0</span>
+        <span className="demo-toolbar-btn" style={{ fontSize: 7 }}>{"\u24D8"} 312</span>
+        <span style={{ flex: 1 }} />
+        <span className="demo-toolbar-btn" style={{ fontSize: 7 }}>TypeScript JSX</span>
+        <span className="demo-toolbar-btn" style={{ fontSize: 7 }}>Prettier</span>
       </div>
     </div>
   );
