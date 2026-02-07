@@ -1,20 +1,36 @@
 {
   "hero": {
-    "icon": "🧮",
+    "icon": "",
     "headline": "Count your tokens.\nLike beads on an abacus.",
     "highlightPhrase": "Every token counts",
     "description": "— monitor budgets, optimize context, and cut AI costs before they add up. Calculator, optimizer, and VS Code extension in one place.",
     "installCmd": "ext install tokalator",
-    "primaryCta": { "label": "Install Extension", "href": "/extension" },
-    "secondaryCta": { "label": "Explore Tools", "href": "/calculator" }
+    "primaryCta": {
+      "label": "Install Extension",
+      "href": "/extension"
+    },
+    "secondaryCta": {
+      "label": "Explore Tools",
+      "href": "/calculator"
+    }
   },
   "whySection": {
     "title": "Why count tokens?",
     "subtitle": "Because context is money and you're burning it.",
     "stats": [
-      { "number": "~$0.015", "unit": "/1K tokens", "label": "Average input cost" },
-      { "number": "128K\u2013200K", "label": "Context windows to manage" },
-      { "number": "Up to 30%", "label": "Savings with optimization" }
+      {
+        "number": "~$0.015",
+        "unit": "/1K tokens",
+        "label": "Average input cost"
+      },
+      {
+        "number": "128K–200K",
+        "label": "Context windows to manage"
+      },
+      {
+        "number": "Up to 30%",
+        "label": "Savings with optimization"
+      }
     ]
   },
   "extensionFeatures": {
@@ -23,26 +39,22 @@
     "githubUrl": "https://github.com/benjitaylor/agentation",
     "items": [
       {
-        "icon": "▣",
         "name": "Token Budget Dashboard",
         "description": "Sidebar panel showing real-time token usage and per-file breakdown",
         "number": 1
       },
       {
-        "icon": "⬡",
         "name": "Tab Relevance Scoring",
         "description": "Ranks open tabs by imports, path similarity, edit recency, and diagnostics",
         "number": 2
       },
       {
-        "icon": "◎",
         "name": "Chat Participant",
         "description": "@tokens commands for inline budget management",
         "command": "/count /optimize /pin /breakdown",
         "number": 3
       },
       {
-        "icon": "⚠",
         "name": "Context Rot Warnings",
         "description": "Alerts when conversation turns exceed threshold",
         "number": 4
@@ -53,25 +65,21 @@
     "title": "Web Tools",
     "items": [
       {
-        "icon": "◇",
         "name": "Cost Calculator",
         "description": "Token cost calculator with Cobb-Douglas quality modeling",
         "href": "/calculator"
       },
       {
-        "icon": "▣",
         "name": "Context Optimizer",
         "description": "Visualize your context budget and optimize token usage",
         "href": "/context"
       },
       {
-        "icon": "◆",
         "name": "Model Comparison",
         "description": "Cross-provider cost and capability comparison",
         "href": "/tools/compare"
       },
       {
-        "icon": "◈",
         "name": "Caching ROI",
         "description": "Break-even analysis for prompt caching",
         "href": "/tools/caching"
@@ -83,10 +91,22 @@
     "description": "A collection of agents, prompts, and instructions for maximizing AI coding assistant effectiveness through better context management.",
     "awesomeCopilotUrl": "https://github.com/github/awesome-copilot",
     "items": [
-      { "name": "Context Architect Agent", "description": "Maps dependencies before suggesting changes" },
-      { "name": "Context Map Prompt", "description": "Generates a map of affected files" },
-      { "name": "What Context Needed", "description": "Asks the AI what files it needs" },
-      { "name": "Refactor Plan Prompt", "description": "Creates phased refactor plans with verification" }
+      {
+        "name": "Context Architect Agent",
+        "description": "Maps dependencies before suggesting changes"
+      },
+      {
+        "name": "Context Map Prompt",
+        "description": "Generates a map of affected files"
+      },
+      {
+        "name": "What Context Needed",
+        "description": "Asks the AI what files it needs"
+      },
+      {
+        "name": "Refactor Plan Prompt",
+        "description": "Creates phased refactor plans with verification"
+      }
     ]
   }
 }

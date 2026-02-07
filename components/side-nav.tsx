@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 import siteContent from "../content/site.json";
 
-type NavItem = { href: string; label: string; badge?: string; icon?: string };
+type NavItem = { href: string; label: string; badge?: string };
 type NavSection = { section: string; items: NavItem[] };
 
 const nav: NavSection[] = siteContent.nav as NavSection[];
@@ -31,32 +31,31 @@ export function SideNav() {
 
   return (
     <>
-      {/* Mobile header with hamburger */}
+      {/* Mobile header with minimal menu button on right */}
       <div className="mobile-header">
+        <Link href="/" className="mobile-logo text-motion" onClick={() => setOpen(false)}>
+          {siteContent.name}
+        </Link>
+        <span className="mobile-version">{siteContent.version}</span>
         <button
           className="menu-btn"
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
             {open ? (
               <>
-                <line x1="4" y1="4" x2="16" y2="16" />
-                <line x1="16" y1="4" x2="4" y2="16" />
+                <line x1="4" y1="4" x2="14" y2="14" />
+                <line x1="14" y1="4" x2="4" y2="14" />
               </>
             ) : (
               <>
-                <line x1="3" y1="5" x2="17" y2="5" />
-                <line x1="3" y1="10" x2="17" y2="10" />
-                <line x1="3" y1="15" x2="17" y2="15" />
+                <line x1="3" y1="7" x2="15" y2="7" />
+                <line x1="3" y1="12" x2="15" y2="12" />
               </>
             )}
           </svg>
         </button>
-        <Link href="/" className="mobile-logo" onClick={() => setOpen(false)}>
-          {siteContent.name}
-        </Link>
-        <span className="mobile-version">{siteContent.version}</span>
       </div>
 
       {/* Overlay */}
@@ -69,7 +68,7 @@ export function SideNav() {
       <nav className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-header">
           <Link href="/" className="sidebar-logo" onClick={() => setOpen(false)}>
-            <span className="sidebar-logo-text">{siteContent.name}</span>
+            <span className="sidebar-logo-text text-motion">{siteContent.name}</span>
             <span className="sidebar-version">{siteContent.version}</span>
           </Link>
         </div>
@@ -90,7 +89,6 @@ export function SideNav() {
                   className={`nav-link ${isActive ? "active" : ""}`}
                   onClick={() => setOpen(false)}
                 >
-                  {item.icon && <span className="nav-icon">{item.icon}</span>}
                   {item.label}
                   {item.badge && <span className="nav-badge">{item.badge}</span>}
                 </Link>

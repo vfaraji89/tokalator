@@ -1,7 +1,7 @@
 {
-  "name": "Tokalator",
+  "name": "@Tokalator",
   "version": "v0.1",
-  "footer": "\u00a9 2026 Tokalator. Built by vfaraji89.",
+  "footer": "© 2026 Tokalator. Built by vfaraji89.",
   "github": "https://github.com/vfaraji89/tokalator",
   "nav": [
     {
@@ -9,23 +9,19 @@
       "items": [
         {
           "href": "/",
-          "label": "Overview",
-          "icon": "\u25c9"
+          "label": "Overview"
         },
         {
           "href": "/about",
-          "label": "About",
-          "icon": "\u2139"
+          "label": "About"
         },
         {
           "href": "/wiki",
-          "label": "Wiki",
-          "icon": "\u25c8"
+          "label": "Wiki"
         },
         {
           "href": "/dictionary",
-          "label": "Dictionary",
-          "icon": "\ud83d\udcd6"
+          "label": "Dictionary"
         }
       ]
     },
@@ -35,7 +31,6 @@
         {
           "href": "/extension",
           "label": "Install",
-          "icon": "\u2b21",
           "badge": "Coming Soon"
         }
       ]
@@ -45,38 +40,31 @@
       "items": [
         {
           "href": "/calculator",
-          "label": "Cost Calculator",
-          "icon": "\u25c7"
+          "label": "Cost Calculator"
         },
         {
           "href": "/context",
-          "label": "Context Optimizer",
-          "icon": "\u25a3"
+          "label": "Context Optimizer"
         },
         {
           "href": "/tools/compare",
-          "label": "Model Comparison",
-          "icon": "\u25c6"
+          "label": "Model Comparison"
         },
         {
           "href": "/tools/caching",
-          "label": "Caching ROI",
-          "icon": "\u25c8"
+          "label": "Caching ROI"
         },
         {
           "href": "/tools/conversation",
-          "label": "Conversation Cost",
-          "icon": "\u25ce"
+          "label": "Conversation Cost"
         },
         {
           "href": "/tools/analysis",
-          "label": "Economic Analysis",
-          "icon": "\u25a6"
+          "label": "Economic Analysis"
         },
         {
           "href": "/tools/pricing",
-          "label": "Pricing Reference",
-          "icon": "\u25ca"
+          "label": "Pricing Reference"
         }
       ]
     },
@@ -85,28 +73,23 @@
       "items": [
         {
           "href": "/agents",
-          "label": "Agents",
-          "icon": "\u2b22"
+          "label": "Agents"
         },
         {
           "href": "/prompts",
-          "label": "Prompts",
-          "icon": "\u25b7"
+          "label": "Prompts"
         },
         {
           "href": "/instructions",
-          "label": "Instructions",
-          "icon": "\u2630"
+          "label": "Instructions"
         },
         {
           "href": "/collections",
-          "label": "Collections",
-          "icon": "\u25a4"
+          "label": "Collections"
         },
         {
           "href": "/context-engineering",
-          "label": "Context Engineering",
-          "icon": "\u2699"
+          "label": "Context Engineering"
         }
       ]
     }

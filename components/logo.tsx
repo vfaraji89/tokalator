@@ -80,39 +80,39 @@ export function Logo({ className = '' }: { className?: string }) {
               strokeWidth="2"
               fill="none"
               strokeLinejoin="round"
-              className="text-gray-800 dark:text-gray-200"
+              className="text-gray-800"
             />
             {/* Rods */}
-            <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1.2" className="text-gray-800 dark:text-gray-200"/>
-            <line x1="4" y1="14" x2="24" y2="14" stroke="currentColor" strokeWidth="1.2" className="text-gray-800 dark:text-gray-200"/>
-            <line x1="4" y1="19" x2="24" y2="19" stroke="currentColor" strokeWidth="1.2" className="text-gray-800 dark:text-gray-200"/>
+            <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1.2" className="text-gray-800"/>
+            <line x1="4" y1="14" x2="24" y2="14" stroke="currentColor" strokeWidth="1.2" className="text-gray-800"/>
+            <line x1="4" y1="19" x2="24" y2="19" stroke="currentColor" strokeWidth="1.2" className="text-gray-800"/>
           </g>
 
           {/* Row 1 beads */}
           <g className="bead-row-1">
-            <circle cx="8" cy="9" r="2.2" fill="#8B5CF6"/>
-            <circle cx="13" cy="9" r="2.2" className="fill-gray-800 dark:fill-gray-200"/>
+            <circle cx="8" cy="9" r="2.2" fill="#e3120b"/>
+            <circle cx="13" cy="9" r="2.2" className="fill-gray-800"/>
           </g>
 
           {/* Row 2 beads */}
           <g className="bead-row-2">
-            <circle cx="9" cy="14" r="2.2" className="fill-gray-800 dark:fill-gray-200"/>
-            <circle cx="14" cy="14" r="2.2" fill="#8B5CF6"/>
-            <circle cx="19" cy="14" r="2.2" fill="#8B5CF6"/>
+            <circle cx="9" cy="14" r="2.2" className="fill-gray-800"/>
+            <circle cx="14" cy="14" r="2.2" fill="#e3120b"/>
+            <circle cx="19" cy="14" r="2.2" fill="#e3120b"/>
           </g>
 
           {/* Row 3 beads */}
           <g className="bead-row-3">
-            <circle cx="8" cy="19" r="2.2" fill="#8B5CF6"/>
-            <circle cx="13" cy="19" r="2.2" fill="#8B5CF6"/>
-            <circle cx="18" cy="19" r="2.2" className="fill-gray-800 dark:fill-gray-200"/>
+            <circle cx="8" cy="19" r="2.2" fill="#e3120b"/>
+            <circle cx="13" cy="19" r="2.2" fill="#e3120b"/>
+            <circle cx="18" cy="19" r="2.2" className="fill-gray-800"/>
           </g>
         </svg>
       </div>
 
-      {/* Text with gradient on hover */}
-      <span className="font-bold text-xl text-gray-900 dark:text-white transition-all duration-300 group-hover:bg-gradient-to-r group-hover:from-purple-600 group-hover:to-purple-400 group-hover:bg-clip-text group-hover:text-transparent">
-        Tokalator
+      {/* Text with motion animation */}
+      <span className="text-motion font-bold text-xl text-gray-900 transition-all duration-300">
+        @Tokalator
       </span>
     </div>
   );

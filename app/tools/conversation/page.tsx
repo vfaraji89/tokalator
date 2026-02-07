@@ -4,7 +4,7 @@ export default function ConversationPage() {
   return (
     <article className="article">
       <header>
-        <h1>◎ Conversation Cost Estimator</h1>
+        <h1>Conversation Cost Estimator</h1>
         <p className="tagline">
           Estimate conversation costs and compare context management strategies.
         </p>
