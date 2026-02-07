@@ -1,26 +1,429 @@
 @import "tailwindcss";
 
+/* ============================================
+   THE ECONOMIST INSPIRED DESIGN SYSTEM
+   Minimal • Black • Red • Data-Focused
+   ============================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Core Colors */
+  --eco-black: #121212;
+  --eco-dark: #1a1a1a;
+  --eco-gray-900: #262626;
+  --eco-gray-800: #333333;
+  --eco-gray-700: #4a4a4a;
+  --eco-gray-600: #666666;
+  --eco-gray-500: #888888;
+  --eco-gray-400: #aaaaaa;
+  --eco-gray-300: #cccccc;
+  --eco-gray-200: #e5e5e5;
+  --eco-gray-100: #f5f5f5;
+  --eco-white: #fafafa;
+  
+  /* Accent Colors */
+  --eco-red: #e3120b;
+  --eco-red-dark: #b30d08;
+  --eco-red-light: #ff4136;
+  --eco-red-muted: #dc2626;
+  
+  /* Semantic Colors */
+  --eco-positive: #15803d;
+  --eco-negative: #e3120b;
+  --eco-neutral: #888888;
+  
+  /* Typography */
+  --font-serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  
+  /* Spacing */
+  --space-unit: 8px;
+  
+  /* Light mode defaults */
+  --background: var(--eco-white);
+  --foreground: var(--eco-black);
+  --card-bg: #ffffff;
+  --card-border: var(--eco-gray-200);
+  --muted: var(--eco-gray-600);
+  --muted-foreground: var(--eco-gray-500);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  
+  /* Economist Red */
+  --color-eco-red: var(--eco-red);
+  --color-eco-red-dark: var(--eco-red-dark);
+  --color-eco-red-light: var(--eco-red-light);
+  
+  /* Grays */
+  --color-eco-black: var(--eco-black);
+  --color-eco-gray-900: var(--eco-gray-900);
+  --color-eco-gray-800: var(--eco-gray-800);
+  --color-eco-gray-700: var(--eco-gray-700);
+  --color-eco-gray-600: var(--eco-gray-600);
+  --color-eco-gray-500: var(--eco-gray-500);
+  --color-eco-gray-400: var(--eco-gray-400);
+  --color-eco-gray-300: var(--eco-gray-300);
+  --color-eco-gray-200: var(--eco-gray-200);
+  --color-eco-gray-100: var(--eco-gray-100);
 }
 
+/* Dark Mode */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: var(--eco-black);
+    --foreground: var(--eco-white);
+    --card-bg: var(--eco-dark);
+    --card-border: var(--eco-gray-800);
+    --muted: var(--eco-gray-400);
+    --muted-foreground: var(--eco-gray-500);
   }
+}
+
+/* Force dark mode for dashboard aesthetic */
+.dark {
+  --background: var(--eco-black);
+  --foreground: var(--eco-white);
+  --card-bg: var(--eco-dark);
+  --card-border: var(--eco-gray-800);
+  --muted: var(--eco-gray-400);
+  --muted-foreground: var(--eco-gray-500);
+}
+
+/* ============================================
+   BASE STYLES
+   ============================================ */
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans);
+  font-weight: 400;
+  line-height: 1.6;
+  margin: 0;
+  padding: 0;
+}
+
+/* ============================================
+   TYPOGRAPHY - ECONOMIST STYLE
+   ============================================ */
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+}
+
+.headline {
+  font-family: var(--font-serif);
+  font-size: 2.5rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.subheadline {
+  font-family: var(--font-sans);
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--muted);
+  letter-spacing: 0.01em;
+}
+
+.section-title {
+  font-family: var(--font-serif);
+  font-size: 1.25rem;
+  font-weight: 700;
+  border-bottom: 3px solid var(--eco-red);
+  padding-bottom: 0.5rem;
+  margin-bottom: 1.5rem;
+  display: inline-block;
+}
+
+.data-label {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+}
+
+.data-value {
+  font-family: var(--font-sans);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+.data-value-sm {
+  font-family: var(--font-sans);
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+/* ============================================
+   ECONOMIST-STYLE COMPONENTS
+   ============================================ */
+
+/* Cards */
+.eco-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 1.5rem;
+  position: relative;
+}
+
+.eco-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--eco-red);
+}
+
+.eco-card-flat {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 1.5rem;
+}
+
+/* Stat Cards */
+.stat-card {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.stat-card .stat-label {
+  font-family: var(--font-sans);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.stat-card .stat-value {
+  font-family: var(--font-sans);
+  font-size: 1.75rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.stat-card .stat-change {
+  font-family: var(--font-sans);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.stat-change.positive {
+  color: var(--eco-positive);
+}
+
+.stat-change.negative {
+  color: var(--eco-negative);
+}
+
+/* Data Tables */
+.eco-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+}
+
+.eco-table th {
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  text-align: left;
+  padding: 0.75rem 1rem;
+  border-bottom: 2px solid var(--eco-red);
+}
+
+.eco-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.eco-table tr:hover td {
+  background: rgba(227, 18, 11, 0.05);
+}
+
+/* Badges */
+.eco-badge {
+  font-family: var(--font-sans);
+  font-size: 0.625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+}
+
+.eco-badge-red {
+  background: var(--eco-red);
+  color: white;
+}
+
+.eco-badge-black {
+  background: var(--eco-black);
+  color: white;
+}
+
+.eco-badge-outline {
+  background: transparent;
+  border: 1px solid currentColor;
+}
+
+/* Dividers */
+.eco-divider {
+  height: 1px;
+  background: var(--card-border);
+  margin: 1.5rem 0;
+}
+
+.eco-divider-thick {
+  height: 3px;
+  background: var(--eco-red);
+  margin: 1.5rem 0;
+}
+
+/* ============================================
+   CHART CUSTOMIZATIONS
+   ============================================ */
+
+.recharts-wrapper {
+  font-family: var(--font-sans) !important;
+}
+
+.recharts-text {
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem;
+}
+
+.recharts-legend-item-text {
+  font-family: var(--font-sans) !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+.recharts-tooltip-wrapper {
+  font-family: var(--font-sans) !important;
+}
+
+.recharts-default-tooltip {
+  background: var(--eco-dark) !important;
+  border: 1px solid var(--eco-gray-700) !important;
+  border-radius: 0 !important;
+  padding: 0.75rem 1rem !important;
+}
+
+.recharts-tooltip-label {
+  font-weight: 600 !important;
+  margin-bottom: 0.5rem !important;
+  color: var(--eco-white) !important;
+}
+
+.recharts-cartesian-grid line {
+  stroke: var(--eco-gray-800) !important;
+}
+
+/* ============================================
+   UTILITY CLASSES
+   ============================================ */
+
+.text-eco-red { color: var(--eco-red); }
+.text-eco-black { color: var(--eco-black); }
+.text-muted { color: var(--muted); }
+.text-positive { color: var(--eco-positive); }
+.text-negative { color: var(--eco-negative); }
+
+.bg-eco-red { background-color: var(--eco-red); }
+.bg-eco-black { background-color: var(--eco-black); }
+.bg-eco-dark { background-color: var(--eco-dark); }
+
+.border-eco-red { border-color: var(--eco-red); }
+.border-eco-gray { border-color: var(--card-border); }
+
+.font-serif { font-family: var(--font-serif); }
+.font-sans { font-family: var(--font-sans); }
+
+/* Transitions */
+.transition-smooth {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Red accent line */
+.accent-line::before {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--eco-red);
+  margin-bottom: 1rem;
+}
+
+/* Live indicator */
+.live-pulse {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.live-pulse::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  background: var(--eco-red);
+  border-radius: 50%;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.5; transform: scale(0.8); }
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--eco-dark);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--eco-gray-700);
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--eco-gray-600);
 }

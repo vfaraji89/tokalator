@@ -1,36 +1,46 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Context Engineering
 
-## Getting Started
+This repo contains two things:
 
-First, run the development server:
+## 1. Copilot Contribution (`copilot-contribution/`)
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Ready-to-submit collection for [awesome-copilot](https://github.com/github/awesome-copilot):
+
+```
+copilot-contribution/
+├── README.md                                    # Contribution guide
+├── instructions/
+│   └── context-engineering.instructions.md     # Coding guidelines
+├── agents/
+│   └── context-architect.agent.md              # Multi-file planning agent
+├── prompts/
+│   ├── context-map.prompt.md                   # Map affected files
+│   ├── what-context-needed.prompt.md           # Ask what Copilot needs
+│   └── refactor-plan.prompt.md                 # Plan multi-file refactors
+└── collections/
+    └── context-engineering.collection.yml      # Bundle manifest
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+**To submit:** Fork awesome-copilot, copy the files to their respective directories, run `npm start`, and open a PR.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 2. Reference Material (`reference-material/`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Deep-dive documentation on how AI IDEs handle context. Not for the Copilot contribution—use for blog posts, talks, or personal reference:
 
-## Learn More
+```
+reference-material/
+├── 01-ai-ide-context.md        # Claude Code, Copilot, Cursor architectures
+├── 02-github-ai-workflows.md   # PR review, Actions, issue triage
+├── 03-practical-patterns.md    # Project structure, prompting techniques
+└── 04-building-tools.md        # Python implementations for context management
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Quick Links
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- [Copilot contribution README](copilot-contribution/README.md)
+- [How AI IDEs handle context](reference-material/01-ai-ide-context.md)
+- [GitHub AI workflows](reference-material/02-github-ai-workflows.md)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## License
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+MIT

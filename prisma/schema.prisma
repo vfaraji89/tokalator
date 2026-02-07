@@ -1,0 +1,163 @@
+// Tokalator - Anthropic Token Usage & Cost Management
+// Prisma Schema for PostgreSQL
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Anthropic Models
+model Model {
+  id              String          @id @default(cuid())
+  name            String          @unique // claude-opus-4.5, claude-sonnet-4.5, claude-haiku-4.5
+  displayName     String          // Claude Opus 4.5
+  description     String?
+  
+  // Economic model parameters (Cobb-Douglas)
+  baseQuality     Float           @default(1.0)  // b parameter
+  alphaParam      Float           @default(0.25) // input token sensitivity
+  betaParam       Float           @default(0.25) // output token sensitivity
+  gammaParam      Float           @default(0.25) // cache/fine-tuning sensitivity
+  
+  // Relationships
+  pricingRules    PricingRule[]
+  usageRecords    UsageRecord[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+// Pricing Rules with tiered pricing support (for Sonnet's >200K threshold)
+model PricingRule {
+  id                    String      @id @default(cuid())
+  modelId               String
+  model                 Model       @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  
+  // Token thresholds (null = no threshold, 0 = base tier)
+  promptTokenThreshold  Int?        // e.g., 200000 for Sonnet's tiered pricing
+  
+  // Costs per million tokens
+  inputCostPerMTok      Float       // c_x
+  outputCostPerMTok     Float       // c_y
+  cacheWriteCostPerMTok Float       // c_z (write)
+  cacheReadCostPerMTok  Float       // c_z (read)
+  
+  // Service tier
+  serviceTier           ServiceTier @default(STANDARD)
+  
+  effectiveFrom         DateTime    @default(now())
+  effectiveUntil        DateTime?
+  
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  
+  @@unique([modelId, promptTokenThreshold, serviceTier, effectiveFrom])
+}
+
+enum ServiceTier {
+  PRIORITY
+  STANDARD
+  BATCH
+}
+
+// Projects for organizing usage
+model Project {
+  id              String          @id @default(cuid())
+  name            String
+  description     String?
+  
+  // Budget settings
+  monthlyBudget   Float?
+  alertThreshold  Float           @default(0.8) // Alert at 80% of budget
+  
+  // Relationships
+  usageRecords    UsageRecord[]
+  budgetAlerts    BudgetAlert[]
+  
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+// Usage Records
+model UsageRecord {
+  id                String        @id @default(cuid())
+  projectId         String
+  project           Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  modelId           String
+  model             Model         @relation(fields: [modelId], references: [id], onDelete: Cascade)
+  
+  // Token counts
+  inputTokens       Int
+  outputTokens      Int
+  cacheWriteTokens  Int           @default(0)
+  cacheReadTokens   Int           @default(0)
+  
+  // Additional services
+  webSearches       Int           @default(0)
+  codeExecMinutes   Float         @default(0)
+  
+  // Calculated costs (stored for historical accuracy)
+  inputCost         Float
+  outputCost        Float
+  cacheWriteCost    Float         @default(0)
+  cacheReadCost     Float         @default(0)
+  webSearchCost     Float         @default(0)
+  codeExecCost      Float         @default(0)
+  totalCost         Float
+  
+  // Quality metric (from Cobb-Douglas model)
+  qualityScore      Float?
+  
+  // Service tier used
+  serviceTier       ServiceTier   @default(STANDARD)
+  
+  // Metadata
+  description       String?
+  recordedAt        DateTime      @default(now())
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  
+  @@index([projectId, recordedAt])
+  @@index([modelId, recordedAt])
+}
+
+// Budget Alerts
+model BudgetAlert {
+  id                String        @id @default(cuid())
+  projectId         String
+  project           Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  
+  thresholdPercent  Float         // e.g., 0.5 for 50%, 0.8 for 80%, 1.0 for 100%
+  currentSpend      Float
+  budgetLimit       Float
+  
+  acknowledged      Boolean       @default(false)
+  acknowledgedAt    DateTime?
+  
+  triggeredAt       DateTime      @default(now())
+  
+  @@index([projectId, triggeredAt])
+}
+
+// Additional Services Pricing
+model ServicePricing {
+  id                String        @id @default(cuid())
+  serviceName       String        @unique // web_search, code_execution
+  displayName       String
+  
+  // Pricing
+  costPerUnit       Float         // $10 per 1K searches, $0.05 per hour
+  unitType          String        // "1K_SEARCHES", "HOUR"
+  freeAllowance     Float?        // 50 hours for code execution
+  freeAllowanceUnit String?       // "HOURS_PER_DAY_PER_ORG"
+  
+  effectiveFrom     DateTime      @default(now())
+  
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+}

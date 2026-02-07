@@ -1,0 +1,153 @@
+{
+  "name": "tokalator",
+  "displayName": "Tokalator",
+  "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
+  "version": "0.1.0",
+  "publisher": "vfaraji89",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vfaraji89/tokalator"
+  },
+  "icon": "media/icon.png",
+  "engines": {
+    "vscode": "^1.99.0"
+  },
+  "categories": [
+    "AI",
+    "Other"
+  ],
+  "keywords": [
+    "tokens",
+    "context",
+    "context-engineering",
+    "ai",
+    "copilot",
+    "claude",
+    "tokalator",
+    "abacus"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tokalator",
+          "title": "Tokalator",
+          "icon": "media/abacus.svg"
+        }
+      ]
+    },
+    "views": {
+      "tokalator": [
+        {
+          "type": "webview",
+          "id": "tokalator.dashboard",
+          "name": "Token Budget"
+        }
+      ]
+    },
+    "chatParticipants": [
+      {
+        "id": "tokalator.tokens",
+        "name": "tokens",
+        "fullName": "Tokalator",
+        "description": "Count and manage your AI context token budget",
+        "isSticky": false,
+        "commands": [
+          {
+            "name": "count",
+            "description": "Show current token count and budget status"
+          },
+          {
+            "name": "optimize",
+            "description": "Close low-relevance tabs to free up tokens"
+          },
+          {
+            "name": "pin",
+            "description": "Pin a file so it's always included"
+          },
+          {
+            "name": "breakdown",
+            "description": "Show where your tokens are going"
+          }
+        ]
+      }
+    ],
+    "commands": [
+      {
+        "command": "tokalator.refresh",
+        "title": "Refresh Token Count",
+        "category": "Tokalator",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "tokalator.optimize",
+        "title": "Optimize (Close Low-Relevance Tabs)",
+        "category": "Tokalator",
+        "icon": "$(sparkle)"
+      },
+      {
+        "command": "tokalator.clearPins",
+        "title": "Clear All Pinned Files",
+        "category": "Tokalator"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "tokalator.refresh",
+          "when": "view == tokalator.dashboard",
+          "group": "navigation"
+        },
+        {
+          "command": "tokalator.optimize",
+          "when": "view == tokalator.dashboard",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "Tokalator",
+      "properties": {
+        "tokalator.relevanceThreshold": {
+          "type": "number",
+          "default": 0.3,
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Tabs below this relevance score are marked as distractors (0-1)"
+        },
+        "tokalator.windowSize": {
+          "type": "number",
+          "default": 1000000,
+          "description": "Context window size in tokens (1M for Opus 4.6, 128K for older models)"
+        },
+        "tokalator.contextRotWarningTurns": {
+          "type": "number",
+          "default": 20,
+          "description": "Warn about context rot after this many chat turns (Opus 4.6 scores 76% on 1M MRCR v2 vs 18.5% for Sonnet 4.5)"
+        },
+        "tokalator.autoRefreshInterval": {
+          "type": "number",
+          "default": 2000,
+          "description": "Dashboard refresh interval in milliseconds"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap",
+    "watch": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/vscode": "^1.99.0",
+    "esbuild": "^0.24.0",
+    "typescript": "^5.5.0"
+  }
+}
