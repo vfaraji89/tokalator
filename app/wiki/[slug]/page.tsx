@@ -75,8 +75,8 @@ export default async function WikiArticlePage({
       </nav>
 
       {/* Header */}
-      <header style={{ marginBottom: "2rem" }}>
-        <div style={{ display: "flex", gap: "0.5rem", marginBottom: "0.75rem", flexWrap: "wrap", alignItems: "center" }}>
+      <header>
+        <div className="wiki-card-header">
           <span
             className="source-badge"
             style={{ background: article.sourceColor }}
@@ -87,18 +87,12 @@ export default async function WikiArticlePage({
             {article.category.replace(/-/g, " ")}
           </span>
           {article.date && (
-            <span style={{ fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              {article.date}
-            </span>
+            <span className="wiki-tag">{article.date}</span>
           )}
         </div>
-        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.5rem" }}>
-          {article.title}
-        </h1>
+        <h1>{article.title}</h1>
         {article.authors && article.authors.length > 0 && (
-          <p style={{ fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-            {article.authors.join(", ")}
-          </p>
+          <p className="tagline">{article.authors.join(", ")}</p>
         )}
         {article.url && (
           <a
@@ -106,7 +100,7 @@ export default async function WikiArticlePage({
             target="_blank"
             rel="noopener noreferrer"
             className="cta-secondary"
-            style={{ marginTop: "0.75rem", display: "inline-flex", fontSize: "0.8125rem", padding: "0.375rem 1rem" }}
+            style={{ marginTop: "0.75rem", display: "inline-flex" }}
           >
             View Original →
           </a>
@@ -121,7 +115,7 @@ export default async function WikiArticlePage({
 
       {/* Tags */}
       {article.tags.length > 0 && (
-        <div style={{ marginTop: "2rem", display: "flex", gap: "0.375rem", flexWrap: "wrap" }}>
+        <div className="wiki-card-tags" style={{ marginTop: "2rem" }}>
           {article.tags.map((tag) => (
             <span key={tag} className="wiki-tag">
               {tag}
@@ -132,7 +126,7 @@ export default async function WikiArticlePage({
 
       {/* Related */}
       {related.length > 0 && (
-        <section style={{ marginTop: "3rem" }}>
+        <section>
           <div className="section-divider" />
           <h2 className="section-header">Related Articles</h2>
           <div className="wiki-grid">
