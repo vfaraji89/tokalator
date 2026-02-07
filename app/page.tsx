@@ -21,20 +21,36 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function HomePage() {
-  const { hero, whySection, extensionFeatures, webTools, contextEngineering } =
+  const { hero, whySection, extensionFeatures, webTools, contextEngineering, howToUse } =
     content;
 
-  // Split headline on newlines and join with <br />
+  // Split headline on newlines
   const headlineParts = hero.headline.split("\n");
 
   return (
     <article className="article">
-      {/* Hero */}
+      {/* Hero — Agentation-inspired marker highlight */}
       <header className="hero">
-        <div className="hero-icon"></div>
+        {/* Motionable outline icon */}
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none" className="hero-abacus">
+            <path d="M4 4 L4 24 L24 24 L24 4 Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+            <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1" />
+            <line x1="4" y1="14" x2="24" y2="14" stroke="currentColor" strokeWidth="1" />
+            <line x1="4" y1="19" x2="24" y2="19" stroke="currentColor" strokeWidth="1" />
+            <circle className="hero-bead hero-bead-1" cx="8" cy="9" r="2" />
+            <circle className="hero-bead hero-bead-2" cx="13" cy="9" r="2" />
+            <circle className="hero-bead hero-bead-3" cx="9" cy="14" r="2" />
+            <circle className="hero-bead hero-bead-4" cx="14" cy="14" r="2" />
+            <circle className="hero-bead hero-bead-5" cx="19" cy="14" r="2" />
+            <circle className="hero-bead hero-bead-6" cx="8" cy="19" r="2" />
+            <circle className="hero-bead hero-bead-7" cx="13" cy="19" r="2" />
+            <circle className="hero-bead hero-bead-8" cx="18" cy="19" r="2" />
+          </svg>
+        </div>
         <h1 className="hero-headline">
           {headlineParts.map((part, i) => (
-            <span key={i}>
+            <span key={i} className={i === 0 ? "hero-marker" : "hero-underline"}>
               {i > 0 && <br />}
               {part}
             </span>
@@ -157,8 +173,22 @@ export default function HomePage() {
         </ul>
       </section>
 
+      {/* How you use it — Agentation-inspired numbered steps */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">{howToUse.title}</h2>
+        <ol className="how-to-steps">
+          {howToUse.steps.map((step: string, i: number) => (
+            <li key={i} className="how-to-step">
+              <span className="how-to-num">{i + 1}</span>
+              <span>{step}</span>
+            </li>
+          ))}
+        </ol>
+      </section>
+
       <div className="footer">
-        <p>&copy; 2026 Tokalator. Built by vfaraji89.</p>
+        <p>&copy; 2026 @Tokalator. Built by vfaraji89.</p>
       </div>
     </article>
   );
