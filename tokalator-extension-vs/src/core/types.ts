@@ -34,6 +34,10 @@ export interface ContextSnapshot {
   chatTurnCount: number;
   contextHealth: 'healthy' | 'warning' | 'critical';
   healthReasons: string[];
+  modelId: string;
+  modelLabel: string;
+  workspaceFileCount: number;
+  workspaceFileTokens: number;
 }
 
 /**

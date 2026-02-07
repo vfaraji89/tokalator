@@ -2,8 +2,10 @@ import * as vscode from 'vscode';
 import { TabInfo, ContextSnapshot } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
+import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './modelProfiles';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
+const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
 
 /**
  * Core engine that tracks all editor state and produces real-time ContextSnapshots.
@@ -35,12 +37,23 @@ export class ContextMonitor implements vscode.Disposable {
   private debounceTimer: ReturnType<typeof setTimeout> | undefined;
   private isRefreshing = false;
 
+  private activeModel: ModelProfile;
+  private workspaceFileTokens = 0;
+  private workspaceFileCount = 0;
+
   constructor(private readonly workspaceState?: vscode.Memento) {
     // Load persisted pinned files
     if (workspaceState) {
       const saved = workspaceState.get<string[]>(PINNED_FILES_KEY, []);
       this.pinnedFiles = new Set(saved);
     }
+
+    // Load persisted model selection
+    const savedModelId = workspaceState?.get<string>(SELECTED_MODEL_KEY, DEFAULT_MODEL_ID) || DEFAULT_MODEL_ID;
+    this.activeModel = getModel(savedModelId);
+
+    // Scan workspace files on startup
+    this.scanWorkspaceFiles();
 
     // Debounced refresh to avoid perf issues from rapid event firing
     const debouncedRefresh = () => {
@@ -195,8 +208,8 @@ export class ContextMonitor implements vscode.Disposable {
    */
   private async buildSnapshot(): Promise<ContextSnapshot> {
     const config = vscode.workspace.getConfiguration('tokalator');
-    const windowCapacity = config.get<number>('windowSize', 1000000);
-    const rotWarning = config.get<number>('contextRotWarningTurns', 20);
+    const windowCapacity = this.activeModel.contextWindow;
+    const rotWarning = this.activeModel.rotThreshold;
 
     // 1. Gather all open tabs
     let tabs = this.gatherTabs();
@@ -279,6 +292,10 @@ export class ContextMonitor implements vscode.Disposable {
       chatTurnCount: this.chatTurnCount,
       contextHealth,
       healthReasons,
+      modelId: this.activeModel.id,
+      modelLabel: this.activeModel.label,
+      workspaceFileCount: this.workspaceFileCount,
+      workspaceFileTokens: this.workspaceFileTokens,
     };
   }
 
@@ -378,6 +395,61 @@ export class ContextMonitor implements vscode.Disposable {
       css: 'css', html: 'html', sh: 'shellscript', sql: 'sql',
     };
     return map[ext] || ext;
+  }
+
+  /**
+   * Set the active model and persist it.
+   */
+  setModel(modelId: string): void {
+    this.activeModel = getModel(modelId);
+    if (this.workspaceState) {
+      this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
+    }
+    this.refresh();
+  }
+
+  /**
+   * Get the current active model.
+   */
+  getActiveModel(): ModelProfile {
+    return this.activeModel;
+  }
+
+  /**
+   * Get all available models.
+   */
+  getModels(): ModelProfile[] {
+    return MODEL_PROFILES;
+  }
+
+  /**
+   * Scan workspace files to estimate total project token count.
+   * This runs once on startup and on workspace change.
+   */
+  private async scanWorkspaceFiles(): Promise<void> {
+    try {
+      const files = await vscode.workspace.findFiles(
+        '**/*.{ts,tsx,js,jsx,py,go,rs,java,rb,md,json,yml,yaml,css,html,sh,sql,c,cpp,h,cs,swift,kt}',
+        '{**/node_modules/**,**/dist/**,**/build/**,**/.next/**,**/vendor/**,**/.git/**}',
+        5000
+      );
+      this.workspaceFileCount = files.length;
+
+      // Estimate total workspace tokens from file sizes (rough: 1 token per 4 bytes)
+      let totalChars = 0;
+      for (const uri of files) {
+        try {
+          const stat = await vscode.workspace.fs.stat(uri);
+          totalChars += stat.size;
+        } catch {
+          // skip unreadable files
+        }
+      }
+      this.workspaceFileTokens = Math.ceil(totalChars / 4);
+    } catch {
+      this.workspaceFileCount = 0;
+      this.workspaceFileTokens = 0;
+    }
   }
 
   dispose(): void {
