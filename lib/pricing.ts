@@ -61,23 +61,30 @@ export interface QualityMetrics {
 }
 
 // ============================================
-// CONSTANTS - Anthropic Pricing (January 2026)
+// CONSTANTS - Anthropic Pricing (February 2026)
 // ============================================
 
 export const MODEL_LIMITS = {
-  'claude-opus-4.5': { contextWindow: 200_000, maxOutput: 32_000 },
-  'claude-sonnet-4.5': { contextWindow: 200_000, maxOutput: 64_000 },
+  'claude-opus-4.6': { contextWindow: 200_000, maxOutput: 128_000, contextWindowBeta: 1_000_000 },
+  'claude-sonnet-4.5': { contextWindow: 200_000, maxOutput: 64_000, contextWindowBeta: 1_000_000 },
   'claude-haiku-4.5': { contextWindow: 200_000, maxOutput: 64_000 },
 } as const;
 
 export const ANTHROPIC_PRICING = {
-  'claude-opus-4.5': {
+  'claude-opus-4.6': {
     standard: {
       inputCostPerMTok: 5.0,
       outputCostPerMTok: 25.0,
       cacheWriteCostPerMTok: 6.25,
       cacheReadCostPerMTok: 0.50,
     },
+    extended: { // >200K tokens (1M beta)
+      inputCostPerMTok: 10.0,
+      outputCostPerMTok: 37.50,
+      cacheWriteCostPerMTok: 12.50,
+      cacheReadCostPerMTok: 1.00,
+    },
+    threshold: 200000,
   },
   'claude-sonnet-4.5': {
     standard: {
@@ -86,7 +93,7 @@ export const ANTHROPIC_PRICING = {
       cacheWriteCostPerMTok: 3.75,
       cacheReadCostPerMTok: 0.30,
     },
-    extended: { // >200K tokens
+    extended: { // >200K tokens (1M beta)
       inputCostPerMTok: 6.0,
       outputCostPerMTok: 22.50,
       cacheWriteCostPerMTok: 7.50,
@@ -115,7 +122,7 @@ export const SERVICE_PRICING = {
 } as const;
 
 export const MODEL_PARAMS: Record<string, ModelParams> = {
-  'claude-opus-4.5': {
+  'claude-opus-4.6': {
     baseQuality: 1.0,
     alphaParam: 0.30,
     betaParam: 0.35,
@@ -472,19 +479,19 @@ export function formatTokens(tokens: number): string {
  */
 export function getModelInfo(modelName: string) {
   const info = {
-    'claude-opus-4.5': {
-      displayName: 'Claude Opus 4.5',
-      description: 'Most intelligent model for building agents and coding',
+    'claude-opus-4.6': {
+      displayName: 'Claude Opus 4.6',
+      description: 'Most intelligent model with 128K output & adaptive thinking',
       color: '#8B5CF6', // Purple
     },
     'claude-sonnet-4.5': {
       displayName: 'Claude Sonnet 4.5',
-      description: 'Optimal balance of intelligence, cost, and speed',
+      description: 'Best combination of speed and intelligence',
       color: '#3B82F6', // Blue
     },
     'claude-haiku-4.5': {
       displayName: 'Claude Haiku 4.5',
-      description: 'Fastest, most cost-efficient model',
+      description: 'Fastest model with near-frontier intelligence',
       color: '#10B981', // Green
     },
   };

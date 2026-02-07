@@ -41,3 +41,12 @@ yarn-error.log*
 next-env.d.ts
 
 /app/generated/prisma
+
+# user content (personal agents, prompts, etc.)
+/user-content/*
+!/user-content/.gitkeep
+!/user-content/agents/.gitkeep
+!/user-content/prompts/.gitkeep
+!/user-content/instructions/.gitkeep
+!/user-content/collections/.gitkeep
+!/user-content/claude-code/.gitkeep

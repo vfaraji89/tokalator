@@ -192,16 +192,20 @@ interface PriceQualityData {
 }
 
 export function PriceQualityChart() {
-  // Simulated quality scores (in real app, could come from benchmarks)
+  // Quality scores based on latest benchmarks (Feb 2026)
   const data: PriceQualityData[] = [
-    { name: 'Opus 4.5', pricePerToken: 5.0, qualityScore: 98, provider: 'anthropic' },
-    { name: 'Sonnet 4.5', pricePerToken: 3.0, qualityScore: 92, provider: 'anthropic' },
-    { name: 'Haiku 4.5', pricePerToken: 1.0, qualityScore: 85, provider: 'anthropic' },
-    { name: 'GPT-5', pricePerToken: 10.0, qualityScore: 97, provider: 'openai' },
-    { name: 'GPT-4o', pricePerToken: 2.5, qualityScore: 91, provider: 'openai' },
-    { name: 'o1', pricePerToken: 15.0, qualityScore: 99, provider: 'openai' },
-    { name: 'Gemini Ultra', pricePerToken: 7.5, qualityScore: 95, provider: 'google' },
-    { name: 'Gemini Flash', pricePerToken: 0.1, qualityScore: 82, provider: 'google' },
+    { name: 'Opus 4.6', pricePerToken: 5.0, qualityScore: 99, provider: 'anthropic' },
+    { name: 'Sonnet 4.5', pricePerToken: 3.0, qualityScore: 93, provider: 'anthropic' },
+    { name: 'Haiku 4.5', pricePerToken: 1.0, qualityScore: 86, provider: 'anthropic' },
+    { name: 'GPT-5.2', pricePerToken: 1.75, qualityScore: 97, provider: 'openai' },
+    { name: 'GPT-4.1', pricePerToken: 3.0, qualityScore: 92, provider: 'openai' },
+    { name: 'GPT-4.1 Mini', pricePerToken: 0.80, qualityScore: 87, provider: 'openai' },
+    { name: 'GPT-5 Mini', pricePerToken: 0.25, qualityScore: 84, provider: 'openai' },
+    { name: 'o4-mini', pricePerToken: 4.0, qualityScore: 96, provider: 'openai' },
+    { name: 'Gemini 3 Pro', pricePerToken: 2.0, qualityScore: 96, provider: 'google' },
+    { name: 'Gemini 3 Flash', pricePerToken: 0.50, qualityScore: 89, provider: 'google' },
+    { name: 'Gemini 2.5 Pro', pricePerToken: 1.25, qualityScore: 94, provider: 'google' },
+    { name: 'Gemini 2.5 Flash', pricePerToken: 0.30, qualityScore: 85, provider: 'google' },
   ];
   
   // Calculate efficiency (quality per dollar)

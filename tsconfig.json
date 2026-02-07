@@ -30,5 +30,15 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "awesome-copilot",
+    "copilot-context-monitor",
+    "copilot-contribution",
+    "reference-material",
+    "user-content",
+    "examples",
+    "prisma",
+    "lib/db.ts"
+  ]
 }

@@ -6,7 +6,7 @@ import { CostComparisonChart, ContextWindowChart, PriceQualityChart } from '@/co
 export default function ComparePage() {
   const [inputTokens, setInputTokens] = useState(100000);
   const [outputTokens, setOutputTokens] = useState(10000);
-  
+
   return (
     <div className="dark bg-eco-black min-h-screen text-eco-white p-6 lg:p-8">
       {/* Header */}
@@ -17,7 +17,7 @@ export default function ComparePage() {
         </p>
         <div className="eco-divider-thick w-24 mt-4" />
       </header>
-      
+
       {/* Token Input Controls */}
       <section className="mb-8">
         <div className="eco-card-flat">
@@ -62,11 +62,11 @@ export default function ComparePage() {
           </div>
         </div>
       </section>
-      
+
       {/* Charts Grid */}
       <div className="space-y-8">
         <CostComparisonChart inputTokens={inputTokens} outputTokens={outputTokens} />
-        
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <ContextWindowChart />
           <PriceQualityChart />

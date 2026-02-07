@@ -11,7 +11,7 @@ export default function AnalysisPage() {
           Analyze costs using the Cobb-Douglas economic model and optimize your API usage.
         </p>
       </div>
-      
+
       <EconomicAnalysis />
     </div>
   );

@@ -8,7 +8,7 @@ import {
   formatCost 
 } from '@/lib/pricing';
 
-type ModelId = 'claude-opus-4.5' | 'claude-sonnet-4.5' | 'claude-haiku-4.5';
+type ModelId = 'claude-opus-4.6' | 'claude-sonnet-4.5' | 'claude-haiku-4.5';
 
 export function EconomicAnalysis() {
   const [model, setModel] = useState<ModelId>('claude-sonnet-4.5');
@@ -223,7 +223,7 @@ export function EconomicAnalysis() {
                 onChange={(e) => setModel(e.target.value as ModelId)}
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               >
-                <option value="claude-opus-4.5">Claude Opus 4.5</option>
+                <option value="claude-opus-4.6">Claude Opus 4.6</option>
                 <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
                 <option value="claude-haiku-4.5">Claude Haiku 4.5</option>
               </select>

@@ -5,14 +5,14 @@ import { usePathname } from 'next/navigation';
 import { Logo } from './logo';
 
 const navItems = [
-  { href: '/', label: 'Market', icon: '◉' },
-  { href: '/compare', label: 'Compare', icon: '⬡' },
+  { href: '/', label: 'Home', icon: '◉' },
+  { href: '/agents', label: 'Agents', icon: '⬡' },
+  { href: '/prompts', label: 'Prompts', icon: '◇' },
+  { href: '/collections', label: 'Collections', icon: '◈' },
   { href: '/calculator', label: 'Calculator', icon: '◇' },
   { href: '/context', label: 'Context', icon: '▣' },
-  { href: '/caching', label: 'Caching', icon: '◈' },
-  { href: '/usage', label: 'Usage', icon: '▲' },
-  { href: '/pricing', label: 'Pricing', icon: '◆' },
-  { href: '/analysis', label: 'Analysis', icon: '◎' },
+  { href: '/tools', label: 'More Tools', icon: '◆' },
+  { href: '/extension', label: 'Extension', icon: '◎' },
 ];
 
 export function Navigation() {

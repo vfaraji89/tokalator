@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { calculateCost, formatCost } from '@/lib/pricing';
 
-type ModelId = 'claude-opus-4.5' | 'claude-sonnet-4.5' | 'claude-haiku-4.5';
+type ModelId = 'claude-opus-4.6' | 'claude-sonnet-4.5' | 'claude-haiku-4.5';
 
 interface UsageRecord {
   id: string;
@@ -33,7 +33,7 @@ const sampleUsage: UsageRecord[] = [
   {
     id: '2',
     date: '2026-01-30',
-    model: 'claude-opus-4.5',
+    model: 'claude-opus-4.6',
     project: 'Default Project',
     inputTokens: 20000,
     outputTokens: 25000,
@@ -66,13 +66,13 @@ const sampleUsage: UsageRecord[] = [
 ];
 
 const MODEL_LABELS: Record<ModelId, string> = {
-  'claude-opus-4.5': 'Claude Opus 4.5',
+  'claude-opus-4.6': 'Claude Opus 4.6',
   'claude-sonnet-4.5': 'Claude Sonnet 4.5',
   'claude-haiku-4.5': 'Claude Haiku 4.5',
 };
 
 const MODEL_COLORS: Record<ModelId, string> = {
-  'claude-opus-4.5': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  'claude-opus-4.6': 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
   'claude-sonnet-4.5': 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
   'claude-haiku-4.5': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
 };
@@ -177,9 +177,9 @@ export function UsageTracker() {
                 onChange={(e) => setNewRecord({ ...newRecord, model: e.target.value as ModelId })}
                 className="w-full rounded-lg border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white"
               >
-                <option value="opus-4.5">Claude Opus 4.5</option>
-                <option value="sonnet-4.5">Claude Sonnet 4.5</option>
-                <option value="haiku-4.5">Claude Haiku 4.5</option>
+                <option value="claude-opus-4.6">Claude Opus 4.6</option>
+                <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
+                <option value="claude-haiku-4.5">Claude Haiku 4.5</option>
               </select>
             </div>
             <div>

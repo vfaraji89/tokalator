@@ -14,15 +14,15 @@ async function main() {
   await prisma.model.deleteMany();
 
   // ============================================
-  // ANTHROPIC MODELS (January 2026)
+  // ANTHROPIC MODELS (February 2026)
   // ============================================
 
-  // Claude Opus 4.5
+  // Claude Opus 4.6
   const opus = await prisma.model.create({
     data: {
-      name: 'claude-opus-4.5',
-      displayName: 'Claude Opus 4.5',
-      description: 'Most intelligent model for building agents and coding',
+      name: 'claude-opus-4.6',
+      displayName: 'Claude Opus 4.6',
+      description: 'Most intelligent model with 128K output & adaptive thinking',
       baseQuality: 1.0,
       alphaParam: 0.30,  // Higher sensitivity to input (complex reasoning)
       betaParam: 0.35,   // Higher sensitivity to output (detailed responses)
@@ -35,7 +35,7 @@ async function main() {
     data: {
       name: 'claude-sonnet-4.5',
       displayName: 'Claude Sonnet 4.5',
-      description: 'Optimal balance of intelligence, cost, and speed',
+      description: 'Best combination of speed and intelligence',
       baseQuality: 0.85,
       alphaParam: 0.25,
       betaParam: 0.30,
@@ -48,7 +48,7 @@ async function main() {
     data: {
       name: 'claude-haiku-4.5',
       displayName: 'Claude Haiku 4.5',
-      description: 'Fastest, most cost-efficient model',
+      description: 'Fastest model with near-frontier intelligence',
       baseQuality: 0.70,
       alphaParam: 0.20,
       betaParam: 0.25,
@@ -62,11 +62,11 @@ async function main() {
   // PRICING RULES
   // ============================================
 
-  // Opus 4.5 - Single tier pricing
+  // Opus 4.6 - Two-tier pricing (≤200K and >200K for 1M beta)
   await prisma.pricingRule.create({
     data: {
       modelId: opus.id,
-      promptTokenThreshold: null, // No threshold - single tier
+      promptTokenThreshold: null, // Base tier
       inputCostPerMTok: 5.0,
       outputCostPerMTok: 25.0,
       cacheWriteCostPerMTok: 6.25,

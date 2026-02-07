@@ -3,8 +3,8 @@ import "./globals.css";
 import { Navigation } from "@/components/navigation";
 
 export const metadata: Metadata = {
-  title: "Tokalator - AI Token Market & Cost Calculator",
-  description: "Track live AI token pricing, compare models across Anthropic, OpenAI, and Google, calculate costs and optimize your AI spending",
+  title: "Tokalator - Context Engineering Platform",
+  description: "Context engineering platform for AI coding assistants. Browse agents, prompts, and tools for Copilot and Claude Code. Monitor tokens, optimize context, and calculate costs.",
 };
 
 export default function RootLayout({

@@ -13,8 +13,8 @@ datasource db {
 // Anthropic Models
 model Model {
   id              String          @id @default(cuid())
-  name            String          @unique // claude-opus-4.5, claude-sonnet-4.5, claude-haiku-4.5
-  displayName     String          // Claude Opus 4.5
+  name            String          @unique // claude-opus-4.6, claude-sonnet-4.5, claude-haiku-4.5
+  displayName     String          // Claude Opus 4.6
   description     String?
   
   // Economic model parameters (Cobb-Douglas)

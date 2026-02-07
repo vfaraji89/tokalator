@@ -11,7 +11,7 @@ export default function UsagePage() {
           View and manage your Anthropic API usage records.
         </p>
       </div>
-      
+
       <UsageTracker />
     </div>
   );

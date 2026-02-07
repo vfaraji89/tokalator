@@ -1,6 +1,7 @@
-import { LiveMarketDashboard } from '@/components/live-market-dashboard';
+import { scanCatalog } from '@/lib/catalog';
+import { ExtensionShowcase } from '@/components/extension-showcase';
 
-export default function DashboardPage() {
-  return <LiveMarketDashboard />;
+export default function HomePage() {
+  const catalog = scanCatalog();
+  return <ExtensionShowcase catalog={catalog} />;
 }
-
