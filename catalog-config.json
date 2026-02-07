@@ -7,7 +7,6 @@
   ],
   "scanDirectories": [
     { "path": "copilot-contribution", "source": "builtin", "ecosystem": "copilot" },
-    { "path": "awesome-copilot", "source": "awesome-copilot", "ecosystem": "copilot" },
     { "path": "user-content", "source": "user" }
   ]
 }

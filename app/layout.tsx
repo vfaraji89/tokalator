@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import "./globals.css";
-import { Navigation } from "@/components/navigation";
+import { SideNav } from "@/components/side-nav";
 
 export const metadata: Metadata = {
-  title: "Tokalator - Context Engineering Platform",
-  description: "Context engineering platform for AI coding assistants. Browse agents, prompts, and tools for Copilot and Claude Code. Monitor tokens, optimize context, and calculate costs.",
+  title: "Tokalator",
+  description:
+    "Context engineering tools for AI coding assistants. Token calculator, context optimizer, and VS Code extension.",
 };
 
 export default function RootLayout({
@@ -13,27 +14,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <link
-          rel="preconnect"
-          href="https://fonts.googleapis.com"
-        />
-        <link
-          rel="preconnect"
-          href="https://fonts.gstatic.com"
-          crossOrigin="anonymous"
-        />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Source+Sans+3:wght@300;400;500;600;700&display=swap"
-        />
-      </head>
-      <body className="antialiased bg-eco-black text-eco-white">
-        <Navigation />
-        <main className="min-h-screen">
-          {children}
-        </main>
+    <html lang="en">
+      <body>
+        <div className="layout">
+          <SideNav />
+          <main className="main-content">{children}</main>
+        </div>
       </body>
     </html>
   );

@@ -1,105 +1,30 @@
 @import "tailwindcss";
 
-/* ============================================
-   THE ECONOMIST INSPIRED DESIGN SYSTEM
-   Minimal • Black • Red • Data-Focused
-   ============================================ */
-
 :root {
-  /* Core Colors */
-  --eco-black: #121212;
-  --eco-dark: #1a1a1a;
-  --eco-gray-900: #262626;
-  --eco-gray-800: #333333;
-  --eco-gray-700: #4a4a4a;
-  --eco-gray-600: #666666;
-  --eco-gray-500: #888888;
-  --eco-gray-400: #aaaaaa;
-  --eco-gray-300: #cccccc;
-  --eco-gray-200: #e5e5e5;
-  --eco-gray-100: #f5f5f5;
-  --eco-white: #fafafa;
-  
-  /* Accent Colors */
-  --eco-red: #e3120b;
-  --eco-red-dark: #b30d08;
-  --eco-red-light: #ff4136;
-  --eco-red-muted: #dc2626;
-  
-  /* Semantic Colors */
-  --eco-positive: #15803d;
-  --eco-negative: #e3120b;
-  --eco-neutral: #888888;
-  
-  /* Typography */
-  --font-serif: 'Libre Baskerville', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Source Sans 3', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  
-  /* Spacing */
-  --space-unit: 8px;
-  
-  /* Light mode defaults */
-  --background: var(--eco-white);
-  --foreground: var(--eco-black);
-  --card-bg: #ffffff;
-  --card-border: var(--eco-gray-200);
-  --muted: var(--eco-gray-600);
-  --muted-foreground: var(--eco-gray-500);
+  --font-primary: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "SF Mono", ui-monospace, SFMono-Regular, "Cascadia Code", monospace;
+  --bg: #ffffff;
+  --bg-subtle: #f9fafb;
+  --bg-secondary: #fafafa;
+  --border: rgba(0, 0, 0, 0.06);
+  --border-strong: rgba(0, 0, 0, 0.1);
+  --text-primary: rgba(0, 0, 0, 0.88);
+  --text-secondary: rgba(0, 0, 0, 0.55);
+  --text-tertiary: rgba(0, 0, 0, 0.35);
+  --text-muted: rgba(0, 0, 0, 0.4);
+  --accent: #e3120b;
+  --accent-bg: rgba(227, 18, 11, 0.06);
+  --positive: #15803d;
+  --warning: #d97706;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-serif: var(--font-serif);
-  
-  /* Economist Red */
-  --color-eco-red: var(--eco-red);
-  --color-eco-red-dark: var(--eco-red-dark);
-  --color-eco-red-light: var(--eco-red-light);
-  
-  /* Grays */
-  --color-eco-black: var(--eco-black);
-  --color-eco-gray-900: var(--eco-gray-900);
-  --color-eco-gray-800: var(--eco-gray-800);
-  --color-eco-gray-700: var(--eco-gray-700);
-  --color-eco-gray-600: var(--eco-gray-600);
-  --color-eco-gray-500: var(--eco-gray-500);
-  --color-eco-gray-400: var(--eco-gray-400);
-  --color-eco-gray-300: var(--eco-gray-300);
-  --color-eco-gray-200: var(--eco-gray-200);
-  --color-eco-gray-100: var(--eco-gray-100);
+  --color-background: var(--bg);
+  --color-foreground: var(--text-primary);
+  --font-sans: var(--font-primary);
 }
 
-/* Dark Mode */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: var(--eco-black);
-    --foreground: var(--eco-white);
-    --card-bg: var(--eco-dark);
-    --card-border: var(--eco-gray-800);
-    --muted: var(--eco-gray-400);
-    --muted-foreground: var(--eco-gray-500);
-  }
-}
-
-/* Force dark mode for dashboard aesthetic */
-.dark {
-  --background: var(--eco-black);
-  --foreground: var(--eco-white);
-  --card-bg: var(--eco-dark);
-  --card-border: var(--eco-gray-800);
-  --muted: var(--eco-gray-400);
-  --muted-foreground: var(--eco-gray-500);
-}
-
-/* ============================================
-   BASE STYLES
-   ============================================ */
-
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 html {
   font-size: 16px;
@@ -108,322 +33,341 @@ html {
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+  background: var(--bg);
+  color: var(--text-primary);
+  font-family: var(--font-primary);
   font-weight: 400;
   line-height: 1.6;
   margin: 0;
   padding: 0;
+  font-size: 0.8125rem;
 }
 
-/* ============================================
-   TYPOGRAPHY - ECONOMIST STYLE
-   ============================================ */
-
-h1, h2, h3, h4, h5, h6 {
-  font-family: var(--font-serif);
-  font-weight: 700;
+h1, h2, h3, h4 {
+  font-family: var(--font-primary);
+  font-weight: 500;
   letter-spacing: -0.02em;
-  line-height: 1.2;
+  line-height: 1.3;
   margin: 0;
+  color: var(--text-primary);
 }
 
-.headline {
-  font-family: var(--font-serif);
-  font-size: 2.5rem;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.1;
-}
+h1 { font-size: 1.125rem; font-weight: 600; letter-spacing: -0.025em; }
+h2 { font-size: 0.875rem; font-weight: 600; margin-bottom: 0.5rem; }
+h3 { font-size: 0.8125rem; font-weight: 500; }
 
-.subheadline {
-  font-family: var(--font-sans);
-  font-size: 1.125rem;
-  font-weight: 300;
-  color: var(--muted);
-  letter-spacing: 0.01em;
-}
+p { margin: 0; color: var(--text-secondary); line-height: 1.6; }
 
-.section-title {
-  font-family: var(--font-serif);
-  font-size: 1.25rem;
-  font-weight: 700;
-  border-bottom: 3px solid var(--eco-red);
-  padding-bottom: 0.5rem;
-  margin-bottom: 1.5rem;
-  display: inline-block;
-}
+a { color: var(--accent); text-decoration: none; }
+a:hover { text-decoration: underline; }
 
-.data-label {
-  font-family: var(--font-sans);
+code {
+  font-family: var(--font-mono);
   font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
+  background: var(--bg-secondary);
+  padding: 0.125em 0.375em;
+  border-radius: 3px;
+  color: var(--text-primary);
 }
 
-.data-value {
-  font-family: var(--font-sans);
-  font-size: 2rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1;
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  line-height: 1.6;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  margin: 0;
+  color: var(--text-primary);
 }
 
-.data-value-sm {
-  font-family: var(--font-sans);
-  font-size: 1.25rem;
-  font-weight: 600;
-}
+/* Layout */
+.layout { display: flex; min-height: 100vh; }
 
-/* ============================================
-   ECONOMIST-STYLE COMPONENTS
-   ============================================ */
-
-/* Cards */
-.eco-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  padding: 1.5rem;
-  position: relative;
-}
-
-.eco-card::before {
-  content: '';
-  position: absolute;
+.sidebar {
+  width: 220px;
+  border-right: 1px solid var(--border);
+  padding: 1.5rem 0;
+  position: sticky;
   top: 0;
-  left: 0;
-  width: 4px;
-  height: 100%;
-  background: var(--eco-red);
+  height: 100vh;
+  overflow-y: auto;
+  flex-shrink: 0;
 }
 
-.eco-card-flat {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  padding: 1.5rem;
+.main-content {
+  flex: 1;
+  min-width: 0;
+  max-width: 800px;
+  padding: 2rem 3rem;
 }
 
-/* Stat Cards */
-.stat-card {
-  background: var(--card-bg);
-  border: 1px solid var(--card-border);
-  padding: 1.25rem 1.5rem;
+/* Sidebar */
+.sidebar-logo {
   display: flex;
-  flex-direction: column;
+  align-items: center;
   gap: 0.5rem;
+  padding: 0 1.25rem;
+  margin-bottom: 1.5rem;
+  text-decoration: none;
 }
 
-.stat-card .stat-label {
-  font-family: var(--font-sans);
-  font-size: 0.6875rem;
+.sidebar-logo-text {
+  font-size: 0.875rem;
   font-weight: 600;
+  color: var(--text-primary);
+}
+
+.sidebar-version {
+  font-size: 0.625rem;
+  font-weight: 500;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 9999px;
+  padding: 0.1em 0.5em;
+}
+
+.nav-section-label {
+  margin-top: 1.25rem;
+  padding: 0 1.25rem;
+  font-size: 0.625rem;
+  font-weight: 500;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  color: var(--muted);
+  letter-spacing: 0.06em;
+  color: var(--text-tertiary);
+  margin-bottom: 0.25rem;
 }
 
-.stat-card .stat-value {
-  font-family: var(--font-sans);
-  font-size: 1.75rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-}
-
-.stat-card .stat-change {
-  font-family: var(--font-sans);
+.nav-link {
+  display: block;
+  padding: 0.375rem 1.25rem;
   font-size: 0.75rem;
+  font-weight: 400;
+  color: var(--text-secondary);
+  transition: color 0.15s ease;
+  text-decoration: none;
+}
+
+.nav-link:hover {
+  color: var(--text-primary);
+  text-decoration: none;
+}
+
+.nav-link.active {
+  color: var(--text-primary);
   font-weight: 500;
 }
 
-.stat-change.positive {
-  color: var(--eco-positive);
+.badge {
+  font-size: 0.5625rem;
+  font-weight: 500;
+  background: var(--accent-bg);
+  color: var(--accent);
+  padding: 0.1em 0.4em;
+  border-radius: 3px;
+  margin-left: 0.5rem;
 }
 
-.stat-change.negative {
-  color: var(--eco-negative);
+.badge-accent {
+  background: var(--accent-bg);
+  color: var(--accent);
 }
 
-/* Data Tables */
-.eco-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: var(--font-sans);
-  font-size: 0.875rem;
+/* Article */
+.article { max-width: 640px; }
+.article header { margin-bottom: 1.5rem; }
+.article .tagline { color: var(--text-secondary); font-size: 0.8125rem; line-height: 1.5; margin-top: 0.5rem; }
+.article section { margin-top: 2rem; }
+.article section h2 { margin-bottom: 0.75rem; }
+.article ul, .article ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+  color: var(--text-secondary);
+}
+.article li { margin: 0.25rem 0; }
+
+/* Cards */
+.card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
 }
 
-.eco-table th {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  text-align: left;
-  padding: 0.75rem 1rem;
-  border-bottom: 2px solid var(--eco-red);
+/* Feature grid */
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+  margin-top: 0.75rem;
 }
 
-.eco-table td {
-  padding: 0.875rem 1rem;
-  border-bottom: 1px solid var(--card-border);
+@media (min-width: 640px) {
+  .feature-grid { grid-template-columns: 1fr 1fr; }
 }
 
-.eco-table tr:hover td {
-  background: rgba(227, 18, 11, 0.05);
+.feature-item {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s ease;
 }
 
-/* Badges */
-.eco-badge {
-  font-family: var(--font-sans);
-  font-size: 0.625rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  padding: 0.25rem 0.5rem;
-  border-radius: 2px;
+.feature-item:hover { border-color: var(--border-strong); }
+.feature-item h3 { font-size: 0.75rem; font-weight: 500; margin-bottom: 0.25rem; }
+.feature-item p { font-size: 0.6875rem; color: var(--text-tertiary); line-height: 1.5; }
+.feature-item code { display: inline-block; margin-top: 0.375rem; font-size: 0.625rem; color: var(--text-tertiary); }
+
+/* Tool grid */
+.tool-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
 }
 
-.eco-badge-red {
-  background: var(--eco-red);
-  color: white;
+@media (min-width: 640px) {
+  .tool-grid { grid-template-columns: 1fr 1fr; }
 }
 
-.eco-badge-black {
-  background: var(--eco-black);
-  color: white;
-}
-
-.eco-badge-outline {
-  background: transparent;
-  border: 1px solid currentColor;
-}
-
-/* Dividers */
-.eco-divider {
-  height: 1px;
-  background: var(--card-border);
-  margin: 1.5rem 0;
-}
-
-.eco-divider-thick {
-  height: 3px;
-  background: var(--eco-red);
-  margin: 1.5rem 0;
-}
-
-/* ============================================
-   CHART CUSTOMIZATIONS
-   ============================================ */
-
-.recharts-wrapper {
-  font-family: var(--font-sans) !important;
-}
-
-.recharts-text {
-  font-family: var(--font-sans) !important;
-  font-size: 0.75rem;
-}
-
-.recharts-legend-item-text {
-  font-family: var(--font-sans) !important;
-  font-size: 0.75rem !important;
-  font-weight: 500 !important;
-}
-
-.recharts-tooltip-wrapper {
-  font-family: var(--font-sans) !important;
-}
-
-.recharts-default-tooltip {
-  background: var(--eco-dark) !important;
-  border: 1px solid var(--eco-gray-700) !important;
-  border-radius: 0 !important;
-  padding: 0.75rem 1rem !important;
-}
-
-.recharts-tooltip-label {
-  font-weight: 600 !important;
-  margin-bottom: 0.5rem !important;
-  color: var(--eco-white) !important;
-}
-
-.recharts-cartesian-grid line {
-  stroke: var(--eco-gray-800) !important;
-}
-
-/* ============================================
-   UTILITY CLASSES
-   ============================================ */
-
-.text-eco-red { color: var(--eco-red); }
-.text-eco-black { color: var(--eco-black); }
-.text-muted { color: var(--muted); }
-.text-positive { color: var(--eco-positive); }
-.text-negative { color: var(--eco-negative); }
-
-.bg-eco-red { background-color: var(--eco-red); }
-.bg-eco-black { background-color: var(--eco-black); }
-.bg-eco-dark { background-color: var(--eco-dark); }
-
-.border-eco-red { border-color: var(--eco-red); }
-.border-eco-gray { border-color: var(--card-border); }
-
-.font-serif { font-family: var(--font-serif); }
-.font-sans { font-family: var(--font-sans); }
-
-/* Transitions */
-.transition-smooth {
-  transition: all 0.2s ease-in-out;
-}
-
-/* Red accent line */
-.accent-line::before {
-  content: '';
+.tool-card {
   display: block;
-  width: 60px;
-  height: 3px;
-  background: var(--eco-red);
-  margin-bottom: 1rem;
+  padding: 0.875rem 1rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  transition: border-color 0.15s ease;
+  text-decoration: none;
 }
 
-/* Live indicator */
-.live-pulse {
+.tool-card:hover { border-color: var(--border-strong); text-decoration: none; }
+.tool-card h3 { font-size: 0.75rem; font-weight: 500; color: var(--text-primary); }
+.tool-card p { font-size: 0.6875rem; color: var(--text-tertiary); margin-top: 0.125rem; }
+
+/* Install block */
+.install-block {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+}
+
+/* Author card */
+.author-card {
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-subtle);
+}
+
+.author-info h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+}
+
+.author-info p {
+  margin: 0 0 1rem;
+}
+
+.github-link {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
 }
 
-.live-pulse::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  background: var(--eco-red);
-  border-radius: 50%;
-  animation: pulse 2s ease-in-out infinite;
+.github-link:hover {
+  color: var(--accent);
+  text-decoration: none;
 }
 
-@keyframes pulse {
-  0%, 100% { opacity: 1; transform: scale(1); }
-  50% { opacity: 0.5; transform: scale(0.8); }
+/* Contribution list */
+.contribution-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-/* Scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.contribution-item {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
 }
 
-::-webkit-scrollbar-track {
-  background: var(--eco-dark);
+.contribution-item h4 {
+  margin: 0 0 0.5rem;
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--eco-gray-700);
-  border-radius: 0;
+.contribution-item p {
+  margin: 0 0 0.75rem;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--eco-gray-600);
+.contribution-item a {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
 }
+
+.contribution-item a:hover {
+  text-decoration: underline;
+}
+
+/* Keyboard styling */
+kbd {
+  display: inline-block;
+  padding: 0.15rem 0.4rem;
+  font-size: 0.75rem;
+  font-family: var(--font-mono);
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+/* Tables */
+.settings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.75rem;
+  margin-top: 0.75rem;
+}
+
+.settings-table th,
+.settings-table td {
+  text-align: left;
+  padding: 0.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings-table th {
+  font-weight: 500;
+  color: var(--text-tertiary);
+  font-size: 0.625rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* Footer */
+.footer {
+  margin-top: 3rem;
+  padding-top: 1.5rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.6875rem;
+  color: var(--text-tertiary);
+}
+
+.footer a { color: var(--text-secondary); }
+.footer a:hover { color: var(--text-primary); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(0, 0, 0, 0.12); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(0, 0, 0, 0.2); }
