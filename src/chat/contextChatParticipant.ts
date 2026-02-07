@@ -3,13 +3,15 @@ import { ContextMonitor } from '../core/contextMonitor';
 import { ContextSnapshot, TabInfo } from '../core/types';
 
 /**
- * Chat participant `@tokens` for Tokalator.
+ * Chat participant `@tokalator` for Tokalator.
  *
  * Commands:
- *  /count     — Show current token count and budget level
- *  /optimize  — Close low-relevance tabs
- *  /pin       — Pin a file as always-relevant
- *  /breakdown — Show where tokens are going
+ *  /count        — Show current token count and budget level
+ *  /optimize     — Close low-relevance tabs
+ *  /pin          — Pin a file as always-relevant
+ *  /breakdown    — Show where tokens are going
+ *  /instructions — List and estimate tokens for instruction files
+ *  /model        — Show or switch the active AI model
  */
 export class ContextChatParticipant implements vscode.Disposable {
 
@@ -50,6 +52,12 @@ export class ContextChatParticipant implements vscode.Disposable {
 
       case 'breakdown':
         return this.handleBreakdown(stream);
+
+      case 'instructions':
+        return this.handleInstructions(stream);
+
+      case 'model':
+        return this.handleModel(request, stream);
 
       default:
         return this.handleDefault(request, stream);
@@ -210,16 +218,137 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`## Tokalator\n\n`);
     stream.markdown(`Count your tokens like beads on an abacus.\n\n`);
     stream.markdown(`| Command | Description |\n|---|---|\n`);
-    stream.markdown(`| \`@tokens /count\` | Current token count and budget level |\n`);
-    stream.markdown(`| \`@tokens /breakdown\` | See where tokens are going |\n`);
-    stream.markdown(`| \`@tokens /optimize\` | Close low-relevance tabs |\n`);
-    stream.markdown(`| \`@tokens /pin <file>\` | Pin a file as always-relevant |\n\n`);
+    stream.markdown(`| \`@tokalator /count\` | Current token count and budget level |\n`);
+    stream.markdown(`| \`@tokalator /breakdown\` | See where tokens are going |\n`);
+    stream.markdown(`| \`@tokalator /optimize\` | Close low-relevance tabs |\n`);
+    stream.markdown(`| \`@tokalator /pin <file>\` | Pin a file as always-relevant |\n`);
+    stream.markdown(`| \`@tokalator /instructions\` | List instruction files and their token cost |\n`);
+    stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n\n`);
 
     if (snapshot) {
       const levelEmoji = snapshot.budgetLevel === 'low' ? '🟢'
         : snapshot.budgetLevel === 'medium' ? '🟡' : '🔴';
       stream.markdown(`**Current:** ${levelEmoji} ${snapshot.tabs.length} tabs, budget ${snapshot.budgetLevel}\n`);
     }
+
+    return {};
+  }
+
+  /**
+   * /instructions — List instruction files and their token cost
+   */
+  private async handleInstructions(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
+    stream.progress('Scanning instruction files...');
+
+    // Find all instruction-like files
+    const patterns = [
+      '**/*.instructions.md',
+      '**/.github/copilot-instructions.md',
+      '**/.copilot/*.md',
+      '**/*.prompt.md',
+      '**/.cursorrules',
+      '**/.claude/**/*.md',
+      '**/AGENTS.md',
+      '**/*.agent.md',
+    ];
+
+    const allFiles: { path: string; tokens: number }[] = [];
+
+    for (const pattern of patterns) {
+      try {
+        const files = await vscode.workspace.findFiles(pattern, '**/node_modules/**', 50);
+        for (const uri of files) {
+          try {
+            const doc = await vscode.workspace.openTextDocument(uri);
+            const tokens = Math.ceil(doc.getText().length / 4);
+            allFiles.push({
+              path: vscode.workspace.asRelativePath(uri),
+              tokens,
+            });
+          } catch {
+            allFiles.push({ path: vscode.workspace.asRelativePath(uri), tokens: 0 });
+          }
+        }
+      } catch {
+        // pattern not found
+      }
+    }
+
+    if (allFiles.length === 0) {
+      stream.markdown('No instruction files found in this workspace.\n\n');
+      stream.markdown('Instruction files are automatically attached to AI context. Common patterns:\n\n');
+      stream.markdown('| File | Used by |\n|---|---|\n');
+      stream.markdown('| `.github/copilot-instructions.md` | GitHub Copilot |\n');
+      stream.markdown('| `*.instructions.md` | GitHub Copilot |\n');
+      stream.markdown('| `*.prompt.md` | Copilot / Claude |\n');
+      stream.markdown('| `AGENTS.md` | Claude Code |\n');
+      stream.markdown('| `.cursorrules` | Cursor |\n');
+      return {};
+    }
+
+    // Sort by tokens descending
+    allFiles.sort((a, b) => b.tokens - a.tokens);
+    const totalTokens = allFiles.reduce((sum, f) => sum + f.tokens, 0);
+
+    stream.markdown(`## Instruction Files\n\n`);
+    stream.markdown(`**${allFiles.length} files** using ~${this.fmtTokens(totalTokens)} tokens\n\n`);
+    stream.markdown(`| File | Tokens |\n|---|---|\n`);
+
+    for (const f of allFiles) {
+      stream.markdown(`| \`${f.path}\` | ~${this.fmtTokens(f.tokens)} |\n`);
+    }
+
+    const model = this.monitor.getActiveModel();
+    const pct = ((totalTokens / model.contextWindow) * 100).toFixed(1);
+    stream.markdown(`\n> Instructions use **${pct}%** of ${model.label}'s ${this.fmtTokens(model.contextWindow)} context window\n`);
+
+    return {};
+  }
+
+  /**
+   * /model — Show or switch the active model
+   */
+  private async handleModel(
+    request: vscode.ChatRequest,
+    stream: vscode.ChatResponseStream,
+  ): Promise<vscode.ChatResult> {
+    const query = request.prompt.trim();
+    const currentModel = this.monitor.getActiveModel();
+
+    if (!query) {
+      // Show current model and list all
+      stream.markdown(`## Active Model: ${currentModel.label}\n\n`);
+      stream.markdown(`| | |\n|---|---|\n`);
+      stream.markdown(`| **Context window** | ${this.fmtTokens(currentModel.contextWindow)} |\n`);
+      stream.markdown(`| **Max output** | ${this.fmtTokens(currentModel.maxOutput)} |\n`);
+      stream.markdown(`| **Rot threshold** | ${currentModel.rotThreshold} turns |\n`);
+      stream.markdown(`| **Provider** | ${currentModel.provider} |\n\n`);
+
+      stream.markdown(`### Available Models\n\n`);
+      const models = this.monitor.getModels();
+      for (const m of models) {
+        const active = m.id === currentModel.id ? ' ← active' : '';
+        stream.markdown(`- **${m.label}** — ${this.fmtTokens(m.contextWindow)}${active}\n`);
+      }
+      stream.markdown(`\nSwitch with: \`@tokalator /model claude sonnet 4.5\`\n`);
+      return {};
+    }
+
+    // Try to find matching model
+    const { findModel } = require('../core/modelProfiles');
+    const match = findModel(query);
+
+    if (!match) {
+      stream.markdown(`No model matching "${query}". Try \`@tokalator /model\` to see all options.\n`);
+      return {};
+    }
+
+    this.monitor.setModel(match.id);
+    stream.markdown(`Switched to **${match.label}**\n\n`);
+    stream.markdown(`| | |\n|---|---|\n`);
+    stream.markdown(`| **Context window** | ${this.fmtTokens(match.contextWindow)} |\n`);
+    stream.markdown(`| **Max output** | ${this.fmtTokens(match.maxOutput)} |\n`);
+    stream.markdown(`| **Rot threshold** | ${match.rotThreshold} turns |\n`);
 
     return {};
   }
