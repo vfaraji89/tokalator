@@ -24,16 +24,16 @@ function Frame({
   children: React.ReactNode;
 }) {
   return (
-    <div className="learn-frame">
-      <div className="demo-chrome">
+    <div className="learn-frame learn-frame-dark">
+      <div className="demo-chrome" style={{ background: P.black, borderBottom: `1px solid ${P.g7}` }}>
         <div className="demo-dots">
-          <span style={{ background: "#ff5f57" }} />
-          <span style={{ background: "#febc2e" }} />
-          <span style={{ background: "#28c840" }} />
+          <span style={{ background: P.red }} />
+          <span style={{ background: P.g5 }} />
+          <span style={{ background: P.g5 }} />
         </div>
-        <div className="demo-url">{title}</div>
+        <div className="demo-url" style={{ color: P.g5 }}>{title}</div>
       </div>
-      <div className="learn-frame-body">{children}</div>
+      <div className="learn-frame-body" style={{ background: P.black, color: P.white }}>{children}</div>
     </div>
   );
 }
@@ -47,15 +47,15 @@ function CodeBlock({
   lang?: string;
 }) {
   return (
-    <div className="learn-code">
-      <div className="learn-code-header">
-        <span className="learn-code-lang">{lang}</span>
+    <div className="learn-code learn-code-dark">
+      <div className="learn-code-header" style={{ background: P.black, borderBottom: `1px solid ${P.g7}` }}>
+        <span className="learn-code-lang" style={{ color: P.g5 }}>{lang}</span>
       </div>
-      <pre className="learn-code-pre">
+      <pre className="learn-code-pre" style={{ background: "#0a0a0a" }}>
         {lines.map((line, i) => (
           <div key={i} className="learn-code-line">
-            <span className="learn-code-num">{i + 1}</span>
-            <span style={{ color: line.dim ? P.g5 : P.g7 }}>{line.text}</span>
+            <span className="learn-code-num" style={{ color: P.g6 }}>{i + 1}</span>
+            <span style={{ color: line.dim ? P.g5 : P.white }}>{line.text}</span>
           </div>
         ))}
       </pre>
@@ -69,8 +69,8 @@ function Badge({ children, variant = "default" }: { children: React.ReactNode; v
     <span
       className="learn-badge"
       style={{
-        background: variant === "red" ? "rgba(227,18,11,0.08)" : P.g1,
-        color: variant === "red" ? P.red : P.g6,
+        background: variant === "red" ? "rgba(227,18,11,0.15)" : "rgba(255,255,255,0.1)",
+        color: variant === "red" ? P.red : P.white,
       }}
     >
       {children}
@@ -79,14 +79,14 @@ function Badge({ children, variant = "default" }: { children: React.ReactNode; v
 }
 
 /* ── Progress bar ── */
-function ProgressBar({ label, pct, color = P.black }: { label: string; pct: number; color?: string }) {
+function ProgressBar({ label, pct, color = P.red }: { label: string; pct: number; color?: string }) {
   return (
     <div className="learn-progress">
       <div className="learn-progress-header">
-        <span>{label}</span>
-        <span style={{ color: pct > 80 ? P.red : P.g5 }}>{pct}%</span>
+        <span style={{ color: P.white }}>{label}</span>
+        <span style={{ color: pct > 80 ? P.red : P.g3 }}>{pct}%</span>
       </div>
-      <div className="learn-progress-track">
+      <div className="learn-progress-track" style={{ background: P.g7 }}>
         <div className="learn-progress-fill" style={{ width: `${pct}%`, background: color }} />
       </div>
     </div>
@@ -96,12 +96,12 @@ function ProgressBar({ label, pct, color = P.black }: { label: string; pct: numb
 /* ── Comparison table ── */
 function CompareTable({ headers, rows }: { headers: string[]; rows: string[][] }) {
   return (
-    <div className="learn-compare-table">
+    <div className="learn-compare-table learn-compare-dark">
       <table>
         <thead>
           <tr>
             {headers.map((h, i) => (
-              <th key={i} style={{ color: i === 0 ? P.g5 : P.black }}>{h}</th>
+              <th key={i} style={{ background: P.black, color: i === 0 ? P.g5 : P.red, borderBottom: `1px solid ${P.g7}` }}>{h}</th>
             ))}
           </tr>
         </thead>
@@ -109,7 +109,7 @@ function CompareTable({ headers, rows }: { headers: string[]; rows: string[][] }
           {rows.map((row, i) => (
             <tr key={i}>
               {row.map((cell, j) => (
-                <td key={j} style={{ color: j === 0 ? P.g6 : P.g7 }}>{cell}</td>
+                <td key={j} style={{ color: j === 0 ? P.g3 : P.white, borderBottom: `1px solid ${P.g7}` }}>{cell}</td>
               ))}
             </tr>
           ))}
@@ -119,64 +119,98 @@ function CompareTable({ headers, rows }: { headers: string[]; rows: string[][] }
   );
 }
 
+/* ── Stat card ── */
+function StatCard({ value, label }: { value: string; label: string }) {
+  return (
+    <div style={{ textAlign: "center", flex: 1, minWidth: "100px" }}>
+      <div style={{ fontSize: "1.75rem", fontWeight: 800, color: P.red, lineHeight: 1.2 }}>{value}</div>
+      <div style={{ fontSize: "0.6875rem", color: P.g5, marginTop: "0.25rem" }}>{label}</div>
+    </div>
+  );
+}
+
 /* ────────────────────────────────────────────── */
 
 const lessons = [
   {
-    id: "context-window",
+    id: "prompt",
     number: 1,
-    title: "Context Window",
-    subtitle: "The AI's short-term memory",
+    title: "What Is a Prompt?",
+    subtitle: "Instructions made of tokens",
     description:
-      "Every LLM has a finite context window \u2014 the maximum number of tokens it can process in a single request. Think of it as a desk: everything you need (system prompt, conversation history, code, instructions) must fit on the desk at once. If it doesn't fit, something has to go.",
+      "A prompt is an instruction \u2014 a series of tokens you send to an LLM. Every character, word, and punctuation mark is tokenized. Understanding this is the foundation: prompts are not magic strings, they are measured, budgeted, and optimized sequences of tokens.",
+  },
+  {
+    id: "context-window",
+    number: 2,
+    title: "Context Window",
+    subtitle: "The finite token budget",
+    description:
+      "Every LLM has a finite context window \u2014 the maximum number of tokens it can process in a single request. Think of it as a desk: your prompt (instructions), conversation history, retrieved context, and response space must all fit. When the desk is full, something must go.",
   },
   {
     id: "trimming",
-    number: 2,
+    number: 3,
     title: "Trimming (Last-N)",
     subtitle: "Delete the oldest, keep the recent",
     description:
-      "The simplest context management strategy. When the context window fills up, delete the oldest conversation turns and keep only the last N. Like tearing pages from the front of a notebook \u2014 fast and predictable, but you lose all early context.",
+      "The simplest token optimization strategy. When the context window fills up, delete the oldest conversation turns and keep only the last N. Like tearing pages from the front of a notebook \u2014 fast and predictable, but you lose all early context.",
   },
   {
     id: "summarisation",
-    number: 3,
+    number: 4,
     title: "Summarisation",
-    subtitle: "Condense to an executive summary",
+    subtitle: "Condense to save tokens",
     description:
-      "Instead of deleting old turns, summarise the entire conversation into a compact snapshot before each new turn. You preserve the big picture but lose verbatim detail. The trade-off: latency from the extra LLM call vs. richer context retention.",
+      "Instead of deleting old turns, summarise the entire conversation into a compact snapshot. You preserve the big picture but lose verbatim detail. The trade-off: an extra API call (more tokens spent) vs. richer context retention. This is token economy in action.",
   },
   {
     id: "management",
-    number: 4,
+    number: 5,
     title: "Context Management",
-    subtitle: "Budget what you send",
+    subtitle: "Token optimization and economy",
     description:
-      "Context management is the practice of deciding what goes into the window and what stays out. You allocate a token budget across system prompt, user message, retrieved context, and response space \u2014 just like allocating memory.",
+      "Context management is the economy of tokens \u2014 deciding what goes into the window and what stays out. You allocate a token budget across system prompt, user message, retrieved context, and response space. Every token has a cost, and every token must earn its place.",
+  },
+  {
+    id: "context-engineering",
+    number: 6,
+    title: "Context Engineering",
+    subtitle: "IDE-driven, JIT context delivery",
+    description:
+      "Modern IDEs don\u2019t dump everything into the context window. They use just-in-time (JIT) context delivery \u2014 pulling in only the files, functions, and docs relevant to the current task. For long-horizon tasks spanning hundreds of tool calls, this intelligent context selection is essential.",
+  },
+  {
+    id: "context-pollution",
+    number: 7,
+    title: "Context Pollution",
+    subtitle: "When tokens work against you",
+    description:
+      "Not all tokens are equal. Irrelevant search results, stale tool outputs, and verbose error logs pollute the context \u2014 pushing out useful information and confusing the model. In a 200K token window processing 5 tickets, data from Ticket #1 clutters processing of Ticket #5.",
   },
   {
     id: "compaction",
-    number: 5,
-    title: "Compaction",
-    subtitle: "Fit more in less",
+    number: 8,
+    title: "Automatic Context Compaction",
+    subtitle: "API-level token optimization",
     description:
-      "When context overflows, compaction strategies kick in: summarize old turns, drop low-relevance files, compress boilerplate. The goal is to preserve signal while reducing token count.",
+      "Anthropic\u2019s compaction_control parameter automatically summarizes conversation history when token usage exceeds a threshold. In real-world tests processing 5 customer service tickets: 208K tokens \u2192 86K tokens \u2014 a 58.6% reduction, transparently, with no code changes.",
   },
   {
     id: "editing-memory",
-    number: 6,
+    number: 9,
     title: "Context Editing & Memory Tool",
-    subtitle: "Auto-cleaner + Filing cabinet",
+    subtitle: "Auto-cleaner + filing cabinet",
     description:
-      "Context Editing uses a secondary model to review and remove stale information (like an auto-cleaner tidying the desk). Memory Tool provides persistent external storage (a filing cabinet) that survives across sessions. Together they solve both in-session bloat and cross-session continuity.",
+      "Context Editing uses a secondary model to remove stale information (the auto-cleaner tidying the desk \u2014 up to 84% token reduction). Memory Tool provides persistent external storage (a filing cabinet) that survives across sessions. Together they improve complex task performance by 39%.",
   },
   {
-    id: "auto-compaction",
-    number: 7,
-    title: "Automatic Context Compaction",
-    subtitle: "API-level compaction from Anthropic",
+    id: "real-world",
+    number: 10,
+    title: "Real-World: Customer Service",
+    subtitle: "Compaction in production",
     description:
-      "Anthropic\u2019s compaction_control parameter automatically summarizes conversation history when token usage exceeds a configurable threshold. In real-world tests, it achieved 58.6% token reduction (208K \u2192 86K tokens) transparently \u2014 no application code changes needed.",
+      "A complete walkthrough using Anthropic\u2019s cookbook: 5 support tickets, 35+ tool calls, 208K tokens without compaction vs 86K with. See exactly when compaction triggers, what the summaries contain, and how to configure thresholds, custom prompts, and model selection.",
   },
 ];
 
@@ -197,18 +231,18 @@ export default function LearnPage() {
           </svg>
         </div>
         <h1 className="hero-headline">
-          <span className="hero-marker">Learn token economics.</span>
+          <span className="hero-marker">Token economics.</span>
           <br />
-          <span className="hero-underline">Visual, hands-on, practical.</span>
+          <span className="hero-underline">From prompt to production.</span>
         </h1>
         <p className="hero-description">
-          <span className="accent-highlight">7 core concepts</span>{" "}
-          &mdash; from context windows to automatic compaction. Each lesson includes
-          interactive visuals and Python code you can run.
+          <span className="accent-highlight">10 lessons</span>{" "}
+          &mdash; a prompt is instructions made of tokens. Context management is the
+          economy of those tokens. Learn to optimize every one.
         </p>
       </header>
 
-      {/* ── Lesson 1: Context Window ── */}
+      {/* ── Lesson 1: What Is a Prompt? ── */}
       <section className="learn-lesson" id={lessons[0].id}>
         <div className="learn-lesson-header">
           <span className="learn-lesson-num">{lessons[0].number}</span>
@@ -219,52 +253,53 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[0].description}</p>
 
-        <Frame title="Context Window \u2014 128K tokens">
-          <div className="learn-window-visual">
-            <div className="learn-window-segments">
-              {[
-                { label: "System Prompt", pct: 15, color: P.red },
-                { label: "Conversation", pct: 25, color: P.black },
-                { label: "Retrieved Context", pct: 35, color: P.g6 },
-                { label: "Response Space", pct: 25, color: P.g3 },
-              ].map((seg) => (
-                <div
-                  key={seg.label}
-                  className="learn-segment"
-                  style={{ flex: seg.pct, background: seg.color }}
-                >
-                  <span className="learn-segment-label">{seg.label}</span>
-                  <span className="learn-segment-pct">{seg.pct}%</span>
+        <Frame title="Prompt = Instruction = Tokens">
+          <div style={{ padding: "20px" }}>
+            <div style={{ fontSize: "0.75rem", color: P.g5, marginBottom: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Tokenization</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "16px" }}>
+              {["You", "are", "a", "helpful", "assistant", ".", "Fix", "the", "auth", "bug", "."].map((tok, i) => (
+                <div key={i} style={{
+                  padding: "6px 10px",
+                  background: i < 6 ? "rgba(227,18,11,0.15)" : "rgba(255,255,255,0.08)",
+                  border: `1px solid ${i < 6 ? P.red : P.g7}`,
+                  borderRadius: "4px",
+                  fontSize: "0.75rem",
+                  color: i < 6 ? P.red : P.white,
+                  fontFamily: "var(--font-mono)",
+                }}>
+                  {tok}
                 </div>
               ))}
             </div>
-            <div className="learn-window-meta">
-              <span>Total: <strong>128,000 tokens</strong></span>
-              <span>Model: <strong>GPT-4o</strong></span>
-              <span style={{ color: P.red }}>Cost: ~$0.30/req</span>
+            <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", borderTop: `1px solid ${P.g7}`, paddingTop: "12px" }}>
+              <span style={{ color: P.red }}>System prompt: 6 tokens</span>
+              <span style={{ color: P.white }}>User message: 5 tokens</span>
+              <span style={{ color: P.g5 }}>Total: 11 tokens</span>
             </div>
           </div>
         </Frame>
 
         <CodeBlock
           lines={[
-            { text: "# Context Window Basics", dim: true },
+            { text: "# Every prompt is a series of tokens", dim: true },
             { text: 'import tiktoken' },
             { text: '' },
             { text: 'enc = tiktoken.encoding_for_model("gpt-4o")' },
             { text: '' },
             { text: 'system = "You are a helpful assistant."' },
-            { text: "system_tokens = len(enc.encode(system))" },
-            { text: 'print(f"System: {system_tokens} tokens")' },
+            { text: 'user = "Fix the auth bug."' },
             { text: '' },
-            { text: "# Your code here \u2014 count your own prompts" },
-            { text: "# user_msg = ..." },
-            { text: "# user_tokens = len(enc.encode(user_msg))" },
+            { text: "system_tokens = len(enc.encode(system))" },
+            { text: "user_tokens = len(enc.encode(user))" },
+            { text: '' },
+            { text: 'print(f"System: {system_tokens} tokens")' },
+            { text: 'print(f"User: {user_tokens} tokens")' },
+            { text: 'print(f"Total: {system_tokens + user_tokens} tokens")' },
           ]}
         />
       </section>
 
-      {/* ── Lesson 2: Trimming ── */}
+      {/* ── Lesson 2: Context Window ── */}
       <section className="learn-lesson" id={lessons[1].id}>
         <div className="learn-lesson-header">
           <span className="learn-lesson-num">{lessons[1].number}</span>
@@ -275,8 +310,63 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[1].description}</p>
 
+        <Frame title="Context Window \u2014 128K tokens">
+          <div className="learn-window-visual" style={{ padding: "20px" }}>
+            <div className="learn-window-segments">
+              {[
+                { label: "System Prompt", pct: 15, color: P.red },
+                { label: "Conversation", pct: 25, color: P.white },
+                { label: "Retrieved Context", pct: 35, color: P.g5 },
+                { label: "Response Space", pct: 25, color: P.g7 },
+              ].map((seg) => (
+                <div
+                  key={seg.label}
+                  className="learn-segment"
+                  style={{ flex: seg.pct, background: seg.color }}
+                >
+                  <span className="learn-segment-label" style={{ color: seg.color === P.white ? P.black : P.white }}>{seg.label}</span>
+                  <span className="learn-segment-pct" style={{ color: seg.color === P.white ? P.black : "rgba(255,255,255,0.8)" }}>{seg.pct}%</span>
+                </div>
+              ))}
+            </div>
+            <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.75rem", fontSize: "0.75rem" }}>
+              <span style={{ color: P.white }}>Total: <strong>128,000 tokens</strong></span>
+              <span style={{ color: P.g5 }}>Model: <strong>GPT-4o</strong></span>
+              <span style={{ color: P.red }}>Cost: ~$0.30/req</span>
+            </div>
+          </div>
+        </Frame>
+
+        <CodeBlock
+          lines={[
+            { text: "# Context Window = Your Token Budget", dim: true },
+            { text: 'import tiktoken' },
+            { text: '' },
+            { text: 'enc = tiktoken.encoding_for_model("gpt-4o")' },
+            { text: 'WINDOW = 128_000  # max tokens' },
+            { text: '' },
+            { text: 'system = "You are a helpful assistant."' },
+            { text: "system_tokens = len(enc.encode(system))" },
+            { text: '' },
+            { text: "remaining = WINDOW - system_tokens" },
+            { text: 'print(f"Budget remaining: {remaining:,} tokens")' },
+          ]}
+        />
+      </section>
+
+      {/* ── Lesson 3: Trimming ── */}
+      <section className="learn-lesson" id={lessons[2].id}>
+        <div className="learn-lesson-header">
+          <span className="learn-lesson-num">{lessons[2].number}</span>
+          <div>
+            <h2 className="learn-lesson-title">{lessons[2].title}</h2>
+            <p className="learn-lesson-sub">{lessons[2].subtitle}</p>
+          </div>
+        </div>
+        <p className="learn-lesson-desc">{lessons[2].description}</p>
+
         <Frame title="Trimming \u2014 Last-N Strategy">
-          <div className="learn-frame-pad">
+          <div style={{ padding: "16px 20px" }}>
             <div className="learn-turns-row">
               {["Turn 1", "Turn 2", "Turn 3", "Turn 4", "Turn 5", "Turn 6", "Turn 7", "Turn 8"].map((t, i) => (
                 <div
@@ -284,8 +374,8 @@ export default function LearnPage() {
                   style={{
                     flex: 1,
                     padding: "10px 4px",
-                    background: i < 5 ? P.g1 : "rgba(227,18,11,0.08)",
-                    border: `1px solid ${i < 5 ? P.g2 : P.red}`,
+                    background: i < 5 ? "rgba(255,255,255,0.05)" : "rgba(227,18,11,0.15)",
+                    border: `1px solid ${i < 5 ? P.g7 : P.red}`,
                     borderRadius: "4px",
                     textAlign: "center",
                     fontSize: "0.75rem",
@@ -312,33 +402,33 @@ export default function LearnPage() {
             { text: '    """Keep only the last N turns."""' },
             { text: "    system = [m for m in messages if m['role'] == 'system']" },
             { text: "    turns = [m for m in messages if m['role'] != 'system']" },
-            { text: "    return system + turns[-n * 2:]  # n turns = n user + n assistant" },
+            { text: "    return system + turns[-n * 2:]" },
             { text: "" },
-            { text: "# Example: 20 messages \u2192 6 (last 3 turns)" },
+            { text: "# 20 messages \u2192 6 (last 3 turns)" },
             { text: "messages = trim_history(conversation, n=3)" },
             { text: 'print(f"Kept {len(messages)} messages")' },
           ]}
         />
       </section>
 
-      {/* ── Lesson 3: Summarisation ── */}
-      <section className="learn-lesson" id={lessons[2].id}>
+      {/* ── Lesson 4: Summarisation ── */}
+      <section className="learn-lesson" id={lessons[3].id}>
         <div className="learn-lesson-header">
-          <span className="learn-lesson-num">{lessons[2].number}</span>
+          <span className="learn-lesson-num">{lessons[3].number}</span>
           <div>
-            <h2 className="learn-lesson-title">{lessons[2].title}</h2>
-            <p className="learn-lesson-sub">{lessons[2].subtitle}</p>
+            <h2 className="learn-lesson-title">{lessons[3].title}</h2>
+            <p className="learn-lesson-sub">{lessons[3].subtitle}</p>
           </div>
         </div>
-        <p className="learn-lesson-desc">{lessons[2].description}</p>
+        <p className="learn-lesson-desc">{lessons[3].description}</p>
 
         <Frame title="Summarisation \u2014 Snapshot Strategy">
-          <div className="learn-frame-pad">
+          <div style={{ padding: "16px 20px" }}>
             <div className="learn-side-by-side">
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "0.75rem", color: P.g5, marginBottom: "8px", fontWeight: 600 }}>Full History</div>
                 {["System prompt", "User: setup project", "AI: created files...", "User: add auth", "AI: implemented...", "User: fix bug #42", "AI: found issue..."].map((line, i) => (
-                  <div key={i} style={{ padding: "4px 8px", fontSize: "0.75rem", color: P.g6, background: P.g05, marginBottom: "2px", borderRadius: "3px", borderLeft: i === 0 ? `2px solid ${P.red}` : `2px solid ${P.g2}` }}>
+                  <div key={i} style={{ padding: "4px 8px", fontSize: "0.75rem", color: P.white, background: "rgba(255,255,255,0.05)", marginBottom: "2px", borderRadius: "3px", borderLeft: i === 0 ? `2px solid ${P.red}` : `2px solid ${P.g7}` }}>
                     {line}
                   </div>
                 ))}
@@ -352,7 +442,7 @@ export default function LearnPage() {
               </div>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "0.75rem", color: P.red, marginBottom: "8px", fontWeight: 600 }}>Summary</div>
-                <div style={{ padding: "12px", fontSize: "0.75rem", color: P.g7, background: "rgba(227,18,11,0.04)", border: `1px solid rgba(227,18,11,0.15)`, borderRadius: "6px", lineHeight: 1.5 }}>
+                <div style={{ padding: "12px", fontSize: "0.75rem", color: P.white, background: "rgba(227,18,11,0.1)", border: `1px solid ${P.red}`, borderRadius: "6px", lineHeight: 1.5 }}>
                   Project initialized with auth module. Bug #42 identified in token validation. Current focus: fixing edge case in refresh flow.
                 </div>
                 <div style={{ textAlign: "center", fontSize: "0.75rem", color: P.red, marginTop: "4px", fontWeight: 600 }}>~180 tokens (96% reduction)</div>
@@ -365,7 +455,7 @@ export default function LearnPage() {
           headers={["", "Trimming (Last-N)", "Summarisation"]}
           rows={[
             ["Speed", "Instant", "Slow (LLM call)"],
-            ["Cost", "Free", "Extra API call"],
+            ["Token cost", "Free", "Extra API call"],
             ["Early context", "Lost completely", "Preserved (condensed)"],
             ["Best for", "Simple chatbots", "Complex workflows"],
             ["Risk", "Amnesia", "Detail loss"],
@@ -374,11 +464,11 @@ export default function LearnPage() {
 
         <CodeBlock
           lines={[
-            { text: "# Summarisation \u2014 Snapshot Strategy", dim: true },
+            { text: "# Summarisation \u2014 Token Economy", dim: true },
             { text: "import anthropic" },
             { text: "" },
             { text: "def summarise_history(messages, client):" },
-            { text: '    """Condense conversation to a summary."""' },
+            { text: '    """Condense conversation to save tokens."""' },
             { text: '    history_text = "\\n".join(' },
             { text: '        f"{m[\'role\']}: {m[\'content\']}" for m in messages' },
             { text: "    )" },
@@ -395,25 +485,25 @@ export default function LearnPage() {
         />
       </section>
 
-      {/* ── Lesson 4: Context Management ── */}
-      <section className="learn-lesson" id={lessons[3].id}>
+      {/* ── Lesson 5: Context Management ── */}
+      <section className="learn-lesson" id={lessons[4].id}>
         <div className="learn-lesson-header">
-          <span className="learn-lesson-num">{lessons[3].number}</span>
+          <span className="learn-lesson-num">{lessons[4].number}</span>
           <div>
-            <h2 className="learn-lesson-title">{lessons[3].title}</h2>
-            <p className="learn-lesson-sub">{lessons[3].subtitle}</p>
+            <h2 className="learn-lesson-title">{lessons[4].title}</h2>
+            <p className="learn-lesson-sub">{lessons[4].subtitle}</p>
           </div>
         </div>
-        <p className="learn-lesson-desc">{lessons[3].description}</p>
+        <p className="learn-lesson-desc">{lessons[4].description}</p>
 
         <Frame title="Token Budget Allocation">
-          <div className="learn-frame-pad">
+          <div style={{ padding: "16px 20px" }}>
             <ProgressBar label="System Prompt" pct={12} color={P.red} />
-            <ProgressBar label="User Message" pct={8} />
-            <ProgressBar label="Retrieved Files" pct={45} color={P.g6} />
-            <ProgressBar label="Conversation History" pct={20} />
-            <ProgressBar label="Response Reserve" pct={15} color={P.g3} />
-            <div className="learn-budget-summary">
+            <ProgressBar label="User Message" pct={8} color={P.white} />
+            <ProgressBar label="Retrieved Files" pct={45} color={P.red} />
+            <ProgressBar label="Conversation History" pct={20} color={P.white} />
+            <ProgressBar label="Response Reserve" pct={15} color={P.g5} />
+            <div style={{ display: "flex", gap: "0.5rem", marginTop: "0.75rem", flexWrap: "wrap" }}>
               <Badge variant="red">85% allocated</Badge>
               <Badge>15% free</Badge>
               <Badge variant="red">Warning: near limit</Badge>
@@ -437,87 +527,14 @@ export default function LearnPage() {
             { text: "        used = sum(self.allocations.values())" },
             { text: "        return self.limit - used" },
             { text: "" },
-            { text: "# Your code here \u2014 build your budget" },
-            { text: "# budget = TokenBudget()" },
-            { text: '# budget.allocate("system", 500)' },
+            { text: "    @property" },
+            { text: "    def utilization(self):" },
+            { text: "        return sum(self.allocations.values()) / self.limit" },
           ]}
         />
       </section>
 
-      {/* ── Lesson 5: Compaction ── */}
-      <section className="learn-lesson" id={lessons[4].id}>
-        <div className="learn-lesson-header">
-          <span className="learn-lesson-num">{lessons[4].number}</span>
-          <div>
-            <h2 className="learn-lesson-title">{lessons[4].title}</h2>
-            <p className="learn-lesson-sub">{lessons[4].subtitle}</p>
-          </div>
-        </div>
-        <p className="learn-lesson-desc">{lessons[4].description}</p>
-
-        <Frame title="Compaction Strategy \u2014 Before vs After">
-          <div className="learn-compact-visual">
-            <div className="learn-compact-col">
-              <div className="learn-compact-label">Before</div>
-              <div className="learn-compact-bar" style={{ height: 120, background: P.red, opacity: 0.15 }}>
-                <span className="learn-compact-val">42,800 tokens</span>
-              </div>
-              <div className="learn-compact-detail">
-                12 files, 8 turns, full history
-              </div>
-            </div>
-            <div className="learn-compact-arrow">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke={P.red} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="6" y1="16" x2="26" y2="16" />
-                <polyline points="20,10 26,16 20,22" />
-              </svg>
-            </div>
-            <div className="learn-compact-col">
-              <div className="learn-compact-label" style={{ color: P.red }}>After</div>
-              <div className="learn-compact-bar" style={{ height: 56, background: P.red }}>
-                <span className="learn-compact-val" style={{ color: P.white }}>18,200 tokens</span>
-              </div>
-              <div className="learn-compact-detail" style={{ color: P.red, fontWeight: 600 }}>
-                57% reduction
-              </div>
-            </div>
-          </div>
-          <div className="learn-compact-strategies">
-            {[
-              "Summarize old conversation turns",
-              "Drop low-relevance files",
-              "Compress boilerplate code",
-              "Cache repeated system prompts",
-            ].map((s, i) => (
-              <div key={i} className="learn-compact-strategy">
-                <span className="learn-compact-check">&#10003;</span>
-                <span>{s}</span>
-              </div>
-            ))}
-          </div>
-        </Frame>
-
-        <CodeBlock
-          lines={[
-            { text: "# Compaction Example", dim: true },
-            { text: "def compact_history(turns, max_tokens=4000):" },
-            { text: '    """Summarize old turns to fit budget."""' },
-            { text: "    total = sum(t['tokens'] for t in turns)" },
-            { text: "    if total <= max_tokens:" },
-            { text: "        return turns" },
-            { text: "" },
-            { text: "    # Keep last 3 turns, summarize the rest" },
-            { text: "    keep = turns[-3:]" },
-            { text: "    old = turns[:-3]" },
-            { text: "    summary = summarize(old)  # your LLM call" },
-            { text: "    return [{'role': 'system', 'content': summary}] + keep" },
-            { text: "" },
-            { text: "# Your code here \u2014 implement summarize()" },
-          ]}
-        />
-      </section>
-
-      {/* ── Lesson 6: Context Editing & Memory Tool ── */}
+      {/* ── Lesson 6: Context Engineering ── */}
       <section className="learn-lesson" id={lessons[5].id}>
         <div className="learn-lesson-header">
           <span className="learn-lesson-num">{lessons[5].number}</span>
@@ -528,29 +545,224 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[5].description}</p>
 
+        <Frame title="JIT Context \u2014 Pull Only What You Need">
+          <div style={{ padding: "20px" }}>
+            <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
+              {[
+                { label: "Current file", active: true },
+                { label: "Open tabs", active: true },
+                { label: "Import graph", active: true },
+                { label: "Git diff", active: false },
+                { label: "Test files", active: false },
+                { label: "Docs", active: false },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  padding: "8px 14px",
+                  background: item.active ? "rgba(227,18,11,0.15)" : "rgba(255,255,255,0.05)",
+                  border: `1px solid ${item.active ? P.red : P.g7}`,
+                  borderRadius: "6px",
+                  fontSize: "0.75rem",
+                  color: item.active ? P.red : P.g5,
+                  fontWeight: item.active ? 600 : 400,
+                }}>
+                  {item.active ? "\u2713" : "\u2717"} {item.label}
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop: `1px solid ${P.g7}`, paddingTop: "12px", fontSize: "0.75rem" }}>
+              <span style={{ color: P.red, fontWeight: 600 }}>3 sources active</span>
+              <span style={{ color: P.g5 }}> &mdash; IDE pulls context just-in-time, not all-at-once</span>
+            </div>
+          </div>
+        </Frame>
+
+        <CompareTable
+          headers={["", "Dump Everything", "JIT Context"]}
+          rows={[
+            ["Strategy", "Send all files", "Pull relevant files on demand"],
+            ["Token usage", "High (wasteful)", "Low (efficient)"],
+            ["Quality", "Diluted by noise", "Focused signal"],
+            ["Best for", "Small projects", "Large codebases, long tasks"],
+            ["Example", "Paste entire repo", "IDE auto-includes imports"],
+          ]}
+        />
+      </section>
+
+      {/* ── Lesson 7: Context Pollution ── */}
+      <section className="learn-lesson" id={lessons[6].id}>
+        <div className="learn-lesson-header">
+          <span className="learn-lesson-num">{lessons[6].number}</span>
+          <div>
+            <h2 className="learn-lesson-title">{lessons[6].title}</h2>
+            <p className="learn-lesson-sub">{lessons[6].subtitle}</p>
+          </div>
+        </div>
+        <p className="learn-lesson-desc">{lessons[6].description}</p>
+
+        <Frame title="Context Pollution \u2014 Token Waste">
+          <div style={{ padding: "20px" }}>
+            <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
+              {[
+                { label: "System prompt", tokens: 500, useful: true },
+                { label: "User request", tokens: 200, useful: true },
+                { label: "Stale tool output", tokens: 8200, useful: false },
+                { label: "Old KB search", tokens: 3400, useful: false },
+                { label: "Current task", tokens: 600, useful: true },
+                { label: "Prev ticket draft", tokens: 2800, useful: false },
+              ].map((item, i) => (
+                <div key={i} style={{
+                  padding: "8px 12px",
+                  background: item.useful ? "rgba(227,18,11,0.12)" : "rgba(255,255,255,0.04)",
+                  border: `1px solid ${item.useful ? P.red : P.g7}`,
+                  borderRadius: "6px",
+                  fontSize: "0.6875rem",
+                  flex: "1 1 auto",
+                  minWidth: "120px",
+                }}>
+                  <div style={{ color: item.useful ? P.red : P.g5, fontWeight: 600 }}>{item.label}</div>
+                  <div style={{ color: item.useful ? P.white : P.g5, fontSize: "0.625rem", marginTop: "2px" }}>
+                    {item.tokens.toLocaleString()} tokens {!item.useful && "\u2014 wasted"}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop: `1px solid ${P.g7}`, paddingTop: "12px", display: "flex", justifyContent: "space-between", fontSize: "0.75rem" }}>
+              <span style={{ color: P.red }}>Useful: 1,300 tokens (8%)</span>
+              <span style={{ color: P.g5 }}>Pollution: 14,400 tokens (92%)</span>
+            </div>
+          </div>
+        </Frame>
+
+        <CodeBlock
+          lines={[
+            { text: "# Context Pollution Detection", dim: true },
+            { text: "def detect_pollution(messages):" },
+            { text: '    """Flag stale or redundant content."""' },
+            { text: "    stale = []" },
+            { text: "    for i, msg in enumerate(messages):" },
+            { text: "        if msg.get('tool_result'):" },
+            { text: "            age = len(messages) - i" },
+            { text: "            if age > 10:  # older than 10 turns" },
+            { text: "                stale.append(i)" },
+            { text: '    print(f"Found {len(stale)} stale entries")' },
+            { text: "    return stale" },
+          ]}
+        />
+      </section>
+
+      {/* ── Lesson 8: Automatic Context Compaction ── */}
+      <section className="learn-lesson" id={lessons[7].id}>
+        <div className="learn-lesson-header">
+          <span className="learn-lesson-num">{lessons[7].number}</span>
+          <div>
+            <h2 className="learn-lesson-title">{lessons[7].title}</h2>
+            <p className="learn-lesson-sub">{lessons[7].subtitle}</p>
+          </div>
+        </div>
+        <p className="learn-lesson-desc">{lessons[7].description}</p>
+
+        <Frame title="Compaction Results \u2014 5 Tickets">
+          <div style={{ padding: "20px" }}>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "2rem" }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: P.g5, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>Before</div>
+                <div style={{ width: "80px", height: "130px", background: "rgba(227,18,11,0.15)", borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "0.625rem", fontWeight: 700, color: P.white }}>208K</span>
+                </div>
+                <div style={{ fontSize: "0.625rem", color: P.g5, marginTop: "4px" }}>37 turns</div>
+              </div>
+              <div>
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke={P.red} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="6" y1="16" x2="26" y2="16" />
+                  <polyline points="20,10 26,16 20,22" />
+                </svg>
+              </div>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ fontSize: "0.6875rem", fontWeight: 700, color: P.red, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: "6px" }}>After</div>
+                <div style={{ width: "80px", height: "54px", background: P.red, borderRadius: "6px", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "0.625rem", fontWeight: 700, color: P.white }}>86K</span>
+                </div>
+                <div style={{ fontSize: "0.625rem", color: P.red, fontWeight: 600, marginTop: "4px" }}>58.6% saved</div>
+              </div>
+            </div>
+            <div style={{ display: "flex", justifyContent: "center", gap: "2rem", marginTop: "16px", borderTop: `1px solid ${P.g7}`, paddingTop: "12px" }}>
+              <StatCard value="2" label="compaction events" />
+              <StatCard value="58.6%" label="token reduction" />
+              <StatCard value="26" label="turns (vs 37)" />
+            </div>
+          </div>
+        </Frame>
+
+        <CodeBlock
+          lang="python"
+          lines={[
+            { text: "# Anthropic Automatic Context Compaction", dim: true },
+            { text: "import anthropic" },
+            { text: "" },
+            { text: "client = anthropic.Anthropic()" },
+            { text: "" },
+            { text: "runner = client.beta.messages.tool_runner(" },
+            { text: '    model="claude-sonnet-4-5",' },
+            { text: "    max_tokens=4096," },
+            { text: "    tools=tools," },
+            { text: "    messages=messages," },
+            { text: "    compaction_control={" },
+            { text: '        "enabled": True,' },
+            { text: '        "context_token_threshold": 5000,' },
+            { text: "    }," },
+            { text: ")" },
+            { text: "" },
+            { text: "for message in runner:" },
+            { text: "    total_input += message.usage.input_tokens" },
+            { text: "    total_output += message.usage.output_tokens" },
+          ]}
+        />
+
+        <CompareTable
+          headers={["Threshold", "When to use", "Compaction frequency"]}
+          rows={[
+            ["5K\u201320K", "Sequential entity processing", "Frequent, minimal accumulation"],
+            ["50K\u2013100K", "Multi-phase workflows", "Balanced retention"],
+            ["100K\u2013150K", "Tasks needing full history", "Rare, preserves detail"],
+            ["Default 100K", "General long-running tasks", "Standard balance"],
+          ]}
+        />
+      </section>
+
+      {/* ── Lesson 9: Context Editing & Memory Tool ── */}
+      <section className="learn-lesson" id={lessons[8].id}>
+        <div className="learn-lesson-header">
+          <span className="learn-lesson-num">{lessons[8].number}</span>
+          <div>
+            <h2 className="learn-lesson-title">{lessons[8].title}</h2>
+            <p className="learn-lesson-sub">{lessons[8].subtitle}</p>
+          </div>
+        </div>
+        <p className="learn-lesson-desc">{lessons[8].description}</p>
+
         <Frame title="Context Editing vs Memory Tool">
-          <div className="learn-frame-pad">
+          <div style={{ padding: "16px 20px" }}>
             <div className="learn-side-by-side">
-              <div style={{ flex: 1, padding: "16px", background: P.g05, borderRadius: "8px", border: `1px solid ${P.g2}` }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: P.black, marginBottom: "8px" }}>Context Editing</div>
-                <div style={{ fontSize: "0.75rem", color: P.g6, marginBottom: "12px" }}>The Auto-Cleaner</div>
+              <div style={{ flex: 1, padding: "16px", background: "rgba(227,18,11,0.08)", borderRadius: "8px", border: `1px solid ${P.red}` }}>
+                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: P.red, marginBottom: "8px" }}>Context Editing</div>
+                <div style={{ fontSize: "0.75rem", color: P.g3, marginBottom: "12px" }}>The Auto-Cleaner</div>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                  <div style={{ width: "40px", height: "20px", background: P.red, opacity: 0.15, borderRadius: "3px" }} />
+                  <div style={{ width: "40px", height: "20px", background: "rgba(227,18,11,0.2)", borderRadius: "3px" }} />
                   <svg width="16" height="16" viewBox="0 0 32 32" fill="none" stroke={P.red} strokeWidth="2" strokeLinecap="round"><line x1="8" y1="16" x2="24" y2="16" /><polyline points="18,10 24,16 18,22" /></svg>
                   <div style={{ width: "20px", height: "20px", background: P.red, borderRadius: "3px" }} />
                 </div>
                 <div style={{ fontSize: "0.75rem", color: P.red, fontWeight: 600 }}>84% token reduction</div>
                 <div style={{ fontSize: "0.7rem", color: P.g5, marginTop: "4px" }}>In-session only</div>
               </div>
-              <div style={{ flex: 1, padding: "16px", background: "rgba(227,18,11,0.03)", borderRadius: "8px", border: `1px solid rgba(227,18,11,0.15)` }}>
-                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: P.black, marginBottom: "8px" }}>Memory Tool</div>
-                <div style={{ fontSize: "0.75rem", color: P.g6, marginBottom: "12px" }}>The Filing Cabinet</div>
+              <div style={{ flex: 1, padding: "16px", background: "rgba(255,255,255,0.05)", borderRadius: "8px", border: `1px solid ${P.g7}` }}>
+                <div style={{ fontSize: "0.85rem", fontWeight: 700, color: P.white, marginBottom: "8px" }}>Memory Tool</div>
+                <div style={{ fontSize: "0.75rem", color: P.g3, marginBottom: "12px" }}>The Filing Cabinet</div>
                 <div style={{ display: "flex", gap: "4px", marginBottom: "8px" }}>
                   {["Prefs", "Facts", "Plans"].map((label) => (
-                    <div key={label} style={{ padding: "4px 8px", fontSize: "0.65rem", background: "rgba(227,18,11,0.08)", color: P.red, borderRadius: "3px", fontWeight: 600 }}>{label}</div>
+                    <div key={label} style={{ padding: "4px 8px", fontSize: "0.65rem", background: "rgba(227,18,11,0.12)", color: P.red, borderRadius: "3px", fontWeight: 600 }}>{label}</div>
                   ))}
                 </div>
-                <div style={{ fontSize: "0.75rem", color: P.red, fontWeight: 600 }}>Persists forever</div>
+                <div style={{ fontSize: "0.75rem", color: P.white, fontWeight: 600 }}>Persists forever</div>
                 <div style={{ fontSize: "0.7rem", color: P.g5, marginTop: "4px" }}>Cross-session memory</div>
               </div>
             </div>
@@ -560,11 +772,11 @@ export default function LearnPage() {
         <CompareTable
           headers={["", "Context Editing", "Memory Tool"]}
           rows={[
-            ["Metaphor", "Auto-cleaner (tidy desk)", "Filing cabinet"],
+            ["What it does", "Removes stale clutter", "Saves key facts permanently"],
+            ["Where", "On the desk (context)", "In the cabinet (external)"],
+            ["Token saving", "Up to 84%", "Offloads to storage"],
             ["Persistence", "In-session only", "Across all sessions"],
-            ["Token saving", "Up to 84%", "Offloads to external storage"],
-            ["Use case", "Long conversations", "User preferences, project knowledge"],
-            ["Risk", "May remove useful context", "Stale stored facts"],
+            ["Combined", "39% better on complex tasks", "39% better on complex tasks"],
           ]}
         />
 
@@ -573,7 +785,7 @@ export default function LearnPage() {
             { text: "# Context Editing Example", dim: true },
             { text: "def edit_context(messages, client):" },
             { text: '    """Remove stale info from context."""' },
-            { text: '    prompt = "Review this conversation. Remove any"' },
+            { text: '    prompt = "Review this conversation. Remove"' },
             { text: '    prompt += " outdated or redundant information."' },
             { text: '    prompt += " Keep decisions and current state."' },
             { text: "" },
@@ -590,107 +802,104 @@ export default function LearnPage() {
         />
       </section>
 
-      {/* ── Lesson 7: Automatic Context Compaction ── */}
-      <section className="learn-lesson" id={lessons[6].id}>
+      {/* ── Lesson 10: Real-World Customer Service ── */}
+      <section className="learn-lesson" id={lessons[9].id}>
         <div className="learn-lesson-header">
-          <span className="learn-lesson-num">{lessons[6].number}</span>
+          <span className="learn-lesson-num">{lessons[9].number}</span>
           <div>
-            <h2 className="learn-lesson-title">{lessons[6].title}</h2>
-            <p className="learn-lesson-sub">{lessons[6].subtitle}</p>
+            <h2 className="learn-lesson-title">{lessons[9].title}</h2>
+            <p className="learn-lesson-sub">{lessons[9].subtitle}</p>
           </div>
         </div>
-        <p className="learn-lesson-desc">{lessons[6].description}</p>
+        <p className="learn-lesson-desc">{lessons[9].description}</p>
 
-        <Frame title="Anthropic Automatic Compaction \u2014 Real Results">
-          <div className="learn-compact-visual">
-            <div className="learn-compact-col">
-              <div className="learn-compact-label">Before</div>
-              <div className="learn-compact-bar" style={{ height: 130, background: P.red, opacity: 0.15 }}>
-                <span className="learn-compact-val">208,000 tokens</span>
+        <Frame title="Customer Service Workflow \u2014 5 Tickets">
+          <div style={{ padding: "20px" }}>
+            <div style={{ fontSize: "0.75rem", color: P.g5, marginBottom: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Per-ticket workflow (7 steps each)</div>
+            <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "16px" }}>
+              {["Fetch", "Classify", "Research", "Prioritize", "Route", "Draft", "Complete"].map((step, i) => (
+                <div key={i} style={{
+                  flex: 1,
+                  minWidth: "60px",
+                  padding: "8px 4px",
+                  textAlign: "center",
+                  fontSize: "0.625rem",
+                  fontWeight: 600,
+                  background: i === 0 || i === 6 ? "rgba(227,18,11,0.15)" : "rgba(255,255,255,0.05)",
+                  border: `1px solid ${i === 0 || i === 6 ? P.red : P.g7}`,
+                  borderRadius: "4px",
+                  color: i === 0 || i === 6 ? P.red : P.white,
+                }}>
+                  {step}
+                </div>
+              ))}
+            </div>
+            <div style={{ borderTop: `1px solid ${P.g7}`, paddingTop: "12px" }}>
+              <div style={{ fontSize: "0.75rem", color: P.white, marginBottom: "6px", fontWeight: 600 }}>Linear token growth without compaction:</div>
+              <div style={{ display: "flex", gap: "3px", alignItems: "flex-end", height: "60px" }}>
+                {[1537, 3297, 5202, 9824, 18328, 25094, 36873, 46017, 55939, 72386, 91047, 111556, 134178, 158905, 185559, 204416].map((tokens, i) => (
+                  <div key={i} style={{
+                    flex: 1,
+                    height: `${(tokens / 204416) * 100}%`,
+                    background: tokens > 150000 ? P.red : "rgba(227,18,11,0.3)",
+                    borderRadius: "2px 2px 0 0",
+                    minWidth: "4px",
+                  }} />
+                ))}
               </div>
-              <div className="learn-compact-detail">
-                50-turn customer service session
+              <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.625rem", color: P.g5, marginTop: "4px" }}>
+                <span>Turn 1</span>
+                <span style={{ color: P.red }}>204K tokens</span>
               </div>
             </div>
-            <div className="learn-compact-arrow">
-              <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke={P.red} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="6" y1="16" x2="26" y2="16" />
-                <polyline points="20,10 26,16 20,22" />
-              </svg>
-            </div>
-            <div className="learn-compact-col">
-              <div className="learn-compact-label" style={{ color: P.red }}>After</div>
-              <div className="learn-compact-bar" style={{ height: 54, background: P.red }}>
-                <span className="learn-compact-val" style={{ color: P.white }}>86,000 tokens</span>
-              </div>
-              <div className="learn-compact-detail" style={{ color: P.red, fontWeight: 600 }}>
-                58.6% reduction
-              </div>
-            </div>
-          </div>
-          <div className="learn-compact-strategies">
-            {[
-              "compaction_control parameter in API",
-              "Configurable token threshold (5K-150K)",
-              "Custom summary prompts per use-case",
-              "Turn-based or token-based triggers",
-            ].map((s, i) => (
-              <div key={i} className="learn-compact-strategy">
-                <span className="learn-compact-check">&#10003;</span>
-                <span>{s}</span>
-              </div>
-            ))}
           </div>
         </Frame>
+
+        <CompareTable
+          headers={["Metric", "No Compaction", "With Compaction"]}
+          rows={[
+            ["Total turns", "37", "26"],
+            ["Input tokens", "204,416", "82,171"],
+            ["Output tokens", "4,422", "4,275"],
+            ["Total tokens", "208,838", "86,446"],
+            ["Compactions", "N/A", "2"],
+            ["Token savings", "\u2014", "122,392 (58.6%)"],
+          ]}
+        />
 
         <CodeBlock
           lang="python"
           lines={[
-            { text: "# Anthropic Automatic Context Compaction", dim: true },
-            { text: "# From: platform.claude.com/cookbook", dim: true },
-            { text: "import anthropic" },
-            { text: "" },
-            { text: "client = anthropic.Anthropic()" },
-            { text: "" },
-            { text: "response = client.messages.create(" },
-            { text: '    model="claude-sonnet-4-20250514",' },
-            { text: "    max_tokens=1024," },
-            { text: "    # Enable automatic compaction" },
-            { text: "    compaction_control={" },
-            { text: '        "type": "auto",' },
-            { text: "        # Trigger when context exceeds 10K tokens" },
-            { text: '        "context_token_threshold": 10000,' },
-            { text: "    }," },
-            { text: "    system=[{" },
-            { text: '        "type": "text",' },
-            { text: '        "text": "You are a customer service agent.",' },
-            { text: "    }]," },
-            { text: "    messages=conversation_history," },
-            { text: ")" },
-            { text: "" },
-            { text: "# Custom summary prompt for domain-specific needs" },
+            { text: "# Custom summary prompt for domain needs", dim: true },
             { text: "compaction_control={" },
-            { text: '    "type": "auto",' },
-            { text: '    "context_token_threshold": 20000,' },
+            { text: '    "enabled": True,' },
+            { text: '    "context_token_threshold": 5000,' },
             { text: '    "summary_prompt": (' },
-            { text: '        "Always preserve: order IDs, account numbers, "' },
-            { text: '        "resolution status, and customer sentiment."' },
+            { text: '        "Preserve: ticket IDs, categories, "' },
+            { text: '        "priorities, teams, outcomes. "' },
+            { text: '        "Discard: full KB articles, draft text."' },
             { text: "    )," },
+            { text: "}" },
+            { text: "" },
+            { text: "# Use cheaper model for summaries", dim: true },
+            { text: "compaction_control={" },
+            { text: '    "enabled": True,' },
+            { text: '    "model": "claude-haiku-4-5",' },
             { text: "}" },
           ]}
         />
       </section>
 
       {/* ── Course navigation ── */}
-      <div className="learn-nav">
-        <h3>Course Outline</h3>
+      <div className="learn-nav" style={{ background: P.black, border: `1px solid ${P.g7}` }}>
+        <h3 style={{ color: P.white }}>Course Outline</h3>
         <div className="learn-nav-items">
           {lessons.map((l) => (
-            <a key={l.id} href={`#${l.id}`} className="learn-nav-item">
+            <a key={l.id} href={`#${l.id}`} className="learn-nav-item" style={{ color: P.white }}>
               <span className="learn-nav-num">{l.number}</span>
               <div>
                 <strong>{l.title}</strong>
-                <span className="learn-nav-sub">{l.subtitle}</span>
+                <span className="learn-nav-sub" style={{ color: P.g5 }}>{l.subtitle}</span>
               </div>
             </a>
           ))}

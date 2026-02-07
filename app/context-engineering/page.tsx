@@ -30,12 +30,21 @@ export default function ContextEngineeringPage() {
 
   return (
     <article className="article">
-      <header>
-        <h1>
-          Context Engineering Collection{" "}
+      <header className="hero">
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <circle cx="10" cy="14" r="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <circle cx="20" cy="10" r="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <circle cx="20" cy="20" r="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <line x1="13.5" y1="12" x2="17.5" y2="10.5" stroke="#e3120b" strokeWidth="1" />
+            <line x1="13.5" y1="16" x2="17.5" y2="19" stroke="#e3120b" strokeWidth="1" />
+          </svg>
+        </div>
+        <h1 className="hero-headline">
+          <span className="hero-marker">Context Engineering Collection</span>{" "}
           <span className="badge badge-accent">PR</span>
         </h1>
-        <p className="tagline">
+        <p className="hero-description">
           Tools for maximizing GitHub Copilot effectiveness through better
           context management. Contributed to{" "}
           <a

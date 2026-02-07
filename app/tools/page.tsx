@@ -41,9 +41,18 @@ const tools = [
 export default function ToolsPage() {
   return (
     <article className="article">
-      <header>
-        <h1>Tools</h1>
-        <p className="tagline">
+      <header className="hero">
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <path d="M17 4L21 8L12 17H8V13L17 4Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+            <line x1="4" y1="24" x2="24" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="14.5" y1="6.5" x2="18.5" y2="10.5" stroke="#e3120b" strokeWidth="1" />
+          </svg>
+        </div>
+        <h1 className="hero-headline">
+          <span className="hero-marker">Tools</span>
+        </h1>
+        <p className="hero-description">
           Calculators, analyzers, and optimization tools for AI token cost
           management.
         </p>
