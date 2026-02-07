@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
@@ -53,7 +53,7 @@
     "chatParticipants": [
       {
         "id": "tokalator.tokens",
-        "name": "tokens",
+        "name": "tokalator",
         "fullName": "Tokalator",
         "description": "Count and manage your AI context token budget",
         "isSticky": false,
@@ -73,6 +73,14 @@
           {
             "name": "breakdown",
             "description": "Show where your tokens are going"
+          },
+          {
+            "name": "instructions",
+            "description": "List, count, and estimate tokens for instruction files in workspace"
+          },
+          {
+            "name": "model",
+            "description": "Show or switch the active AI model"
           }
         ]
       }
