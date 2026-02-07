@@ -68,8 +68,8 @@ export function SideNav() {
       <nav className={`sidebar ${open ? "open" : ""}`}>
         <div className="sidebar-header">
           <Link href="/" className="sidebar-logo" onClick={() => setOpen(false)}>
-            <span className="sidebar-logo-text text-motion">{siteContent.name}</span>
-            <span className="sidebar-version">{siteContent.version}</span>
+            <span className="sidebar-slash">/</span>
+            <span className="sidebar-logo-text text-motion">{siteContent.name.replace("@", "")}</span>
           </Link>
         </div>
 
@@ -96,6 +96,10 @@ export function SideNav() {
             })}
           </div>
         ))}
+
+        <div className="sidebar-footer">
+          <span className="sidebar-version">{siteContent.version}</span>
+        </div>
       </nav>
     </>
   );

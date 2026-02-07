@@ -227,6 +227,8 @@ pre {
   background: var(--bg);
   z-index: 100;
   animation: slideInLeft 0.35s ease-out both;
+  display: flex;
+  flex-direction: column;
 }
 
 .main-content {
@@ -338,8 +340,15 @@ pre {
 .sidebar-logo {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.125rem;
   text-decoration: none;
+}
+
+.sidebar-slash {
+  font-size: 1.125rem;
+  font-weight: 300;
+  color: var(--text-muted);
+  margin-right: 0.125rem;
 }
 
 .sidebar-logo-text {
@@ -356,6 +365,12 @@ pre {
   border: 1px solid var(--accent);
   border-radius: 9999px;
   padding: 0.1em 0.5em;
+}
+
+.sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
 }
 
 /* Coming Soon Badge */
@@ -480,6 +495,82 @@ pre {
   font-size: 2.5rem;
   margin-bottom: 0.75rem;
   animation: scaleIn 0.4s ease-out 0.15s both;
+}
+
+/* Motionable outline icon — Agentation-inspired */
+.hero-outline-icon {
+  margin-bottom: 1rem;
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.hero-abacus {
+  color: var(--grey-700);
+  transition: color 0.3s ease;
+}
+
+.hero-outline-icon:hover .hero-abacus {
+  color: var(--accent);
+}
+
+/* Bead idle motion */
+@keyframes beadSlide1 { 0%, 30% { transform: translateX(0); } 35%, 55% { transform: translateX(4px); } 60%, 100% { transform: translateX(0); } }
+@keyframes beadSlide2 { 0%, 40% { transform: translateX(0); } 45%, 65% { transform: translateX(-3px); } 70%, 100% { transform: translateX(0); } }
+@keyframes beadSlide3 { 0%, 55% { transform: translateX(0); } 60%, 80% { transform: translateX(5px); } 85%, 100% { transform: translateX(0); } }
+
+.hero-bead {
+  fill: var(--grey-500);
+  transition: fill 0.3s ease;
+}
+.hero-bead-1, .hero-bead-4, .hero-bead-6, .hero-bead-7 { fill: var(--accent); }
+.hero-bead-1, .hero-bead-2 { animation: beadSlide1 4s ease-in-out 0.5s infinite; }
+.hero-bead-3, .hero-bead-4, .hero-bead-5 { animation: beadSlide2 4s ease-in-out 0.5s infinite; }
+.hero-bead-6, .hero-bead-7, .hero-bead-8 { animation: beadSlide3 4s ease-in-out 0.5s infinite; }
+
+.hero-outline-icon:hover .hero-bead { fill: var(--accent); }
+.hero-outline-icon:hover .hero-bead-2,
+.hero-outline-icon:hover .hero-bead-3,
+.hero-outline-icon:hover .hero-bead-8 { fill: var(--grey-700); }
+
+/* Marker highlight on first line — Agentation-style red marker */
+.hero-marker {
+  position: relative;
+  display: inline;
+}
+
+.hero-marker::after {
+  content: "";
+  position: absolute;
+  left: -4px;
+  right: -4px;
+  bottom: 0;
+  height: 40%;
+  background: rgba(227, 18, 11, 0.12);
+  border-radius: 3px;
+  z-index: -1;
+  animation: markerReveal 0.6s ease-out 0.3s both;
+}
+
+@keyframes markerReveal {
+  0% { transform: scaleX(0); transform-origin: left; }
+  100% { transform: scaleX(1); transform-origin: left; }
+}
+
+/* Underline on second line */
+.hero-underline {
+  position: relative;
+  display: inline;
+}
+
+.hero-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+  animation: markerReveal 0.5s ease-out 0.5s both;
 }
 
 /* @Tokalator text-motion animation */
@@ -1254,6 +1345,50 @@ kbd {
 .wiki-content a { color: var(--accent); text-decoration: underline; }
 .wiki-content blockquote { border-left: 3px solid var(--accent); padding-left: 1rem; color: var(--text-muted); margin: 0.75rem 0; font-style: italic; }
 .wiki-content hr { border: none; border-top: 1px solid var(--border); margin: 1.5rem 0; }
+
+/* How-to-use steps — Agentation-inspired */
+.how-to-steps {
+  list-style: none;
+  padding: 0;
+  margin: 1.25rem 0 0;
+  counter-reset: none;
+}
+
+.how-to-step {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  animation: fadeInUp 0.4s ease-out both;
+}
+
+.how-to-step:last-child {
+  border-bottom: none;
+}
+
+.how-to-num {
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.6875rem;
+  font-weight: 700;
+  background: var(--bg-muted);
+  color: var(--text-primary);
+  border-radius: 50%;
+  margin-top: 0.1rem;
+}
+
+.how-to-step:hover .how-to-num {
+  background: var(--accent);
+  color: var(--white);
+}
 
 /* Footer */
 .footer {
