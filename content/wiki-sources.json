@@ -1,0 +1,190 @@
+{
+  "sources": [
+    {
+      "id": "arxiv",
+      "name": "arXiv",
+      "color": "#b31b1b",
+      "queries": [
+        "context engineering large language model",
+        "token optimization language model",
+        "prompt caching LLM",
+        "context window management transformer",
+        "retrieval augmented generation code"
+      ],
+      "maxResults": 15
+    },
+    {
+      "id": "openai",
+      "name": "OpenAI Cookbook",
+      "color": "#10a37f",
+      "repoFiles": [
+        "articles/how_to_work_with_large_language_models.md",
+        "articles/techniques_to_improve_reliability.md",
+        "articles/related_resources.md",
+        "examples/How_to_count_tokens_with_tiktoken.ipynb",
+        "examples/How_to_stream_completions.ipynb",
+        "articles/how_to_handle_rate_limits.md"
+      ]
+    },
+    {
+      "id": "anthropic",
+      "name": "Anthropic",
+      "color": "#d97706",
+      "pages": [
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching",
+          "title": "Prompt Caching",
+          "tags": ["caching", "optimization", "tokens"],
+          "category": "caching"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/overview",
+          "title": "Prompt Engineering Overview",
+          "tags": ["prompts", "engineering", "best-practices"],
+          "category": "prompt-engineering"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/chain-of-thought",
+          "title": "Chain of Thought Prompting",
+          "tags": ["prompts", "reasoning", "chain-of-thought"],
+          "category": "prompt-engineering"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/context-windows",
+          "title": "Context Windows",
+          "tags": ["context", "windows", "tokens"],
+          "category": "context-management"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/long-context-tips",
+          "title": "Long Context Window Tips",
+          "tags": ["context", "long-context", "optimization"],
+          "category": "context-management"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/token-counting",
+          "title": "Token Counting",
+          "tags": ["tokens", "counting", "usage"],
+          "category": "token-optimization"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/prompt-engineering/use-xml-tags",
+          "title": "Use XML Tags in Prompts",
+          "tags": ["prompts", "xml", "structure"],
+          "category": "prompt-engineering"
+        },
+        {
+          "url": "https://docs.anthropic.com/en/docs/build-with-claude/extended-thinking",
+          "title": "Extended Thinking",
+          "tags": ["reasoning", "thinking", "chain-of-thought"],
+          "category": "prompt-engineering"
+        }
+      ]
+    },
+    {
+      "id": "google",
+      "name": "Google AI",
+      "color": "#4285f4",
+      "pages": [
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/caching",
+          "title": "Context Caching",
+          "tags": ["caching", "context", "optimization"],
+          "category": "caching"
+        },
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/long-context",
+          "title": "Long Context",
+          "tags": ["context", "long-context", "tokens"],
+          "category": "context-management"
+        },
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/tokens",
+          "title": "Tokens",
+          "tags": ["tokens", "counting", "usage"],
+          "category": "token-optimization"
+        },
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/prompting-strategies",
+          "title": "Prompting Strategies",
+          "tags": ["prompts", "strategies", "engineering"],
+          "category": "prompt-engineering"
+        },
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/system-instructions",
+          "title": "System Instructions",
+          "tags": ["system-prompts", "instructions", "engineering"],
+          "category": "prompt-engineering"
+        },
+        {
+          "url": "https://ai.google.dev/gemini-api/docs/code-execution",
+          "title": "Code Execution",
+          "tags": ["code", "execution", "tools"],
+          "category": "tool-use"
+        }
+      ]
+    }
+  ],
+  "builtinTerms": [
+    {
+      "term": "Progressive Disclosure",
+      "definition": "Instead of loading an entire codebase\u2014which would immediately overwhelm the attention budget\u2014modern agents use JIT context. The assistant dynamically loads only the necessary data at runtime.",
+      "category": "context-management",
+      "tags": ["context", "jit", "optimization"]
+    },
+    {
+      "term": "Lightweight Identifiers",
+      "definition": "The assistant maintains references (file paths, stored queries) and dynamically loads only the necessary data at runtime using tools like grep, head, or tail.",
+      "category": "context-management",
+      "tags": ["context", "references", "efficiency"]
+    },
+    {
+      "term": "Compaction",
+      "definition": "When a session nears its token limit, the assistant summarizes critical details\u2014such as architectural decisions and unresolved bugs\u2014while discarding redundant tool outputs.",
+      "category": "context-management",
+      "tags": ["context", "compression", "long-horizon"]
+    },
+    {
+      "term": "Tool Result Clearing",
+      "definition": "A light touch form of compaction where the raw results of previous tool calls (like long terminal outputs) are cleared to save space.",
+      "category": "context-management",
+      "tags": ["context", "tools", "optimization"]
+    },
+    {
+      "term": "Structured Note-taking",
+      "definition": "The agent may maintain an external NOTES.md or a to-do list to track dependencies and progress across thousands of steps, which it can read back into its context after a reset.",
+      "category": "context-management",
+      "tags": ["context", "persistence", "notes"]
+    },
+    {
+      "term": "Distractors",
+      "definition": "Files or code snippets that are topically related to the query but do not contain the answer can cause the model to lose focus or hallucinate.",
+      "category": "context-management",
+      "tags": ["context", "pollution", "relevance"]
+    },
+    {
+      "term": "Context Rot",
+      "definition": "As more tokens are added, the model's ability to accurately retrieve needles of information from the haystack of the codebase decreases.",
+      "category": "context-management",
+      "tags": ["context", "degradation", "tokens"]
+    },
+    {
+      "term": "XML Tagging",
+      "definition": "Use tags like <background_information>, <tool_guidance>, <constraints> to clearly separate different types of instructions in system prompts.",
+      "category": "prompt-engineering",
+      "tags": ["prompts", "xml", "structure"]
+    },
+    {
+      "term": "High-Signal Tokens",
+      "definition": "The objective is to provide the smallest possible set of high-signal tokens that maximize the likelihood of the correct code generation.",
+      "category": "token-optimization",
+      "tags": ["tokens", "optimization", "quality"]
+    },
+    {
+      "term": "Structural Patterns",
+      "definition": "Research suggests that models often perform better on shuffled or unstructured context than on logically structured haystacks, impacting how they process long files.",
+      "category": "context-management",
+      "tags": ["context", "structure", "research"]
+    }
+  ]
+}
