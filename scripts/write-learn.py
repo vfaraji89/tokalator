@@ -1,4 +1,4 @@
-"use client";
+content = r'''"use client";
 
 import Link from "next/link";
 
@@ -276,8 +276,8 @@ export default function LearnPage() {
         <p className="learn-lesson-desc">{lessons[1].description}</p>
 
         <Frame title="Trimming \u2014 Last-N Strategy">
-          <div className="learn-frame-pad">
-            <div className="learn-turns-row">
+          <div style={{ padding: "20px" }}>
+            <div style={{ display: "flex", gap: "6px", marginBottom: "16px" }}>
               {["Turn 1", "Turn 2", "Turn 3", "Turn 4", "Turn 5", "Turn 6", "Turn 7", "Turn 8"].map((t, i) => (
                 <div
                   key={t}
@@ -333,8 +333,8 @@ export default function LearnPage() {
         <p className="learn-lesson-desc">{lessons[2].description}</p>
 
         <Frame title="Summarisation \u2014 Snapshot Strategy">
-          <div className="learn-frame-pad">
-            <div className="learn-side-by-side">
+          <div style={{ padding: "20px" }}>
+            <div style={{ display: "flex", gap: "16px", alignItems: "center" }}>
               <div style={{ flex: 1 }}>
                 <div style={{ fontSize: "0.75rem", color: P.g5, marginBottom: "8px", fontWeight: 600 }}>Full History</div>
                 {["System prompt", "User: setup project", "AI: created files...", "User: add auth", "AI: implemented...", "User: fix bug #42", "AI: found issue..."].map((line, i) => (
@@ -407,7 +407,7 @@ export default function LearnPage() {
         <p className="learn-lesson-desc">{lessons[3].description}</p>
 
         <Frame title="Token Budget Allocation">
-          <div className="learn-frame-pad">
+          <div style={{ padding: "16px 20px" }}>
             <ProgressBar label="System Prompt" pct={12} color={P.red} />
             <ProgressBar label="User Message" pct={8} />
             <ProgressBar label="Retrieved Files" pct={45} color={P.g6} />
@@ -529,8 +529,8 @@ export default function LearnPage() {
         <p className="learn-lesson-desc">{lessons[5].description}</p>
 
         <Frame title="Context Editing vs Memory Tool">
-          <div className="learn-frame-pad">
-            <div className="learn-side-by-side">
+          <div style={{ padding: "20px" }}>
+            <div style={{ display: "flex", gap: "16px" }}>
               <div style={{ flex: 1, padding: "16px", background: P.g05, borderRadius: "8px", border: `1px solid ${P.g2}` }}>
                 <div style={{ fontSize: "0.85rem", fontWeight: 700, color: P.black, marginBottom: "8px" }}>Context Editing</div>
                 <div style={{ fontSize: "0.75rem", color: P.g6, marginBottom: "12px" }}>The Auto-Cleaner</div>
@@ -709,3 +709,8 @@ export default function LearnPage() {
     </article>
   );
 }
+'''
+
+with open("/Users/vfaraji89/Documents/contribuet-github/tokalator/app/learn/page.tsx", "w") as f:
+    f.write(content)
+print(f"Written {len(content)} chars to learn/page.tsx")
