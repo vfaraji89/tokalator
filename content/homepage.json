@@ -68,22 +68,26 @@
       {
         "name": "Cost Calculator",
         "description": "Token cost calculator with Cobb-Douglas quality modeling",
-        "href": "/calculator"
+        "href": "/calculator",
+        "number": 1
       },
       {
         "name": "Context Optimizer",
         "description": "Visualize your context budget and optimize token usage",
-        "href": "/context"
+        "href": "/context",
+        "number": 2
       },
       {
         "name": "Model Comparison",
         "description": "Cross-provider cost and capability comparison",
-        "href": "/tools/compare"
+        "href": "/tools/compare",
+        "number": 3
       },
       {
         "name": "Caching ROI",
         "description": "Break-even analysis for prompt caching",
-        "href": "/tools/caching"
+        "href": "/tools/caching",
+        "number": 4
       }
     ]
   },
