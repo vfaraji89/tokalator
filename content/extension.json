@@ -1,0 +1,122 @@
+{
+  "version": "0.1.0",
+  "icon": "⬡",
+  "headline": "Real-time context monitoring.\nInside your editor.",
+  "highlightPhrase": "context monitoring",
+  "tagline": "Track token budgets, score tab relevance, and manage context — a VS Code sidebar that pays for itself.",
+  "installCmd": "ext install vfaraji89.tokalator",
+  "vsCodeMinVersion": "1.99",
+  "githubUrl": "https://github.com/vfaraji89/tokalator",
+  "license": "MIT",
+  "features": [
+    {
+      "icon": "▣",
+      "name": "Token Budget Dashboard",
+      "description": "Activity bar sidebar panel showing real-time token usage, budget meter, and per-file breakdown.",
+      "command": "View via sidebar icon",
+      "number": 1
+    },
+    {
+      "icon": "◎",
+      "name": "@tokens Chat Participant",
+      "description": "Integrated chat commands for inline budget management directly in Copilot Chat.",
+      "command": "@tokens /count, /optimize, /pin, /breakdown",
+      "number": 2
+    },
+    {
+      "icon": "⬡",
+      "name": "Tab Relevance Scoring",
+      "description": "Ranks open tabs by relevance using import analysis, path similarity, edit recency, and diagnostics.",
+      "command": "tokalator.optimize",
+      "number": 3
+    },
+    {
+      "icon": "◆",
+      "name": "Status Bar Indicator",
+      "description": "Quick-glance budget status (LOW / MEDIUM / HIGH) in the bottom-right corner.",
+      "command": "Always visible",
+      "number": 4
+    },
+    {
+      "icon": "⚠",
+      "name": "Context Rot Warnings",
+      "description": "Warns when conversation turns exceed threshold. Helps you know when to start a fresh chat.",
+      "command": "Automatic",
+      "number": 5
+    },
+    {
+      "icon": "📌",
+      "name": "Pinned Files",
+      "description": "Pin important files so they are always treated as high-relevance in context scoring.",
+      "command": "@tokens /pin <file>",
+      "number": 6
+    }
+  ],
+  "settings": [
+    {
+      "key": "tokalator.relevanceThreshold",
+      "default": "0.3",
+      "description": "Tabs below this relevance score are marked as distractors (0\u20131)"
+    },
+    {
+      "key": "tokalator.windowSize",
+      "default": "1,000,000",
+      "description": "Context window size in tokens"
+    },
+    {
+      "key": "tokalator.contextRotWarningTurns",
+      "default": "20",
+      "description": "Warn about context rot after this many turns"
+    },
+    {
+      "key": "tokalator.autoRefreshInterval",
+      "default": "2000",
+      "description": "Dashboard refresh interval in milliseconds"
+    }
+  ],
+  "architecture": [
+    {
+      "layer": "Core Engine",
+      "purpose": "Subscribes to editor events, builds context snapshots, manages pinned files",
+      "number": 1
+    },
+    {
+      "layer": "Token Estimator",
+      "purpose": "Counts tokens per file using tiktoken when available, falls back to ~4 chars/token",
+      "number": 2
+    },
+    {
+      "layer": "Relevance Scorer",
+      "purpose": "Scores tabs 0\u20131 based on language, imports, path, recency, diagnostics",
+      "number": 3
+    },
+    {
+      "layer": "Chat Participant",
+      "purpose": "@tokens chat commands; read-only commands don't inflate turn counter",
+      "number": 4
+    }
+  ],
+  "installMethods": {
+    "marketplace": {
+      "title": "Marketplace",
+      "icon": "◉",
+      "command": "ext install vfaraji89.tokalator",
+      "note": "Requires VS Code 1.99+"
+    },
+    "vsix": {
+      "title": "VSIX",
+      "icon": "◇",
+      "steps": [
+        "Download tokalator-0.1.0.vsix from releases",
+        "Cmd+Shift+P \u2192 Extensions: Install from VSIX...",
+        "Select the downloaded .vsix file"
+      ],
+      "command": "code --install-extension tokalator-0.1.0.vsix"
+    },
+    "source": {
+      "title": "Build from Source",
+      "icon": "◆",
+      "command": "git clone https://github.com/vfaraji89/tokalator.git\ncd tokalator/copilot-context-monitor\nnpm install\nnpm run compile"
+    }
+  }
+}

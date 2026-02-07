@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "fetch-wiki": "npx tsx scripts/fetch-wiki.ts"
   },
   "dependencies": {
     "@prisma/client": "^7.3.0",

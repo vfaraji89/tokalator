@@ -1,126 +1,137 @@
-export default function ExtensionPage() {
-  const features = [
-    {
-      name: "Token Budget Dashboard",
-      description:
-        "Activity bar sidebar panel showing real-time token usage, budget meter, and per-file breakdown.",
-      command: "View via sidebar icon",
-    },
-    {
-      name: "@tokens Chat Participant",
-      description:
-        "Integrated chat commands for inline budget management directly in Copilot Chat.",
-      command: "@tokens /count, /optimize, /pin, /breakdown",
-    },
-    {
-      name: "Tab Relevance Scoring",
-      description:
-        "Ranks open tabs by relevance using import analysis, path similarity, edit recency, and diagnostics.",
-      command: "tokalator.optimize",
-    },
-    {
-      name: "Status Bar Indicator",
-      description:
-        "Quick-glance budget status (LOW / MEDIUM / HIGH) in the bottom-right corner.",
-      command: "Always visible",
-    },
-    {
-      name: "Context Rot Warnings",
-      description:
-        "Warns when conversation turns exceed threshold (default: 20).",
-      command: "Automatic",
-    },
-    {
-      name: "Pinned Files",
-      description:
-        "Pin important files so they are always treated as high-relevance.",
-      command: "@tokens /pin <file>",
-    },
-  ];
+"use client";
 
-  const settings = [
-    {
-      key: "tokalator.relevanceThreshold",
-      def: "0.3",
-      desc: "Tabs below this relevance score are marked as distractors (0\u20131)",
-    },
-    {
-      key: "tokalator.windowSize",
-      def: "1,000,000",
-      desc: "Context window size in tokens",
-    },
-    {
-      key: "tokalator.contextRotWarningTurns",
-      def: "20",
-      desc: "Warn about context rot after this many turns",
-    },
-    {
-      key: "tokalator.autoRefreshInterval",
-      def: "2000",
-      desc: "Dashboard refresh interval in milliseconds",
-    },
-  ];
+import { useState } from "react";
+import ext from "../../content/extension.json";
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      className="copy-btn"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+}
+
+export default function ExtensionPage() {
+  const headlineParts = ext.headline.split("\n");
 
   return (
     <article className="article">
-      <header>
-        <h1>
-          Tokalator Extension{" "}
-          <span className="badge badge-accent">v0.1.0</span>
+      {/* Hero */}
+      <header className="hero">
+        <div className="hero-icon">{ext.icon}</div>
+        <h1 className="hero-headline">
+          {headlineParts.map((part, i) => {
+            // Highlight the phrase within the headline
+            if (part.includes(ext.highlightPhrase)) {
+              const idx = part.indexOf(ext.highlightPhrase);
+              return (
+                <span key={i}>
+                  {i > 0 && <br />}
+                  {part.slice(0, idx)}
+                  <span className="accent-highlight">
+                    {ext.highlightPhrase}
+                  </span>
+                  {part.slice(idx + ext.highlightPhrase.length)}
+                </span>
+              );
+            }
+            return (
+              <span key={i}>
+                {i > 0 && <br />}
+                {part}
+              </span>
+            );
+          })}
         </h1>
-        <p className="tagline">
-          Count your tokens like beads on an abacus. Real-time context budget
-          calculator for AI coding assistants.
+        <p className="hero-description">
+          {ext.tagline}{" "}
+          <span className="badge badge-accent">v{ext.version}</span>
         </p>
+        <div className="hero-ctas">
+          <a
+            href={`https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-primary"
+          >
+            Install from Marketplace
+          </a>
+          <a
+            href={ext.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-secondary"
+          >
+            View Source on GitHub
+          </a>
+        </div>
+        <div className="install-cmd">
+          <code>{ext.installCmd}</code>
+          <CopyButton text={ext.installCmd} />
+        </div>
       </header>
 
-      <section>
-        <h2>Install from Marketplace</h2>
-        <div className="install-block">ext install vfaraji89.tokalator</div>
-        <p style={{ marginTop: "0.5rem" }}>Requires VS Code 1.99+</p>
+      {/* Quick Stats */}
+      <section className="why-section">
+        <div className="why-stats why-stats--4col">
+          <div className="why-stat-card">
+            <span className="why-stat-number">{ext.features.length}</span>
+            <span className="why-stat-label">Features</span>
+          </div>
+          <div className="why-stat-card">
+            <span className="why-stat-number">{ext.settings.length}</span>
+            <span className="why-stat-label">Settings</span>
+          </div>
+          <div className="why-stat-card">
+            <span className="why-stat-number">
+              VS Code {ext.vsCodeMinVersion}+
+            </span>
+            <span className="why-stat-label">Minimum version</span>
+          </div>
+          <div className="why-stat-card">
+            <span className="why-stat-number">{ext.license}</span>
+            <span className="why-stat-label">License</span>
+          </div>
+        </div>
       </section>
 
+      {/* Features */}
       <section>
-        <h2>Install from VSIX</h2>
-        <p>Download the latest release and install manually:</p>
-        <ol>
-          <li>Download <code>tokalator-0.1.0.vsix</code> from the releases page</li>
-          <li>Open VS Code</li>
-          <li>Press <kbd>Cmd+Shift+P</kbd> (macOS) or <kbd>Ctrl+Shift+P</kbd> (Windows/Linux)</li>
-          <li>Type <strong>Extensions: Install from VSIX...</strong></li>
-          <li>Select the downloaded <code>.vsix</code> file</li>
-        </ol>
-        <p>Or install via command line:</p>
-        <pre>{`code --install-extension tokalator-0.1.0.vsix`}</pre>
-      </section>
-
-      <section>
-        <h2>Build from Source</h2>
-        <pre>
-          {`git clone https://github.com/vfaraji89/tokalator.git
-cd tokalator/copilot-context-monitor
-npm install
-npm run compile
-# Press F5 to launch Extension Development Host`}
-        </pre>
-      </section>
-
-      <section>
-        <h2>Features</h2>
-        <div className="feature-grid">
-          {features.map((f) => (
-            <div key={f.name} className="feature-item">
-              <h3>{f.name}</h3>
+        <div className="section-divider" />
+        <h2 className="section-header">Features</h2>
+        <div className="feature-grid feature-grid--3col">
+          {ext.features.map((f) => (
+            <div
+              key={f.name}
+              className="feature-item feature-item--extension"
+            >
+              <span className="feature-number">{f.number}</span>
+              <h3>
+                {f.icon} {f.name}
+              </h3>
               <p>{f.description}</p>
               <code>{f.command}</code>
+              <span className="feature-badge feature-badge--extension">
+                VS Code
+              </span>
             </div>
           ))}
         </div>
       </section>
 
+      {/* Configuration */}
       <section>
-        <h2>Configuration</h2>
-        <table className="table">
+        <div className="section-divider" />
+        <h2 className="section-header">Configuration</h2>
+        <table className="settings-table">
           <thead>
             <tr>
               <th>Setting</th>
@@ -129,77 +140,101 @@ npm run compile
             </tr>
           </thead>
           <tbody>
-            {settings.map((s) => (
+            {ext.settings.map((s) => (
               <tr key={s.key}>
                 <td>
                   <code>{s.key}</code>
                 </td>
-                <td>{s.def}</td>
-                <td>{s.desc}</td>
+                <td>{s.default}</td>
+                <td>{s.description}</td>
               </tr>
             ))}
           </tbody>
         </table>
       </section>
 
+      {/* Architecture */}
       <section>
-        <h2>Architecture</h2>
+        <div className="section-divider" />
+        <h2 className="section-header">Architecture</h2>
         <p>Four layers inside the extension:</p>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Layer</th>
-              <th>Purpose</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>
-                <strong>Core Engine</strong>
-              </td>
-              <td>
-                Subscribes to editor events, builds context snapshots, manages
-                pinned files
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Token Estimator</strong>
-              </td>
-              <td>
-                Counts tokens per file using tiktoken when available, falls back
-                to ~4 chars/token
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Relevance Scorer</strong>
-              </td>
-              <td>
-                Scores tabs 0&ndash;1 based on language, imports, path, recency,
-                diagnostics
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <strong>Chat Participant</strong>
-              </td>
-              <td>
-                @tokens chat commands; read-only commands don&apos;t inflate turn
-                counter
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div className="arch-grid">
+          {ext.architecture.map((a) => (
+            <div key={a.layer} className="arch-card">
+              <span className="feature-number">{a.number}</span>
+              <h3>{a.layer}</h3>
+              <p>{a.purpose}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* Install Methods */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Installation</h2>
+        <div className="install-methods">
+          {/* Marketplace */}
+          <div className="install-method-card">
+            <h3>
+              {ext.installMethods.marketplace.icon}{" "}
+              {ext.installMethods.marketplace.title}
+            </h3>
+            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
+              <code>{ext.installMethods.marketplace.command}</code>
+              <CopyButton text={ext.installMethods.marketplace.command} />
+            </div>
+            <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
+              {ext.installMethods.marketplace.note}
+            </p>
+          </div>
+
+          {/* VSIX */}
+          <div className="install-method-card">
+            <h3>
+              {ext.installMethods.vsix.icon}{" "}
+              {ext.installMethods.vsix.title}
+            </h3>
+            <ol style={{ margin: "0.75rem 0 0", paddingLeft: "1.25rem" }}>
+              {ext.installMethods.vsix.steps.map((step, i) => (
+                <li key={i} style={{ fontSize: "0.8125rem", margin: "0.25rem 0", color: "var(--text-secondary)" }}>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
+              <code>{ext.installMethods.vsix.command}</code>
+              <CopyButton text={ext.installMethods.vsix.command} />
+            </div>
+          </div>
+
+          {/* Source */}
+          <div className="install-method-card">
+            <h3>
+              {ext.installMethods.source.icon}{" "}
+              {ext.installMethods.source.title}
+            </h3>
+            <pre style={{ marginTop: "0.75rem" }}>
+              {ext.installMethods.source.command}
+            </pre>
+          </div>
+        </div>
       </section>
 
       <div className="footer">
+        <div className="section-cta" style={{ marginBottom: "1rem" }}>
+          <a
+            href={ext.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-secondary"
+          >
+            View on GitHub →
+          </a>
+        </div>
         <p>
           VS Code Marketplace &middot;{" "}
-          <a
-            href="https://github.com/vfaraji89/tokalator"
-            style={{ textDecoration: "underline" }}
-          >
+          <a href={ext.githubUrl} style={{ textDecoration: "underline" }}>
             Source
           </a>
         </p>
