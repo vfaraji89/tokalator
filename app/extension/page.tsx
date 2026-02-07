@@ -54,16 +54,16 @@ export default function ExtensionPage() {
         <p className="hero-description">
           {ext.tagline}{" "}
           <span className="badge badge-accent">v{ext.version}</span>
+          {" "}
+          <span className="coming-soon-badge">Coming Soon</span>
         </p>
         <div className="hero-ctas">
-          <a
-            href={`https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator`}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cta-primary"
+          <span
+            className="cta-primary cta-disabled"
+            title="Coming soon to the VS Code Marketplace"
           >
-            Install from Marketplace
-          </a>
+            Coming Soon to Marketplace
+          </span>
           <a
             href={ext.githubUrl}
             target="_blank"
