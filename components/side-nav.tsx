@@ -70,18 +70,6 @@ export function SideNav() {
       {/* Mobile header — logo + desktop hint, no hamburger */}
       <div className="mobile-header">
         <Link href="/" className="mobile-logo">
-          <svg className="mobile-logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none">
-            <path d="M4 4 L4 24 L24 24 L24 4 Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
-            <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1" />
-            <line x1="4" y1="14" x2="24" y2="14" stroke="currentColor" strokeWidth="1" />
-            <line x1="4" y1="19" x2="24" y2="19" stroke="currentColor" strokeWidth="1" />
-            <circle cx="8" cy="9" r="2" fill="var(--accent)" />
-            <circle cx="13" cy="9" r="2" fill="var(--grey-600)" />
-            <circle cx="9" cy="14" r="2" fill="var(--accent)" />
-            <circle cx="14" cy="14" r="2" fill="var(--grey-600)" />
-            <circle cx="8" cy="19" r="2" fill="var(--accent)" />
-            <circle cx="13" cy="19" r="2" fill="var(--grey-600)" />
-          </svg>
           <span className="mobile-logo-text">/Tokalator</span>
         </Link>
         <span className="mobile-desktop-hint">

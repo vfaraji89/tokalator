@@ -45,7 +45,15 @@ export default function DictionaryPage() {
   return (
     <article className="article">
       <header className="hero">
-        <div className="hero-icon">📖</div>
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="3" width="20" height="22" rx="2" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <line x1="8" y1="9" x2="20" y2="9" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+            <line x1="8" y1="13" x2="17" y2="13" stroke="#e3120b" strokeWidth="1.5" strokeLinecap="round" />
+            <line x1="8" y1="17" x2="20" y2="17" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+            <line x1="8" y1="21" x2="15" y2="21" stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+          </svg>
+        </div>
         <h1 className="hero-headline">Dictionary</h1>
         <p className="hero-description">
           <span className="accent-highlight">{terms.length} terms</span>{" "}

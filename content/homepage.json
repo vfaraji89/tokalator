@@ -37,7 +37,7 @@
   "extensionFeatures": {
     "title": "VS Code Extension",
     "description": "Real-time context window monitoring inside your editor. Track token budgets, score tab relevance, and manage context through chat commands.",
-    "githubUrl": "https://github.com/benjitaylor/agentation",
+    "githubUrl": "https://github.com/vfaraji89/tokalator",
     "items": [
       {
         "name": "Token Budget Dashboard",
