@@ -1,46 +1,50 @@
 import * as vscode from 'vscode';
 import { TabInfo } from './types';
+import { TokenizerService } from './tokenizerService';
 
 /**
  * Estimates token counts for files and tracks total context budget usage.
  *
- * Strategy:
- *  - Attempts to use vscode.lm.countTokens() when a model is available
- *  - Falls back to a heuristic: ~1 token per 4 characters (GPT-family average)
+ * Uses model-specific tokenizers via TokenizerService:
+ *  - Anthropic: Claude BPE tokenizer (real token counts)
+ *  - OpenAI: o200k_base tokenizer (real token counts)
+ *  - Google/other: heuristic (~1 token per 4 chars)
  */
 export class TokenBudgetEstimator {
 
   // Cached token counts by URI string
-  private cache = new Map<string, { tokens: number; version: number }>();
+  private cache = new Map<string, { tokens: number; version: number; provider: string }>();
+
+  constructor(private readonly tokenizer: TokenizerService) {}
 
   /**
-   * Estimate tokens for a single document.
+   * Set which provider's tokenizer to use for counting.
+   */
+  private provider: string = 'anthropic';
+
+  setProvider(provider: string): void {
+    // If provider changed, invalidate cache (different tokenizer = different counts)
+    if (provider !== this.provider) {
+      this.cache.clear();
+      this.provider = provider;
+    }
+  }
+
+  /**
+   * Estimate tokens for a single document using the real tokenizer.
    */
   async estimateFileTokens(doc: vscode.TextDocument): Promise<number> {
     const key = doc.uri.toString();
     const cached = this.cache.get(key);
 
-    // Use cache if document version hasn't changed
-    if (cached && cached.version === doc.version) {
+    // Use cache if document version and provider haven't changed
+    if (cached && cached.version === doc.version && cached.provider === this.provider) {
       return cached.tokens;
     }
 
-    let tokens: number;
+    const tokens = this.tokenizer.countTokens(doc.getText(), this.provider);
 
-    try {
-      // Try to use the LM API for accurate counting
-      const models = await vscode.lm.selectChatModels({ family: 'gpt-4o' });
-      if (models.length > 0) {
-        tokens = await models[0].countTokens(doc.getText());
-      } else {
-        tokens = this.heuristicCount(doc.getText());
-      }
-    } catch {
-      // Fallback: heuristic
-      tokens = this.heuristicCount(doc.getText());
-    }
-
-    this.cache.set(key, { tokens, version: doc.version });
+    this.cache.set(key, { tokens, version: doc.version, provider: this.provider });
     return tokens;
   }
 
@@ -109,13 +113,6 @@ export class TokenBudgetEstimator {
         outputReservation: 4000,
       },
     };
-  }
-
-  /**
-   * Heuristic: ~1 token per 4 characters (rough average for GPT tokenizer).
-   */
-  private heuristicCount(text: string): number {
-    return Math.ceil(text.length / 4);
   }
 
   /**

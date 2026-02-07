@@ -38,6 +38,8 @@ export interface ContextSnapshot {
   modelLabel: string;
   workspaceFileCount: number;
   workspaceFileTokens: number;
+  tokenizerType: string;
+  tokenizerLabel: string;
 }
 
 /**
