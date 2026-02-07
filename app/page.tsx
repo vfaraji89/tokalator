@@ -31,7 +31,7 @@ export default function HomePage() {
     <article className="article">
       {/* Hero */}
       <header className="hero">
-        <div className="hero-icon">{hero.icon}</div>
+        <div className="hero-icon"></div>
         <h1 className="hero-headline">
           {headlineParts.map((part, i) => (
             <span key={i}>
@@ -89,7 +89,7 @@ export default function HomePage() {
             >
               <span className="feature-number">{f.number}</span>
               <h3>
-                {f.icon} {f.name}
+                {f.name}
               </h3>
               <p>{f.description}</p>
               {f.command && <code>{f.command}</code>}
@@ -123,7 +123,7 @@ export default function HomePage() {
               className="tool-card tool-card--web"
             >
               <h3>
-                {tool.icon} {tool.name}
+                {tool.name}
               </h3>
               <p>{tool.description}</p>
               <span className="feature-badge feature-badge--web">

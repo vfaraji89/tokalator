@@ -1,4 +1,8 @@
-"use client";
+#!/usr/bin/env python3
+"""Rewrite the corrupted pricing page cleanly."""
+import os
+
+content = r""""use client";
 
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -57,7 +61,7 @@ export default function PricingPage() {
               <CartesianGrid strokeDasharray="3 3" stroke={P.g3} />
               <XAxis dataKey="name" stroke={P.g7} tick={{ fontSize: 12 }} />
               <YAxis stroke={P.g7} tick={{ fontSize: 11 }} tickFormatter={(v) => "$" + v} />
-              <Tooltip {...tt} formatter={(v) => ["$" + Number(v).toFixed(2) + "/MTok"]} />
+              <Tooltip {...tt} formatter={(v: number) => ["$" + v.toFixed(2) + "/MTok"]} />
               <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
               <Bar dataKey="input" name="Input Cost" radius={[4, 4, 0, 0]} fill={P.black} />
               <Bar dataKey="output" name="Output Cost" radius={[4, 4, 0, 0]} fill={P.red} />
@@ -175,3 +179,12 @@ export default function PricingPage() {
     </article>
   );
 }
+"""
+
+path = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    "app", "tools", "pricing", "page.tsx"
+)
+with open(path, "w") as f:
+    f.write(content)
+print(f"OK: wrote {len(content)} chars to {path}")
