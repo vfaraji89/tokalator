@@ -262,7 +262,7 @@ pre {
   .mobile-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    justify-content: space-between;
     padding: 0.75rem 1rem;
     border-bottom: 1px solid var(--border);
     position: sticky;
@@ -282,12 +282,6 @@ pre {
   .mobile-logo:hover {
     text-decoration: none;
   }
-
-  .mobile-version {
-    font-size: 0.625rem;
-    color: var(--text-muted);
-    margin-right: auto;
-  }
   
   .menu-btn {
     display: flex;
@@ -295,18 +289,17 @@ pre {
     justify-content: center;
     width: 32px;
     height: 32px;
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    background: var(--bg);
+    border: none;
+    border-radius: 0;
+    background: transparent;
     cursor: pointer;
     color: var(--text-primary);
     flex-shrink: 0;
-    transition: border-color 0.15s ease;
-    margin-left: auto;
+    transition: color 0.15s ease;
   }
 
   .menu-btn:hover {
-    border-color: var(--grey-400);
+    color: var(--accent);
   }
   
   .overlay {
