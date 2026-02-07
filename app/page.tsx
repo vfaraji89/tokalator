@@ -48,6 +48,10 @@ export default function HomePage() {
     <article className="article">
       {/* Hero — Agentation-inspired marker highlight */}
       <header className="hero">
+        <a href="/extension" className="update-pill">
+          <span className="update-dot" /> Now on VS Code Marketplace
+          <span className="update-arrow">→</span>
+        </a>
         {/* Motionable outline icon */}
         <div className="hero-outline-icon" aria-hidden>
           <svg width="48" height="48" viewBox="0 0 28 28" fill="none" className="hero-abacus">
