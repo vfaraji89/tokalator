@@ -308,14 +308,25 @@ html, body {
   min-height: 220px;
 }
 
-/* Sidebar panel */
+/* File explorer column */
 .demo-sidebar {
   position: relative;
-  width: 150px;
+  width: 120px;
   flex-shrink: 0;
-  padding: 12px;
+  padding: 10px;
   border-right: 1px solid var(--grey-200);
   background: var(--grey-50);
+}
+
+/* Chat / Claude Code panel */
+.demo-chat-panel {
+  position: relative;
+  width: 170px;
+  flex-shrink: 0;
+  border-left: 1px solid var(--grey-200);
+  background: var(--white);
+  display: flex;
+  flex-direction: column;
 }
 
 /* Budget fill animation */
@@ -384,44 +395,26 @@ html, body {
   user-select: none;
 }
 
-/* Inline chat */
-.demo-inline-chat {
-  position: relative;
-  margin: 6px 10px 8px 24px;
-  padding: 8px 10px;
-  border: 1.5px dashed var(--accent);
-  border-radius: 6px;
-  background: rgba(227, 18, 11, 0.03);
-}
-
-/* Floating toolbar */
+/* Status bar toolbar */
 .demo-toolbar {
-  position: absolute;
-  bottom: -16px;
-  left: 50%;
-  transform: translateX(-50%);
   display: flex;
-  gap: 2px;
+  align-items: center;
+  gap: 6px;
   background: var(--grey-900);
-  border-radius: 8px;
-  padding: 4px 6px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.18);
+  border-radius: 0 0 10px 10px;
+  padding: 3px 10px;
 }
 .demo-toolbar-btn {
-  width: 24px;
-  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--grey-300);
-  font-size: 10px;
-  border-radius: 4px;
+  font-size: 8px;
   cursor: default;
-  transition: color 0.15s, background 0.15s;
+  transition: color 0.15s;
 }
 .demo-toolbar-btn:hover {
   color: var(--white);
-  background: rgba(255,255,255,0.08);
 }
 
 /* ── Demo Annotations Legend ──────────────── */
@@ -534,7 +527,8 @@ html, body {
 
   /* Demo mockup mobile */
   .demo-mockup-wrapper { margin: 2rem auto 0; max-width: 100%; }
-  .demo-sidebar { width: 120px; padding: 8px; }
+  .demo-sidebar { width: 100px; padding: 8px; }
+  .demo-chat-panel { width: 140px; }
   .demo-code { font-size: 8px; }
   .demo-tab { padding: 4px 8px; font-size: 8px; }
   .demo-legend { gap: 1rem; margin-top: 1.5rem; }
@@ -2555,10 +2549,10 @@ kbd {
   /* Demo mockup small phones */
   .demo-mockup-wrapper { margin: 1.5rem auto 0; }
   .demo-body { flex-direction: column; min-height: auto; }
-  .demo-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--grey-200); padding: 10px; }
+  .demo-sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--grey-200); padding: 8px; }
+  .demo-chat-panel { width: 100%; border-left: none; border-top: 1px solid var(--grey-200); }
   .demo-code { font-size: 7.5px; line-height: 1.6; }
   .demo-code-line { gap: 6px; padding: 0 6px; }
-  .demo-inline-chat { margin: 4px 6px 6px 18px; padding: 6px 8px; }
   .demo-legend { gap: 0.75rem; }
   .demo-legend-item { font-size: 10px; }
 

@@ -94,13 +94,13 @@ export default function HomePage() {
         <DemoMockup />
         <div className="demo-legend">
           <span className="demo-legend-item">
-            <span className="demo-legend-num">1</span> Token Budget Panel
+            <span className="demo-legend-num">1</span> File Explorer
           </span>
           <span className="demo-legend-item">
-            <span className="demo-legend-num">2</span> Inline Token Count
+            <span className="demo-legend-num">2</span> Code Editor
           </span>
           <span className="demo-legend-item">
-            <span className="demo-legend-num">3</span> AI Context Command
+            <span className="demo-legend-num">3</span> Claude Code Panel
           </span>
         </div>
       </header>
