@@ -6,126 +6,106 @@
   "nav": [
     {
       "section": "Overview",
-      "sectionTr": "Genel Bak\u0131\u015f",
       "items": [
         {
           "href": "/",
           "label": "Overview",
-          "labelTr": "Genel Bak\u0131\u015f",
           "icon": "\u25c9"
         },
         {
           "href": "/about",
           "label": "About",
-          "labelTr": "Hakk\u0131nda",
           "icon": "\u2139"
         },
         {
           "href": "/wiki",
           "label": "Wiki",
-          "labelTr": "Wiki",
           "icon": "\u25c8"
         },
         {
           "href": "/dictionary",
           "label": "Dictionary",
-          "labelTr": "S\u00f6zl\u00fck",
           "icon": "\ud83d\udcd6"
         }
       ]
     },
     {
       "section": "Extension",
-      "sectionTr": "Uzant\u0131",
       "items": [
         {
           "href": "/extension",
           "label": "Install",
-          "labelTr": "Kurulum",
-          "icon": "\u2b21"
+          "icon": "\u2b21",
+          "badge": "Coming Soon"
         }
       ]
     },
     {
       "section": "Tools",
-      "sectionTr": "Ara\u00e7lar",
       "items": [
         {
           "href": "/calculator",
           "label": "Cost Calculator",
-          "labelTr": "Maliyet Hesaplay\u0131c\u0131",
           "icon": "\u25c7"
         },
         {
           "href": "/context",
           "label": "Context Optimizer",
-          "labelTr": "Ba\u011flam Optimize Edici",
           "icon": "\u25a3"
         },
         {
           "href": "/tools/compare",
           "label": "Model Comparison",
-          "labelTr": "Model Kar\u015f\u0131la\u015ft\u0131rma",
           "icon": "\u25c6"
         },
         {
           "href": "/tools/caching",
           "label": "Caching ROI",
-          "labelTr": "\u00d6nbellekleme ROI",
           "icon": "\u25c8"
         },
         {
           "href": "/tools/conversation",
           "label": "Conversation Cost",
-          "labelTr": "Konu\u015fma Maliyeti",
           "icon": "\u25ce"
         },
         {
           "href": "/tools/analysis",
           "label": "Economic Analysis",
-          "labelTr": "Ekonomik Analiz",
           "icon": "\u25a6"
         },
         {
           "href": "/tools/pricing",
           "label": "Pricing Reference",
-          "labelTr": "Fiyat Referans\u0131",
           "icon": "\u25ca"
         }
       ]
     },
     {
       "section": "Catalog",
-      "sectionTr": "Katalog",
       "items": [
         {
           "href": "/agents",
           "label": "Agents",
-          "labelTr": "Ajanlar",
           "icon": "\u2b22"
         },
         {
           "href": "/prompts",
           "label": "Prompts",
-          "labelTr": "\u0130stemler",
           "icon": "\u25b7"
         },
         {
           "href": "/instructions",
           "label": "Instructions",
-          "labelTr": "Talimatlar",
           "icon": "\u2630"
         },
         {
           "href": "/collections",
           "label": "Collections",
-          "labelTr": "Koleksiyonlar",
           "icon": "\u25a4"
         },
         {
           "href": "/context-engineering",
           "label": "Context Engineering",
-          "labelTr": "Ba\u011flam M\u00fchendisli\u011fi",
           "icon": "\u2699"
         }
       ]

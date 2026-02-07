@@ -1,82 +1,104 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useSearchParams } from "next/navigation";
-import { Suspense } from "react";
+import { usePathname } from "next/navigation";
+import { useState, useEffect } from "react";
 import siteContent from "../content/site.json";
 
-type NavItem = { href: string; label: string; labelTr?: string; badge?: string; icon?: string };
-type NavSection = { section: string; sectionTr: string; items: NavItem[] };
+type NavItem = { href: string; label: string; badge?: string; icon?: string };
+type NavSection = { section: string; items: NavItem[] };
 
 const nav: NavSection[] = siteContent.nav as NavSection[];
 
-function SideNavContent() {
+export function SideNav() {
   const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const lang = searchParams.get("lang") === "tr" ? "tr" : "en";
+  const [open, setOpen] = useState(false);
 
-  const getLangHref = (targetLang: string) => {
-    if (targetLang === "en") {
-      return pathname;
+  // Close sidebar on route change
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  // Prevent body scroll when mobile menu is open
+  useEffect(() => {
+    if (open) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
     }
-    return `${pathname}?lang=tr`;
-  };
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
 
   return (
-    <nav className="sidebar">
-      <div className="sidebar-header">
-        <Link href="/" className="sidebar-logo">
-          <span className="sidebar-logo-text">{siteContent.name}</span>
-          <span className="sidebar-version">{siteContent.version}</span>
+    <>
+      {/* Mobile header with hamburger */}
+      <div className="mobile-header">
+        <button
+          className="menu-btn"
+          onClick={() => setOpen(!open)}
+          aria-label="Toggle menu"
+        >
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+            {open ? (
+              <>
+                <line x1="4" y1="4" x2="16" y2="16" />
+                <line x1="16" y1="4" x2="4" y2="16" />
+              </>
+            ) : (
+              <>
+                <line x1="3" y1="5" x2="17" y2="5" />
+                <line x1="3" y1="10" x2="17" y2="10" />
+                <line x1="3" y1="15" x2="17" y2="15" />
+              </>
+            )}
+          </svg>
+        </button>
+        <Link href="/" className="mobile-logo" onClick={() => setOpen(false)}>
+          {siteContent.name}
         </Link>
-        <div className="lang-toggle">
-          <Link
-            href={getLangHref("en")}
-            className={`lang-btn ${lang === "en" ? "active" : ""}`}
-          >
-            EN
-          </Link>
-          <Link
-            href={getLangHref("tr")}
-            className={`lang-btn ${lang === "tr" ? "active" : ""}`}
-          >
-            TR
-          </Link>
-        </div>
+        <span className="mobile-version">{siteContent.version}</span>
       </div>
 
-      {nav.map((section) => (
-        <div key={section.section}>
-          <div className="nav-section-label">
-            {lang === "tr" ? section.sectionTr : section.section}
-          </div>
-          {section.items.map((item) => {
-            const isActive =
-              pathname === item.href ||
-              (item.href !== "/" && pathname.startsWith(item.href));
-            const href = lang === "tr" ? `${item.href}?lang=tr` : item.href;
-            return (
-              <Link
-                key={item.href}
-                href={href}
-                className={`nav-link ${isActive ? "active" : ""}`}
-              >
-                {item.icon && <span className="nav-icon">{item.icon}</span>}
-                {lang === "tr" && item.labelTr ? item.labelTr : item.label}
-                {item.badge && <span className="nav-badge">{item.badge}</span>}
-              </Link>
-            );
-          })}
-        </div>
-      ))}
-    </nav>
-  );
-}
+      {/* Overlay */}
+      <div
+        className={`overlay ${open ? "open" : ""}`}
+        onClick={() => setOpen(false)}
+      />
 
-export function SideNav() {
-  return (
-    <Suspense fallback={<nav className="sidebar"><div className="sidebar-header"><span className="sidebar-logo-text">{siteContent.name}</span></div></nav>}>
-      <SideNavContent />
-    </Suspense>
+      {/* Sidebar */}
+      <nav className={`sidebar ${open ? "open" : ""}`}>
+        <div className="sidebar-header">
+          <Link href="/" className="sidebar-logo" onClick={() => setOpen(false)}>
+            <span className="sidebar-logo-text">{siteContent.name}</span>
+            <span className="sidebar-version">{siteContent.version}</span>
+          </Link>
+        </div>
+
+        {nav.map((section) => (
+          <div key={section.section}>
+            <div className="nav-section-label">
+              {section.section}
+            </div>
+            {section.items.map((item) => {
+              const isActive =
+                pathname === item.href ||
+                (item.href !== "/" && pathname.startsWith(item.href));
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`nav-link ${isActive ? "active" : ""}`}
+                  onClick={() => setOpen(false)}
+                >
+                  {item.icon && <span className="nav-icon">{item.icon}</span>}
+                  {item.label}
+                  {item.badge && <span className="nav-badge">{item.badge}</span>}
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+      </nav>
+    </>
   );
 }
