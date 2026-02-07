@@ -175,6 +175,35 @@ export default function ExtensionPage() {
         </div>
       </section>
 
+      {/* Tokenizers */}
+      {(ext as any).tokenizers && (
+        <section>
+          <div className="section-divider" />
+          <h2 className="section-header">Tokenizers</h2>
+          <p style={{ marginBottom: "1rem" }}>Each provider uses its own tokenizer for accurate token counts:</p>
+          <table className="settings-table">
+            <thead>
+              <tr>
+                <th>Provider</th>
+                <th>Models</th>
+                <th>Tokenizer</th>
+                <th>Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(ext as any).tokenizers.map((t: { provider: string; models: string; tokenizer: string; source: string }) => (
+                <tr key={t.provider}>
+                  <td><strong>{t.provider}</strong></td>
+                  <td>{t.models}</td>
+                  <td><code>{t.tokenizer}</code></td>
+                  <td style={{ fontSize: "0.8125rem" }}>{t.source}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+      )}
+
       {/* Install Methods */}
       <section>
         <div className="section-divider" />
