@@ -26,7 +26,13 @@ export default function ExtensionPage() {
     <article className="article">
       {/* Hero */}
       <header className="hero">
-        <div className="hero-icon">{ext.icon}</div>
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <rect x="4" y="4" width="20" height="20" rx="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <path d="M10 10L14 14L10 18" stroke="#e3120b" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+            <line x1="15" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
         <h1 className="hero-headline">
           {headlineParts.map((part, i) => {
             // Highlight the phrase within the headline

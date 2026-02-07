@@ -52,7 +52,16 @@ export default function WikiPage() {
   return (
     <article className="article">
       <header className="hero">
-        <div className="hero-icon">📖</div>
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <path d="M5 5C5 5 8 4 14 4C20 4 23 5 23 5V22C23 22 20 21 14 21C8 21 5 22 5 22V5Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <line x1="14" y1="4" x2="14" y2="21" stroke="currentColor" strokeWidth="1" />
+            <line x1="8" y1="9" x2="12" y2="9" stroke="#e3120b" strokeWidth="1" strokeLinecap="round" />
+            <line x1="8" y1="12" x2="11" y2="12" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round" />
+            <line x1="16" y1="9" x2="20" y2="9" stroke="#e3120b" strokeWidth="1" strokeLinecap="round" />
+            <line x1="16" y1="12" x2="19" y2="12" stroke="currentColor" strokeWidth="0.75" strokeLinecap="round" />
+          </svg>
+        </div>
         <h1 className="hero-headline">
           Context Engineering<br />Wiki
         </h1>

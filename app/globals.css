@@ -1886,8 +1886,28 @@ kbd {
   margin: 1.5rem 0;
 }
 
+.learn-frame-dark {
+  border: 1px solid #333;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.3);
+}
+
 .learn-frame-body {
   background: var(--white);
+}
+
+.learn-code-dark {
+  border: 1px solid #333;
+  background: #0a0a0a;
+}
+
+.learn-compare-dark {
+  border: 1px solid #333;
+}
+.learn-compare-dark table {
+  background: #111;
+}
+.learn-compare-dark tr:hover td {
+  background: rgba(227,18,11,0.05);
 }
 
 .learn-frame-pad {

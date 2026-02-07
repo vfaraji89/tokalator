@@ -9,9 +9,10 @@ interface CatalogGridProps {
   items: CatalogItem[];
   title: string;
   description?: string;
+  icon?: React.ReactNode;
 }
 
-export function CatalogGrid({ items, title, description }: CatalogGridProps) {
+export function CatalogGrid({ items, title, description, icon }: CatalogGridProps) {
   const [search, setSearch] = useState('');
   const [ecosystemFilter, setEcosystemFilter] = useState<Ecosystem | 'all'>('all');
   const [sourceFilter, setSourceFilter] = useState<ContentSource | 'all'>('all');
@@ -32,9 +33,10 @@ export function CatalogGrid({ items, title, description }: CatalogGridProps) {
 
   return (
     <article className="article">
-      <header>
-        <h1>{title}</h1>
-        {description && <p className="tagline">{description}</p>}
+      <header className="hero">
+        {icon && <div className="hero-outline-icon" aria-hidden>{icon}</div>}
+        <h1 className="hero-headline"><span className="hero-marker">{title}</span></h1>
+        {description && <p className="hero-description">{description}</p>}
       </header>
 
       <FilterBar

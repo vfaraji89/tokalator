@@ -13,9 +13,18 @@ const GitHubIcon = () => (
 export default function AboutPage() {
   return (
     <article className="article">
-      <header>
-        <h1>About Tokalator</h1>
-        <p className="tagline">Token budget management tools for AI coding assistants</p>
+      <header className="hero">
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <circle cx="14" cy="14" r="10" stroke="currentColor" strokeWidth="1.5" fill="none" />
+            <line x1="14" y1="13" x2="14" y2="20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            <circle cx="14" cy="9" r="1.5" fill="#e3120b" />
+          </svg>
+        </div>
+        <h1 className="hero-headline">
+          <span className="hero-marker">About Tokalator</span>
+        </h1>
+        <p className="hero-description">Token budget management tools for AI coding assistants</p>
       </header>
 
       <section>
