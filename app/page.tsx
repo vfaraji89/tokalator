@@ -1,89 +1,146 @@
+"use client";
+
 import Link from "next/link";
+import { useState } from "react";
+import content from "../content/homepage.json";
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false);
+  return (
+    <button
+      className="copy-btn"
+      onClick={() => {
+        navigator.clipboard.writeText(text);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      }}
+    >
+      {copied ? "Copied!" : "Copy"}
+    </button>
+  );
+}
 
 export default function HomePage() {
+  const { hero, whySection, extensionFeatures, webTools, contextEngineering } =
+    content;
+
+  // Split headline on newlines and join with <br />
+  const headlineParts = hero.headline.split("\n");
+
   return (
     <article className="article">
-      <header>
-        <h1>Tokalator</h1>
-        <p className="tagline">
-          Count your tokens like beads on an abacus. Context engineering tools
-          for AI coding assistants.
+      {/* Hero */}
+      <header className="hero">
+        <div className="hero-icon">{hero.icon}</div>
+        <h1 className="hero-headline">
+          {headlineParts.map((part, i) => (
+            <span key={i}>
+              {i > 0 && <br />}
+              {part}
+            </span>
+          ))}
+        </h1>
+        <p className="hero-description">
+          <span className="accent-highlight">{hero.highlightPhrase}</span>{" "}
+          {hero.description}
         </p>
+        <div className="hero-ctas">
+          <Link href={hero.primaryCta.href} className="cta-primary">
+            {hero.primaryCta.label}
+          </Link>
+          <Link href={hero.secondaryCta.href} className="cta-secondary">
+            {hero.secondaryCta.label}
+          </Link>
+        </div>
+        <div className="install-cmd">
+          <code>{hero.installCmd}</code>
+          <CopyButton text={hero.installCmd} />
+        </div>
       </header>
 
-      <section>
-        <h2>What is this?</h2>
-        <p>
-          Tokalator is a context engineering platform built around two ideas:
-          tokens are money, and context is everything. It includes a VS Code
-          extension that monitors your real-time context budget, and a set of web
-          tools for calculating costs, optimizing prompts, and understanding the
-          economics of AI-assisted coding.
-        </p>
+      {/* Why This Matters */}
+      <section className="why-section">
+        <h2 className="section-header">{whySection.title}</h2>
+        <p className="why-subtext">{whySection.subtitle}</p>
+        <div className="why-stats">
+          {whySection.stats.map((stat) => (
+            <div key={stat.label} className="why-stat-card">
+              <span className="why-stat-number">{stat.number}</span>
+              {stat.unit && (
+                <span className="why-stat-unit">{stat.unit}</span>
+              )}
+              <span className="why-stat-label">{stat.label}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
-      <section>
-        <h2>VS Code Extension</h2>
-        <p>
-          Real-time context window monitoring inside your editor. Track token
-          budgets, score tab relevance, and manage context through chat commands.
-        </p>
+      {/* VS Code Extension */}
+      <section className="extension-section">
+        <div className="section-divider" />
+        <h2 className="section-header">{extensionFeatures.title}</h2>
+        <p>{extensionFeatures.description}</p>
         <div className="feature-grid">
-          <div className="feature-item">
-            <h3>Token Budget Dashboard</h3>
-            <p>
-              Sidebar panel showing real-time token usage and per-file breakdown
-            </p>
-          </div>
-          <div className="feature-item">
-            <h3>Tab Relevance Scoring</h3>
-            <p>
-              Ranks open tabs by imports, path similarity, edit recency, and
-              diagnostics
-            </p>
-          </div>
-          <div className="feature-item">
-            <h3>Chat Participant</h3>
-            <p>@tokens commands for inline budget management</p>
-            <code>/count /optimize /pin /breakdown</code>
-          </div>
-          <div className="feature-item">
-            <h3>Context Rot Warnings</h3>
-            <p>Alerts when conversation turns exceed threshold</p>
-          </div>
+          {extensionFeatures.items.map((f) => (
+            <div
+              key={f.name}
+              className="feature-item feature-item--extension"
+            >
+              <span className="feature-number">{f.number}</span>
+              <h3>
+                {f.icon} {f.name}
+              </h3>
+              <p>{f.description}</p>
+              {f.command && <code>{f.command}</code>}
+              <span className="feature-badge feature-badge--extension">
+                VS Code
+              </span>
+            </div>
+          ))}
         </div>
-      </section>
-
-      <section>
-        <h2>Web Tools</h2>
-        <div className="tool-grid">
-          <Link href="/calculator" className="tool-card">
-            <h3>Cost Calculator</h3>
-            <p>Token cost calculator with Cobb-Douglas quality modeling</p>
-          </Link>
-          <Link href="/context" className="tool-card">
-            <h3>Context Optimizer</h3>
-            <p>Visualize your context budget and optimize token usage</p>
-          </Link>
-          <Link href="/tools/compare" className="tool-card">
-            <h3>Model Comparison</h3>
-            <p>Cross-provider cost and capability comparison</p>
-          </Link>
-          <Link href="/tools/caching" className="tool-card">
-            <h3>Caching ROI</h3>
-            <p>Break-even analysis for prompt caching</p>
-          </Link>
-        </div>
-      </section>
-
-      <section>
-        <h2>Context Engineering</h2>
-        <p>
-          A collection of agents, prompts, and instructions for maximizing AI
-          coding assistant effectiveness through better context management.
-          Contributed to{" "}
+        <div className="section-cta">
           <a
-            href="https://github.com/github/awesome-copilot"
+            href={extensionFeatures.githubUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-secondary"
+          >
+            View on GitHub →
+          </a>
+        </div>
+      </section>
+
+      {/* Web Tools */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">{webTools.title}</h2>
+        <div className="tool-grid">
+          {webTools.items.map((tool) => (
+            <Link
+              key={tool.href}
+              href={tool.href}
+              className="tool-card tool-card--web"
+            >
+              <h3>
+                {tool.icon} {tool.name}
+              </h3>
+              <p>{tool.description}</p>
+              <span className="feature-badge feature-badge--web">
+                Web Tool
+              </span>
+            </Link>
+          ))}
+        </div>
+      </section>
+
+      {/* Context Engineering */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">{contextEngineering.title}</h2>
+        <p>
+          {contextEngineering.description} Contributed to{" "}
+          <a
+            href={contextEngineering.awesomeCopilotUrl}
             style={{ textDecoration: "underline" }}
           >
             awesome-copilot
@@ -91,22 +148,11 @@ export default function HomePage() {
           .
         </p>
         <ul>
-          <li>
-            <strong>Context Architect Agent</strong> &mdash; Maps dependencies
-            before suggesting changes
-          </li>
-          <li>
-            <strong>Context Map Prompt</strong> &mdash; Generates a map of
-            affected files
-          </li>
-          <li>
-            <strong>What Context Needed</strong> &mdash; Asks the AI what files
-            it needs
-          </li>
-          <li>
-            <strong>Refactor Plan Prompt</strong> &mdash; Creates phased
-            refactor plans with verification
-          </li>
+          {contextEngineering.items.map((item) => (
+            <li key={item.name}>
+              <strong>{item.name}</strong> &mdash; {item.description}
+            </li>
+          ))}
         </ul>
       </section>
 
