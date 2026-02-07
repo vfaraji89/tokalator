@@ -23,6 +23,11 @@
         {
           "href": "/dictionary",
           "label": "Dictionary"
+        },
+        {
+          "href": "/learn",
+          "label": "Learn",
+          "badge": "New"
         }
       ]
     },
