@@ -40,9 +40,18 @@ const tiers = [
 export default function PricingPage() {
   return (
     <article className="article">
-      <header>
-        <h1>Pricing Reference</h1>
-        <p className="tagline">
+      <header className="hero">
+        <div className="hero-outline-icon" aria-hidden>
+          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
+            <path d="M20 4L24 8L12 20H4V16L16 4H20Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+            <line x1="14" y1="8" x2="20" y2="14" stroke="#e3120b" strokeWidth="1" />
+            <line x1="4" y1="24" x2="24" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+        </div>
+        <h1 className="hero-headline">
+          <span className="hero-marker">Pricing Reference</span>
+        </h1>
+        <p className="hero-description">
           Current pricing for Claude models and services (January 2026). All prices per million tokens.
         </p>
       </header>
