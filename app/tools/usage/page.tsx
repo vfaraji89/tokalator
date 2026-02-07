@@ -1,4 +1,10 @@
 import { UsageTracker } from '@/components/usage-tracker';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Usage Tracker",
+  description: "Track your AI token usage over time — monitor spending, set budgets, and analyze consumption patterns.",
+};
 
 export default function UsagePage() {
   return (

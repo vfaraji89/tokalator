@@ -1,4 +1,10 @@
 import { CachingCalculator } from '@/components/caching-calculator';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Caching ROI Calculator",
+  description: "Calculate prompt caching ROI — compare cached vs uncached costs across Claude, GPT-4, and Gemini models.",
+};
 
 export default function CachingPage() {
   return (

@@ -1,3 +1,10 @@
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Context Engineering",
+  description: "Context engineering artifacts — agents, prompts, instructions, and collections for token-optimized AI workflows.",
+};
+
 export default function ContextEngineeringPage() {
   const items = [
     {

@@ -1,5 +1,11 @@
 import { getCatalogByKind } from '@/lib/catalog';
 import { CatalogGrid } from '@/components/catalog/catalog-grid';
+import type { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: "Collections",
+  description: "Curated collections of prompts, agents, and instructions for context engineering workflows.",
+};
 
 export default function CollectionsPage() {
   const collections = getCatalogByKind('collection');
