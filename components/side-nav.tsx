@@ -83,26 +83,38 @@ export function SideNav() {
 
   return (
     <>
-      {/* Mobile header with minimal menu button on right */}
+      {/* Mobile header — Agentation style: icon + /name left, = right */}
       <div className="mobile-header">
-        <Link href="/" className="mobile-logo text-motion" onClick={() => setOpen(false)}>
-          {siteContent.name}
+        <Link href="/" className="mobile-logo" onClick={() => setOpen(false)}>
+          <svg className="mobile-logo-icon" width="28" height="28" viewBox="0 0 28 28" fill="none">
+            <path d="M4 4 L4 24 L24 24 L24 4 Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
+            <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1" />
+            <line x1="4" y1="14" x2="24" y2="14" stroke="currentColor" strokeWidth="1" />
+            <line x1="4" y1="19" x2="24" y2="19" stroke="currentColor" strokeWidth="1" />
+            <circle cx="8" cy="9" r="2" fill="var(--accent)" />
+            <circle cx="13" cy="9" r="2" fill="var(--grey-600)" />
+            <circle cx="9" cy="14" r="2" fill="var(--accent)" />
+            <circle cx="14" cy="14" r="2" fill="var(--grey-600)" />
+            <circle cx="8" cy="19" r="2" fill="var(--accent)" />
+            <circle cx="13" cy="19" r="2" fill="var(--grey-600)" />
+          </svg>
+          <span className="mobile-logo-text">/Tokalator</span>
         </Link>
         <button
           className="menu-btn"
           onClick={() => setOpen(!open)}
           aria-label="Toggle menu"
         >
-          <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
             {open ? (
               <>
-                <line x1="4" y1="4" x2="14" y2="14" />
-                <line x1="14" y1="4" x2="4" y2="14" />
+                <line x1="5" y1="5" x2="15" y2="15" />
+                <line x1="15" y1="5" x2="5" y2="15" />
               </>
             ) : (
               <>
-                <line x1="3" y1="7" x2="15" y2="7" />
-                <line x1="3" y1="12" x2="15" y2="12" />
+                <line x1="3" y1="7" x2="17" y2="7" />
+                <line x1="3" y1="13" x2="17" y2="13" />
               </>
             )}
           </svg>
