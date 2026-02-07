@@ -480,18 +480,18 @@ html, body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
-    border-bottom: 1px solid var(--border);
+    padding: 0.625rem 1rem;
+    border-bottom: 2px solid var(--accent);
     position: sticky;
     top: 0;
-    background: var(--bg);
-    z-index: 50;
+    background: var(--grey-900);
+    z-index: 100;
   }
 
   .mobile-logo {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0;
     text-decoration: none;
   }
 
@@ -499,29 +499,140 @@ html, body {
     text-decoration: none;
   }
 
-  .mobile-logo-icon {
-    flex-shrink: 0;
-    color: var(--text-primary);
+  .mobile-logo-slash {
+    font-weight: 800;
+    font-size: 1.25rem;
+    color: var(--accent);
+    letter-spacing: -0.04em;
   }
 
   .mobile-logo-text {
     font-weight: 700;
     font-size: 1.125rem;
-    color: var(--text-primary);
+    color: var(--white);
     letter-spacing: -0.03em;
   }
 
-  .mobile-desktop-hint {
+  /* Hamburger / close button */
+  .mobile-menu-btn {
     display: flex;
     align-items: center;
-    gap: 0.35rem;
-    font-size: 0.625rem;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border: none;
+    background: transparent;
+    color: var(--white);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: background 0.15s;
+  }
+  .mobile-menu-btn:hover {
+    background: rgba(255,255,255,0.08);
+  }
+
+  /* Overlay behind menu */
+  .mobile-overlay {
+    position: fixed;
+    inset: 0;
+    top: 47px; /* below header */
+    background: rgba(0,0,0,0.5);
+    z-index: 90;
+    animation: overlayIn 0.2s ease-out;
+  }
+  @keyframes overlayIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  /* Slide-down mobile menu */
+  .mobile-menu {
+    position: fixed;
+    top: 47px;
+    left: 0;
+    right: 0;
+    max-height: 0;
+    overflow: hidden;
+    background: var(--grey-900);
+    z-index: 95;
+    transition: max-height 0.3s ease, box-shadow 0.3s ease;
+    border-bottom: 2px solid transparent;
+  }
+  .mobile-menu--open {
+    max-height: 80vh;
+    overflow-y: auto;
+    border-bottom: 2px solid var(--accent);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+  }
+
+  .mobile-menu-section {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+  .mobile-menu-section:last-of-type {
+    border-bottom: none;
+  }
+
+  .mobile-menu-section-label {
+    padding: 0.25rem 1.25rem;
+    font-size: 0.5625rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--grey-500);
+  }
+
+  .mobile-menu-link {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.25rem;
+    font-size: 0.875rem;
     font-weight: 500;
-    color: var(--text-muted);
-    letter-spacing: 0.02em;
+    color: var(--grey-300);
+    text-decoration: none;
+    transition: background 0.15s, color 0.15s;
+  }
+  .mobile-menu-link:hover {
+    background: rgba(255,255,255,0.04);
+    color: var(--white);
+    text-decoration: none;
+  }
+  .mobile-menu-link--active {
+    color: var(--white);
+    background: rgba(227,18,11,0.08);
+    border-left: 3px solid var(--accent);
+    font-weight: 600;
+  }
+
+  .mobile-menu-footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+  .mobile-menu-version {
+    font-size: 0.625rem;
+    color: var(--grey-500);
+  }
+  .mobile-menu-footer .sidebar-github-link {
+    color: var(--grey-400);
+  }
+  .mobile-menu-footer .sidebar-github-link:hover {
+    color: var(--white);
   }
 
   .overlay {
+    display: none;
+  }
+
+  .mobile-desktop-hint {
+    display: none;
+  }
+
+  .mobile-logo-icon {
     display: none;
   }
 
@@ -658,6 +769,8 @@ html, body {
 @media (min-width: 769px) {
   .mobile-header,
   .mobile-desktop-hint,
+  .mobile-menu,
+  .mobile-overlay,
   .overlay {
     display: none !important;
   }
@@ -2648,16 +2761,20 @@ kbd {
   }
 
   .mobile-header {
-    padding: 0.625rem 0.75rem;
+    padding: 0.5rem 0.75rem;
   }
 
-  .mobile-logo-icon {
-    width: 22px;
-    height: 22px;
+  .mobile-logo-slash {
+    font-size: 1.125rem;
   }
 
   .mobile-logo-text {
-    font-size: 0.9375rem;
+    font-size: 0.875rem;
+  }
+
+  .mobile-menu-link {
+    padding: 0.4rem 1rem;
+    font-size: 0.8125rem;
   }
 
   .cta-primary,
