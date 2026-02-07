@@ -84,7 +84,6 @@ export default function HomePage() {
           <Link href={hero.secondaryCta.href} className="cta-secondary">
             {hero.secondaryCta.label}
           </Link>
-          <span className="coming-soon-badge">Extension Coming Soon</span>
         </div>
         <div className="install-cmd">
           <code>{hero.installCmd}</code>
