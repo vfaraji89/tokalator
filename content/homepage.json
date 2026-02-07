@@ -1,9 +1,9 @@
 {
   "hero": {
     "icon": "🧮",
-    "headline": "Point at bugs.\nLet AI fix them.",
-    "highlightPhrase": "Count your tokens",
-    "description": "like beads on an abacus. Monitor token budgets, optimize context, and reduce AI costs — all from your editor.",
+    "headline": "Count your tokens.\nLike beads on an abacus.",
+    "highlightPhrase": "Every token counts",
+    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. Calculator, optimizer, and VS Code extension in one place.",
     "installCmd": "ext install tokalator",
     "primaryCta": { "label": "Install Extension", "href": "/extension" },
     "secondaryCta": { "label": "Explore Tools", "href": "/calculator" }
