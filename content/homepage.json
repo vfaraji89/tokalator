@@ -2,6 +2,7 @@
   "hero": {
     "icon": "",
     "headline": "Count your tokens.\nLike beads on an abacus.",
+    "markerLine": "Count your tokens.",
     "highlightPhrase": "Every token counts",
     "description": "— monitor budgets, optimize context, and cut AI costs before they add up. Calculator, optimizer, and VS Code extension in one place.",
     "installCmd": "ext install tokalator",
@@ -107,6 +108,17 @@
         "name": "Refactor Plan Prompt",
         "description": "Creates phased refactor plans with verification"
       }
+    ]
+  },
+  "howToUse": {
+    "title": "How you use it",
+    "steps": [
+      "Open any project in VS Code",
+      "Install the Tokalator extension",
+      "Open the sidebar to see real-time token budgets",
+      "Use @tokens in Copilot Chat for inline commands",
+      "Switch to the web tools for deep analysis",
+      "Optimize your context and cut costs"
     ]
   }
 }
