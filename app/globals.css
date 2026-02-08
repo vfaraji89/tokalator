@@ -2170,84 +2170,23 @@ kbd {
   font-size: 0.85rem;
 }
 
-/* Istanbul Cat — interactive mascot */
+/* Istanbul Cat — minimal face */
 .istanbul-cat-wrap {
   display: inline-flex;
   align-items: center;
+  color: var(--text-muted);
+  opacity: 0.55;
+  transition: opacity 0.3s ease;
   cursor: default;
-  padding: 2px 4px;
-  border-radius: 8px;
-  transition: background 0.3s ease;
 }
 
 .istanbul-cat-wrap:hover {
-  background: rgba(227, 18, 11, 0.04);
+  opacity: 0.9;
 }
 
-.istanbul-cat-svg {
-  color: var(--text-muted);
-  opacity: 0.6;
-  transition: opacity 0.4s ease, filter 0.3s ease, transform 0.3s ease;
-  filter: drop-shadow(0 0 2px rgba(227, 18, 11, 0.15));
-}
-
-.istanbul-cat-svg--hover {
-  opacity: 1;
-  filter: drop-shadow(0 0 6px rgba(227, 18, 11, 0.3));
-  transform: scale(1.08);
-}
-
-/* Tail sway */
-.istanbul-cat-tail {
-  transform-origin: 73px 37px;
-  animation: catTailSway 2.5s ease-in-out infinite;
-}
-
-@keyframes catTailSway {
-  0%, 100% { transform: rotate(0deg); }
-  30% { transform: rotate(-10deg); }
-  70% { transform: rotate(6deg); }
-}
-
-.istanbul-cat-svg--hover .istanbul-cat-tail {
-  animation-duration: 1.2s;
-}
-
-/* Ear twitch on hover */
-.istanbul-cat-ear {
-  transition: transform 0.2s ease;
-}
-
-.istanbul-cat-ear--left {
-  transform-origin: 44px 20px;
-}
-
-.istanbul-cat-ear--right {
-  transform-origin: 54px 19px;
-}
-
-.istanbul-cat-ear--perked.istanbul-cat-ear--left {
-  transform: rotate(-6deg) translateY(-1px);
-}
-
-.istanbul-cat-ear--perked.istanbul-cat-ear--right {
-  transform: rotate(6deg) translateY(-1px);
-}
-
-/* Whiskers fade in on hover */
-.istanbul-cat-whiskers {
-  opacity: 0;
-  transition: opacity 0.3s ease;
-}
-
-.istanbul-cat-whiskers--show {
-  opacity: 0.5;
-}
-
-/* Istanbul value pill — wider for the cat */
+/* Istanbul value pill */
 .community-value--istanbul {
-  flex-direction: column;
-  gap: 0.15rem !important;
+  gap: 0.3rem !important;
 }
 
 /* Footer */
