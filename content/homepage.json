@@ -4,7 +4,7 @@
     "headline": "Count your tokens.\nLike beads on an abacus.",
     "markerLine": "Count your tokens.",
     "highlightPhrase": "Every token counts",
-    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. Calculator, optimizer, and VS Code extension in one place.",
+    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. Calculator, optimizer, and AI IDE Code extensions (Github Copilot, Claude Code and Cursor) in one place.",
     "installCmd": "ext install tokalator",
     "primaryCta": {
       "label": "Install Extension",
