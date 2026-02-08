@@ -1,10 +1,149 @@
-<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Radar/brain icon for context monitoring -->
-  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.3"/>
-  <circle cx="12" cy="12" r="6" stroke="currentColor" stroke-width="1.5" fill="none" opacity="0.6"/>
-  <circle cx="12" cy="12" r="2" fill="currentColor"/>
-  <line x1="12" y1="2" x2="12" y2="6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="12" y1="18" x2="12" y2="22" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="2" y1="12" x2="6" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-  <line x1="18" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+<svg width="256" height="256" viewBox="0 0 256 256" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <!-- Background gradient: deep charcoal -->
+    <linearGradient id="bg" x1="0" y1="0" x2="256" y2="256">
+      <stop offset="0%" stop-color="#1a1a1a"/>
+      <stop offset="100%" stop-color="#111111"/>
+    </linearGradient>
+
+    <!-- Red bead gradient with specular highlight -->
+    <radialGradient id="redBead" cx="40%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#ff4a42"/>
+      <stop offset="50%" stop-color="#e3120b"/>
+      <stop offset="100%" stop-color="#a80d08"/>
+    </radialGradient>
+
+    <!-- Dark bead gradient -->
+    <radialGradient id="darkBead" cx="40%" cy="35%" r="55%">
+      <stop offset="0%" stop-color="#555555"/>
+      <stop offset="50%" stop-color="#333333"/>
+      <stop offset="100%" stop-color="#1a1a1a"/>
+    </radialGradient>
+
+    <!-- Highlight reflection on beads -->
+    <radialGradient id="beadShine" cx="35%" cy="25%" r="30%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.55)"/>
+      <stop offset="100%" stop-color="rgba(255,255,255,0)"/>
+    </radialGradient>
+
+    <!-- Frame metallic gradient -->
+    <linearGradient id="frameMetal" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#999999"/>
+      <stop offset="50%" stop-color="#777777"/>
+      <stop offset="100%" stop-color="#555555"/>
+    </linearGradient>
+
+    <!-- Rod gradient -->
+    <linearGradient id="rodGrad" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#444444"/>
+      <stop offset="50%" stop-color="#666666"/>
+      <stop offset="100%" stop-color="#444444"/>
+    </linearGradient>
+
+    <!-- Subtle glow behind red beads -->
+    <filter id="redGlow" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feColorMatrix in="blur" type="matrix" values="1 0 0 0 0  0 0.1 0 0 0  0 0 0.05 0 0  0 0 0 0.3 0"/>
+      <feMerge>
+        <feMergeNode/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Shadow under beads -->
+    <filter id="beadShadow" x="-20%" y="-10%" width="140%" height="150%">
+      <feDropShadow dx="0" dy="1.5" stdDeviation="2" flood-color="#000000" flood-opacity="0.35"/>
+    </filter>
+
+    <!-- Rounded rect clip -->
+    <clipPath id="roundClip">
+      <rect width="256" height="256" rx="44" ry="44"/>
+    </clipPath>
+
+    <!-- Corner vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="70%">
+      <stop offset="60%" stop-color="transparent"/>
+      <stop offset="100%" stop-color="rgba(0,0,0,0.25)"/>
+    </radialGradient>
+  </defs>
+
+  <g clip-path="url(#roundClip)">
+
+    <!-- Background -->
+    <rect width="256" height="256" fill="url(#bg)"/>
+
+    <!-- Subtle grid texture -->
+    <g opacity="0.03">
+      <line x1="0" y1="64" x2="256" y2="64" stroke="#ffffff" stroke-width="0.5"/>
+      <line x1="0" y1="128" x2="256" y2="128" stroke="#ffffff" stroke-width="0.5"/>
+      <line x1="0" y1="192" x2="256" y2="192" stroke="#ffffff" stroke-width="0.5"/>
+      <line x1="64" y1="0" x2="64" y2="256" stroke="#ffffff" stroke-width="0.5"/>
+      <line x1="128" y1="0" x2="128" y2="256" stroke="#ffffff" stroke-width="0.5"/>
+      <line x1="192" y1="0" x2="192" y2="256" stroke="#ffffff" stroke-width="0.5"/>
+    </g>
+
+    <!-- Abacus frame -->
+    <rect x="48" y="46" width="160" height="164" rx="10" ry="10"
+          stroke="url(#frameMetal)" stroke-width="5" fill="none" opacity="0.85"/>
+    <rect x="50" y="48" width="156" height="160" rx="8" ry="8"
+          stroke="rgba(255,255,255,0.06)" stroke-width="1" fill="none"/>
+
+    <!-- Rods -->
+    <line x1="56" y1="94" x2="200" y2="94" stroke="url(#rodGrad)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="56" y1="132" x2="200" y2="132" stroke="url(#rodGrad)" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="56" y1="170" x2="200" y2="170" stroke="url(#rodGrad)" stroke-width="2.5" stroke-linecap="round"/>
+
+    <!-- Row 1 (y=94): red, red, dark -->
+    <g filter="url(#beadShadow)">
+      <circle cx="82" cy="94" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="82" cy="94" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="116" cy="94" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="116" cy="94" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="150" cy="94" r="14" fill="url(#darkBead)"/>
+      <circle cx="150" cy="94" r="14" fill="url(#beadShine)"/>
+    </g>
+
+    <!-- Row 2 (y=132): dark, red, red, dark -->
+    <g filter="url(#beadShadow)">
+      <circle cx="88" cy="132" r="14" fill="url(#darkBead)"/>
+      <circle cx="88" cy="132" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="122" cy="132" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="122" cy="132" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="156" cy="132" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="156" cy="132" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="186" cy="132" r="14" fill="url(#darkBead)"/>
+      <circle cx="186" cy="132" r="14" fill="url(#beadShine)"/>
+    </g>
+
+    <!-- Row 3 (y=170): red, dark, red, red -->
+    <g filter="url(#beadShadow)">
+      <circle cx="78" cy="170" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="78" cy="170" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="112" cy="170" r="14" fill="url(#darkBead)"/>
+      <circle cx="112" cy="170" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="146" cy="170" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="146" cy="170" r="14" fill="url(#beadShine)"/>
+    </g>
+    <g filter="url(#beadShadow)">
+      <circle cx="176" cy="170" r="14" fill="url(#redBead)" filter="url(#redGlow)"/>
+      <circle cx="176" cy="170" r="14" fill="url(#beadShine)"/>
+    </g>
+
+    <!-- Vignette overlay -->
+    <rect width="256" height="256" fill="url(#vignette)"/>
+  </g>
 </svg>
