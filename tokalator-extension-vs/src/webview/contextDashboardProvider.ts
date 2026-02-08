@@ -118,6 +118,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow })),
       tokenizerType: snapshot.tokenizerType,
       tokenizerLabel: snapshot.tokenizerLabel,
+      turnHistory: snapshot.turnHistory,
+      budgetBreakdown: snapshot.budgetBreakdown,
     };
 
     this.view.webview.postMessage({ type: 'snapshot', data: serialized });
@@ -314,6 +316,61 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .ws-warn { color: #f59e0b; }
     .ws-ok { color: #22c55e; opacity: 0.8; }
     .tokenizer { color: #60a5fa; font-style: italic; }
+
+    .breakdown-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 2px 8px;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+    .breakdown-label { opacity: 0.7; }
+    .breakdown-value { text-align: right; font-variant-numeric: tabular-nums; }
+    .breakdown-bar {
+      grid-column: 1 / -1;
+      height: 4px;
+      border-radius: 2px;
+      background: rgba(255,255,255,0.08);
+      margin: 2px 0 4px;
+      overflow: hidden;
+    }
+    .breakdown-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+    }
+    .breakdown-bar-fill.files { background: #60a5fa; }
+    .breakdown-bar-fill.system { background: #a78bfa; }
+    .breakdown-bar-fill.conversation { background: #f59e0b; }
+    .breakdown-bar-fill.output { background: #6b7280; }
+
+    .growth-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 2px;
+      height: 32px;
+      margin-bottom: 6px;
+    }
+    .growth-bar {
+      flex: 1;
+      min-width: 4px;
+      border-radius: 2px 2px 0 0;
+      background: #60a5fa;
+      opacity: 0.7;
+      position: relative;
+    }
+    .growth-bar:last-child { opacity: 1; }
+    .growth-bar:hover { opacity: 1; }
+    .growth-label {
+      font-size: 10px;
+      opacity: 0.5;
+      display: flex;
+      justify-content: space-between;
+    }
+    .suggestion {
+      font-size: 11px;
+      color: #f59e0b;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -337,7 +394,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     function render(s) {
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
               healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
-              models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel } = s;
+              models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel,
+              turnHistory, budgetBreakdown } = s;
 
       const threshold = 0.3;
       const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
@@ -382,6 +440,49 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
               ? '<span class="ws-warn">Exceeds context window — not all files can be attached</span>'
               : '<span class="ws-ok">Fits in context window</span>'
             }
+          </div>
+        \` : ''}
+
+        \${budgetBreakdown ? \`
+          <div class="section">
+            <div class="section-title">Budget Breakdown</div>
+            <div class="breakdown-grid">
+              <span class="breakdown-label">Files</span>
+              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.files)}</span>
+              <span class="breakdown-label">System</span>
+              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.systemPrompt)}</span>
+              <span class="breakdown-label">Instructions</span>
+              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.instructions)}</span>
+              <span class="breakdown-label">Conversation</span>
+              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.conversation)}</span>
+              <span class="breakdown-label">Output reserve</span>
+              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.outputReservation)}</span>
+            </div>
+            <div class="breakdown-bar">
+              <div style="display:flex;height:100%">
+                <div class="breakdown-bar-fill files" style="width:\${Math.round((budgetBreakdown.files/totalEstimatedTokens)*100)}%"></div>
+                <div class="breakdown-bar-fill system" style="width:\${Math.round(((budgetBreakdown.systemPrompt+budgetBreakdown.instructions)/totalEstimatedTokens)*100)}%"></div>
+                <div class="breakdown-bar-fill conversation" style="width:\${Math.round((budgetBreakdown.conversation/totalEstimatedTokens)*100)}%"></div>
+                <div class="breakdown-bar-fill output" style="width:\${Math.round((budgetBreakdown.outputReservation/totalEstimatedTokens)*100)}%"></div>
+              </div>
+            </div>
+          </div>
+        \` : ''}
+
+        \${turnHistory && turnHistory.length > 0 ? \`
+          <div class="section">
+            <div class="section-title">Context Growth (\${turnHistory.length} turns)</div>
+            <div class="growth-bars">
+              \${turnHistory.map(function(t) {
+                var pct = Math.max(5, Math.round((t.inputTokens / windowCapacity) * 100));
+                return '<div class="growth-bar" style="height:' + pct + '%" title="Turn ' + t.turn + ': ~' + fmtTokens(t.inputTokens) + '"></div>';
+              }).join('')}
+            </div>
+            <div class="growth-label">
+              <span>T1: ~\${fmtTokens(turnHistory[0].inputTokens)}</span>
+              <span>T\${turnHistory[turnHistory.length-1].turn}: ~\${fmtTokens(turnHistory[turnHistory.length-1].inputTokens)}</span>
+            </div>
+            \${turnHistory.length >= 2 ? '<div class="suggestion">+' + fmtTokens(Math.round((turnHistory[turnHistory.length-1].inputTokens - turnHistory[0].inputTokens) / (turnHistory.length-1))) + '/turn avg growth</div>' : ''}
           </div>
         \` : ''}
 
