@@ -9,7 +9,7 @@ import { ContextChatParticipant } from './chat/contextChatParticipant';
  * Activates:
  *  1. ContextMonitor — core engine tracking editor state
  *  2. ContextDashboardProvider — sidebar webview panel
- *  3. ContextChatParticipant — @tokens chat commands
+ *  3. ContextChatParticipant — @tokalator chat commands
  *  4. Commands — refresh, optimize, clearPins
  */
 export function activate(context: vscode.ExtensionContext): void {

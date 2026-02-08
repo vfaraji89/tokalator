@@ -102,7 +102,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     const distractors = snapshot.tabs.filter(t => t.relevanceScore < threshold && !t.isActive && !t.isPinned);
 
     if (distractors.length > 0) {
-      stream.markdown(`\n> **${distractors.length} low-relevance tabs** — run \`@tokens /optimize\` to close them\n`);
+      stream.markdown(`\n> **${distractors.length} low-relevance tabs** — run \`@tokalator /optimize\` to close them\n`);
     }
 
     return {};
