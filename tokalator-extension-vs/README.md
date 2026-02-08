@@ -21,14 +21,16 @@ A sidebar panel that shows your context usage at a glance:
 - **One-click cleanup** — close low-relevance tabs instantly
 - **Pinned files** — mark files as always-relevant (persists across sessions)
 
-### Chat Commands (`@tokens`)
+### Chat Commands (`@tokalator`)
 
 | Command | Description |
 |---------|-------------|
-| `@tokens /count` | Current token count and budget level |
-| `@tokens /breakdown` | See where tokens are going |
-| `@tokens /optimize` | Close low-relevance tabs |
-| `@tokens /pin <file>` | Pin a file as always-relevant |
+| `@tokalator /count` | Current token count and budget level |
+| `@tokalator /breakdown` | See where tokens are going |
+| `@tokalator /optimize` | Close low-relevance tabs |
+| `@tokalator /pin <file>` | Pin a file as always-relevant |
+| `@tokalator /instructions` | List instruction files and their token cost |
+| `@tokalator /model [name]` | Show or switch the active model |
 
 ### Smart Relevance Scoring
 
@@ -49,7 +51,7 @@ Files are scored based on:
 ## Usage
 
 1. **Sidebar**: Click the abacus icon (🧮) in the Activity Bar
-2. **Chat**: Type `@tokens` in Copilot/Claude Chat
+2. **Chat**: Type `@tokalator` in Copilot/Claude Chat
 3. **Status Bar**: Quick budget indicator in bottom-right
 
 ## Settings
