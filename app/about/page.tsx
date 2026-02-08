@@ -17,6 +17,21 @@ const GitHubIcon = () => (
   </svg>
 );
 
+const LinkedInIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+  </svg>
+);
+
+const ArxivIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+    <line x1="9" y1="8" x2="17" y2="8" />
+    <line x1="9" y1="12" x2="15" y2="12" />
+  </svg>
+);
+
 export default function AboutPage() {
   return (
     <article className="article">
@@ -34,32 +49,73 @@ export default function AboutPage() {
         <p className="hero-description">Token budget management tools for AI coding assistants</p>
       </header>
 
+      {/* Author */}
       <section>
         <h2>Author</h2>
         <div className="author-card">
           <div className="author-info">
             <h3>Vahid Faraji</h3>
-            <p>Creator and maintainer of Tokalator — building tools that help developers understand and optimize their AI context consumption.</p>
-            <a
-              href="https://github.com/vfaraji89"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="github-link"
-            >
-              <GitHubIcon />
-              github.com/vfaraji89
-            </a>
+            <p className="about-role">Sr. Applied AI Specialist · Istanbul</p>
+            <p>
+              8+ years leading cross-functional engineering and AI teams.
+              Currently driving enterprise LLM pipelines and AI-powered automation at Kariyer.net — designing
+              token-efficient prompt architectures adopted as organizational standards.
+            </p>
+            <p style={{ marginTop: "0.75rem" }}>
+              Previously shipped a metadata management system serving 5M+ monthly users across 15+ ML models,
+              led a $40K+ cost optimization initiative with intelligent model routing and response caching,
+              and built self-service analytics platforms that cut team backlog by 40%.
+            </p>
+            <div className="about-links">
+              <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="github-link">
+                <GitHubIcon /> GitHub
+              </a>
+              <a href="https://linkedin.com/in/vfaraji89" target="_blank" rel="noopener noreferrer" className="github-link">
+                <LinkedInIcon /> LinkedIn
+              </a>
+              <a href="https://arxiv.org/abs/2601.22885" target="_blank" rel="noopener noreferrer" className="github-link">
+                <ArxivIcon /> Publication
+              </a>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* Highlights */}
+      <section>
+        <h2>Highlights</h2>
+        <div className="about-highlights">
+          <div className="about-highlight-card">
+            <span className="about-highlight-icon">◈</span>
+            <h4>Enterprise AI at Scale</h4>
+            <p>LLM pipelines, text-to-SQL, feedback automation — serving 100+ internal users with 60% reduction in manual ops.</p>
+          </div>
+          <div className="about-highlight-card">
+            <span className="about-highlight-icon">⬡</span>
+            <h4>Cost Optimization</h4>
+            <p>$40K+ annual savings through model routing, caching, and request batching across 3+ engineering teams.</p>
+          </div>
+          <div className="about-highlight-card">
+            <span className="about-highlight-icon">◎</span>
+            <h4>Published Researcher</h4>
+            <p><em>Leveraging LLMs For Turkish Skill Extraction</em> — arXiv:2601.22885. M.A. in Economics with a data-driven thesis.</p>
+          </div>
+          <div className="about-highlight-card">
+            <span className="about-highlight-icon">♦</span>
+            <h4>Multilingual</h4>
+            <p>Turkish (native), English (C1), Spanish (instructor level), Portuguese (basic) — career mentor and AI speaker.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* Project */}
       <section>
         <h2>Project</h2>
         <p>Tokalator is an open-source project. The codebase includes:</p>
         <ul>
-          <li><strong>VS Code Extension</strong> — Real-time token budget dashboard, tab relevance scoring, and @tokalator chat participant</li>
+          <li><strong>VS Code Extension</strong> — Real-time token budget dashboard, tab relevance scoring, and @tokalator chat participant with real BPE tokenizers</li>
           <li><strong>Web Tools</strong> — Cost calculators, model comparison, caching ROI analysis, and context optimization guides</li>
-          <li><strong>Context Engineering Library</strong> — Curated agents, instructions, and prompts for better AI interactions</li>
+          <li><strong>Context Engineering Library</strong> — Curated agents, instructions, and prompts contributed to <a href="https://github.com/github/awesome-copilot" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>awesome-copilot</a></li>
         </ul>
         <a
           href="https://github.com/vfaraji89/tokalator"
@@ -73,6 +129,7 @@ export default function AboutPage() {
         </a>
       </section>
 
+      {/* License */}
       <section>
         <h2>License</h2>
         <p>MIT License — free for personal and commercial use.</p>
