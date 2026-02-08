@@ -1387,6 +1387,59 @@ html, body {
   text-decoration: none;
 }
 
+/* About page */
+.about-role {
+  font-size: 0.8125rem;
+  color: var(--accent);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  margin-bottom: 0.75rem !important;
+}
+
+.about-links {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1.25rem;
+}
+
+.about-highlights {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.about-highlight-card {
+  padding: 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--bg-subtle);
+  transition: border-color 0.2s ease;
+}
+.about-highlight-card:hover {
+  border-color: var(--accent);
+}
+
+.about-highlight-icon {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--accent);
+  margin-bottom: 0.5rem;
+}
+
+.about-highlight-card h4 {
+  font-size: 0.875rem;
+  font-weight: 600;
+  margin-bottom: 0.35rem;
+}
+
+.about-highlight-card p {
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
 /* Wiki terms */
 .wiki-terms {
   display: flex;
@@ -2714,6 +2767,10 @@ kbd {
 
   .author-card {
     padding: 1rem;
+  }
+
+  .about-highlights {
+    grid-template-columns: 1fr;
   }
 
   pre {
