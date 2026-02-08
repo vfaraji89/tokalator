@@ -317,6 +317,32 @@ export default function HomePage() {
       </section>
 
       <footer className="footer">
+        <div className="footer-nav">
+          <div className="footer-nav-col">
+            <h4 className="footer-nav-heading">Get Started</h4>
+            <Link href="/extension">Install Extension</Link>
+            <Link href="/learn">Learn Tokens</Link>
+            <Link href="/calculator">Cost Calculator</Link>
+          </div>
+          <div className="footer-nav-col">
+            <h4 className="footer-nav-heading">Resources</h4>
+            <Link href="/wiki">Wiki</Link>
+            <Link href="/dictionary">Dictionary</Link>
+            <Link href="/context-engineering">Context Engineering</Link>
+          </div>
+          <div className="footer-nav-col">
+            <h4 className="footer-nav-heading">Catalog</h4>
+            <Link href="/agents">Agents</Link>
+            <Link href="/prompts">Prompts</Link>
+            <Link href="/instructions">Instructions</Link>
+          </div>
+          <div className="footer-nav-col">
+            <h4 className="footer-nav-heading">Project</h4>
+            <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer">GitHub</a>
+            <Link href="/about">About</Link>
+            <Link href="/pro">Tokalator Pro</Link>
+          </div>
+        </div>
         <div className="footer-main">
           <span className="footer-brand">&copy; 2026 @Tokalator.</span>
           <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="footer-author-link">Vahid Faraji</a>
