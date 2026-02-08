@@ -9,29 +9,24 @@ A context engineering toolkit for AI coding. Website + VS Code extension + reusa
 
 ## Why
 
-AI assistants have finite context windows. When you have 30 tabs open, your assistant's attention gets diluted across irrelevant files. You can't see what's happening -- how many tokens you're using, which files matter, when context rot starts to kick in.
-
-Tokalator makes that visible.
-
-## The Website
+AI assistants have finite context windows. When you have 30 tabs open, your assistant's attention gets diluted across irrelevant files. 
+You can't see what's happening -- how many tokens you're using, which files matter, when context rot starts to kick in.
 
 A set of calculators and tools for understanding AI token economics:
 
-- Token calculator with real-time pricing across 40+ models
+- Token calculator with real-time pricing across updated models
 - Model comparison -- context windows, costs, capabilities side by side
 - Caching calculator for estimating prompt caching savings
 - Conversation estimator that predicts when context rot will hit
 - Context optimizer for building token budgets
-- A 10-lesson course on context engineering
-- A wiki with 41 terms defined
-
-Built with Next.js, React, Tailwind. Hosted on Vercel.
+- A interactive course on context engineering
+- A wiki with +40 terms defined.
 
 ## The Extension
 
 A VS Code sidebar that tracks your context budget in real time:
 
-- Shows token usage as LOW / MEDIUM / HIGH (no fake percentages)
+- Shows token usage as LOW / MEDIUM / HIGH
 - Ranks open files by relevance to what you're actually working on
 - One click to close the noise
 - Pin important files so they're always counted
