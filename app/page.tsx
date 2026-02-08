@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import content from "../content/homepage.json";
 import { DemoMockup } from "../components/demo-mockup";
+import { IstanbulCat } from "../components/istanbul-cat";
 
 function LiveClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -289,28 +290,8 @@ export default function HomePage() {
           <div className="community-values">
             <span className="community-value"><span className="community-value-icon">♥</span> Free forever</span>
             <span className="community-value"><span className="community-value-icon">◎</span> MIT licensed</span>
-            <span className="community-value">
-              <span className="community-value-icon istanbul-icon">
-                <svg width="22" height="16" viewBox="0 0 44 32" fill="currentColor" aria-label="Istanbul mosque silhouette">
-                  {/* Galata Tower */}
-                  <rect x="2" y="14" width="4" height="18" rx="1" opacity="0.5"/>
-                  <polygon points="4,8 1,14 7,14" opacity="0.5"/>
-                  {/* Main dome */}
-                  <ellipse cx="22" cy="14" rx="10" ry="9"/>
-                  <rect x="18" y="14" width="8" height="18" rx="1"/>
-                  {/* Central minaret */}
-                  <rect x="21" y="2" width="2" height="12" rx="0.5"/>
-                  <circle cx="22" cy="1.5" r="1.5"/>
-                  {/* Left minaret */}
-                  <rect x="11" y="8" width="1.5" height="24" rx="0.5"/>
-                  <circle cx="11.75" cy="7.5" r="1"/>
-                  {/* Right minaret */}
-                  <rect x="31.5" y="8" width="1.5" height="24" rx="0.5"/>
-                  <circle cx="32.25" cy="7.5" r="1"/>
-                  {/* Bosphorus wave */}
-                  <path d="M0,30 Q6,27 11,30 Q16,33 22,30 Q28,27 33,30 Q38,33 44,30" fill="none" stroke="currentColor" strokeWidth="1.2" opacity="0.4"/>
-                </svg>
-              </span>
+            <span className="community-value community-value--istanbul">
+              <IstanbulCat />
               Made in Istanbul
             </span>
           </div>
