@@ -2134,6 +2134,21 @@ kbd {
   font-size: 0.85rem;
 }
 
+.istanbul-icon {
+  display: inline-flex;
+  align-items: center;
+}
+
+.istanbul-icon svg {
+  filter: drop-shadow(0 0 3px rgba(227, 18, 11, 0.25));
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.community-value:hover .istanbul-icon svg {
+  transform: scale(1.15);
+  filter: drop-shadow(0 0 6px rgba(227, 18, 11, 0.45));
+}
+
 /* Footer */
 .footer {
   margin-top: 4rem;
