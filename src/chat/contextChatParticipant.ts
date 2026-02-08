@@ -11,9 +11,12 @@ import { ContextSnapshot, TabInfo } from '../core/types';
  *  /count        — Show current token count and budget level
  *  /optimize     — Close low-relevance tabs
  *  /pin          — Pin a file as always-relevant
+ *  /unpin        — Unpin a file
  *  /breakdown    — Show where tokens are going
  *  /instructions — List and estimate tokens for instruction files
  *  /model        — Show or switch the active AI model
+ *  /compaction   — Per-turn token growth and compaction recommendations
+ *  /reset        — Reset session state (turn counter)
  */
 export class ContextChatParticipant implements vscode.Disposable {
 
@@ -35,9 +38,9 @@ export class ContextChatParticipant implements vscode.Disposable {
     token: vscode.CancellationToken,
   ): Promise<vscode.ChatResult> {
 
-    // Only count turns for commands that modify state (optimize, pin)
+    // Only count turns for commands that modify state (optimize, pin, unpin)
     // Read-only commands (count, breakdown) don't contribute to context rot
-    const isModifyingCommand = request.command === 'optimize' || request.command === 'pin';
+    const isModifyingCommand = request.command === 'optimize' || request.command === 'pin' || request.command === 'unpin';
     if (isModifyingCommand) {
       this.monitor.incrementChatTurns();
     }
@@ -52,6 +55,9 @@ export class ContextChatParticipant implements vscode.Disposable {
       case 'pin':
         return this.handlePin(request, stream);
 
+      case 'unpin':
+        return this.handleUnpin(request, stream);
+
       case 'breakdown':
         return this.handleBreakdown(stream);
 
@@ -60,6 +66,12 @@ export class ContextChatParticipant implements vscode.Disposable {
 
       case 'model':
         return this.handleModel(request, stream);
+
+      case 'reset':
+        return this.handleReset(stream);
+
+      case 'compaction':
+        return this.handleCompaction(stream);
 
       default:
         return this.handleDefault(request, stream);
@@ -172,6 +184,168 @@ export class ContextChatParticipant implements vscode.Disposable {
   }
 
   /**
+   * /unpin — Unpin a file
+   */
+  private async handleUnpin(
+    request: vscode.ChatRequest,
+    stream: vscode.ChatResponseStream,
+  ): Promise<vscode.ChatResult> {
+    const promptValue = this.stripQuotes(request.prompt.trim());
+    let targets: vscode.Uri[] = [];
+
+    if (!promptValue) {
+      const activeUri = vscode.window.activeTextEditor?.document.uri;
+      if (!activeUri) {
+        stream.markdown('Specify a file to unpin or focus the file you want to unpin. Example: `@tokalator /unpin src/auth.ts`\n');
+        return {};
+      }
+      targets = [activeUri];
+    } else {
+      targets = await this.resolveUrisFromInput(promptValue);
+      if (targets.length === 0) {
+        stream.markdown(`No file found matching \`${promptValue}\`\n`);
+        return {};
+      }
+    }
+
+    const uniqueTargets = this.dedupeUris(targets);
+    const unpinnedLabels: string[] = [];
+
+    for (const uri of uniqueTargets) {
+      this.monitor.unpinFile(uri.toString());
+      unpinnedLabels.push(vscode.workspace.asRelativePath(uri, false));
+    }
+
+    const header = unpinnedLabels.length === 1 ? 'Unpinned file:' : 'Unpinned files:';
+    const list = unpinnedLabels
+      .map(label => `- \`${label}\``)
+      .join('\n');
+
+    stream.markdown(`${header}\n${list}\n\nThese files will now be scored by normal relevance rules.\n`);
+    return {};
+  }
+
+  /**
+   * /reset — Reset session state (turn counter and optionally pins)
+   */
+  private async handleReset(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
+    const turnsBefore = this.monitor.getChatTurnCount();
+    this.monitor.resetChatTurns();
+
+    stream.markdown(`## Session Reset\n\n`);
+    stream.markdown(`- Chat turns: ${turnsBefore} → 0\n`);
+    stream.markdown(`- Context rot tracking cleared\n\n`);
+    stream.markdown(`> To also clear pinned files, run \`@tokalator /unpin\` or use the **Clear All Pinned Files** command.\n`);
+    return {};
+  }
+
+  /**
+   * /compaction — Per-turn token growth and compaction recommendations
+   */
+  private async handleCompaction(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
+    await this.monitor.refresh();
+    const snapshot = this.monitor.getLatestSnapshot();
+
+    if (!snapshot) {
+      stream.markdown('Unable to get compaction data.');
+      return {};
+    }
+
+    const model = this.monitor.getActiveModel();
+    const history = snapshot.turnHistory;
+    const breakdown = snapshot.budgetBreakdown;
+
+    stream.markdown(`## Context Growth\n\n`);
+
+    // Current budget breakdown
+    stream.markdown(`### Budget Breakdown\n\n`);
+    stream.markdown(`| Category | Tokens | % of Window |\n|---|---|---|\n`);
+    const entries: [string, number][] = [
+      ['Files', breakdown.files],
+      ['System prompt', breakdown.systemPrompt],
+      ['Instructions', breakdown.instructions],
+      ['Conversation', breakdown.conversation],
+      ['Output reserve', breakdown.outputReservation],
+    ];
+    for (const [label, tokens] of entries) {
+      const pct = ((tokens / snapshot.windowCapacity) * 100).toFixed(1);
+      stream.markdown(`| ${label} | ~${this.fmtTokens(tokens)} | ${pct}% |\n`);
+    }
+    stream.markdown(`| **Total** | **~${this.fmtTokens(snapshot.totalEstimatedTokens)}** | **${snapshot.usagePercent.toFixed(1)}%** |\n\n`);
+
+    // Per-turn history table
+    if (history.length > 0) {
+      stream.markdown(`### Turn History\n\n`);
+      stream.markdown(`| Turn | Input | Files | Overhead | Tabs | Pinned |\n|---|---|---|---|---|---|\n`);
+
+      for (const t of history) {
+        stream.markdown(`| ${t.turn} | ~${this.fmtTokens(t.inputTokens)} | ~${this.fmtTokens(t.fileTokens)} | ~${this.fmtTokens(t.overheadTokens)} | ${t.tabCount} | ${t.pinnedCount} |\n`);
+      }
+
+      // Growth analysis
+      stream.markdown(`\n### Growth Analysis\n\n`);
+
+      const avgGrowth = history.length >= 2
+        ? (history[history.length - 1].inputTokens - history[0].inputTokens) / (history.length - 1)
+        : 0;
+
+      const firstFile = history[0].fileTokens;
+      const lastFile = history[history.length - 1].fileTokens;
+      const fileTrend = lastFile > firstFile * 1.1 ? 'growing' : lastFile < firstFile * 0.9 ? 'shrinking' : 'stable';
+
+      stream.markdown(`- **Conversation cost:** ~800 tokens/turn (estimated)\n`);
+      if (history.length >= 2) {
+        stream.markdown(`- **Input growth rate:** ~${this.fmtTokens(Math.round(avgGrowth))}/turn\n`);
+      }
+      stream.markdown(`- **File tokens:** ${fileTrend} (${this.fmtTokens(firstFile)} → ${this.fmtTokens(lastFile)})\n`);
+      stream.markdown(`- **Output reserved:** ~${this.fmtTokens(model.maxOutput)} per response\n\n`);
+    } else {
+      stream.markdown(`*No turn history yet.* Use \`@tokalator /pin\`, \`/optimize\`, or \`/unpin\` to start tracking.\n\n`);
+    }
+
+    // Actionable suggestions
+    const suggestions: string[] = [];
+
+    const config = vscode.workspace.getConfiguration('tokalator');
+    const threshold = config.get<number>('relevanceThreshold', 0.3);
+    const distractors = snapshot.tabs.filter(t => t.relevanceScore < threshold && !t.isActive && !t.isPinned);
+    if (distractors.length > 0) {
+      const saveable = distractors.reduce((s, t) => s + t.estimatedTokens, 0);
+      suggestions.push(`Close ${distractors.length} low-relevance tabs to save ~${this.fmtTokens(saveable)} tokens`);
+    }
+
+    const turnsLeft = model.rotThreshold - snapshot.chatTurnCount;
+    if (turnsLeft <= 5 && turnsLeft > 0) {
+      suggestions.push(`${turnsLeft} turns until context rot threshold (${model.rotThreshold}) — consider \`/reset\``);
+    } else if (turnsLeft <= 0) {
+      suggestions.push(`Past context rot threshold (${model.rotThreshold} turns) — run \`/reset\` to clear`);
+    }
+
+    const inputPct = snapshot.usagePercent;
+    if (inputPct >= 80) {
+      suggestions.push(`Input is ${inputPct.toFixed(0)}% of window — compaction point reached`);
+    } else if (inputPct >= 60) {
+      suggestions.push(`Input is ${inputPct.toFixed(0)}% of window — approaching compaction point`);
+    }
+
+    const pinnedCount = snapshot.pinnedFiles.size;
+    if (pinnedCount > 5) {
+      suggestions.push(`${pinnedCount} files pinned — unpin files you're done with`);
+    }
+
+    if (suggestions.length > 0) {
+      stream.markdown(`### Recommendations\n\n`);
+      for (const s of suggestions) {
+        stream.markdown(`- ${s}\n`);
+      }
+    } else {
+      stream.markdown(`> Context looks healthy — no compaction needed yet.\n`);
+    }
+
+    return {};
+  }
+
+  /**
    * /breakdown — Where are tokens going
    */
   private async handleBreakdown(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
@@ -237,8 +411,11 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| \`@tokalator /breakdown\` | See where tokens are going |\n`);
     stream.markdown(`| \`@tokalator /optimize\` | Close low-relevance tabs |\n`);
     stream.markdown(`| \`@tokalator /pin <file>\` | Pin a file as always-relevant |\n`);
+    stream.markdown(`| \`@tokalator /unpin <file>\` | Unpin a file |\n`);
     stream.markdown(`| \`@tokalator /instructions\` | List instruction files and their token cost |\n`);
-    stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n\n`);
+    stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n`);
+    stream.markdown(`| \`@tokalator /compaction\` | Per-turn growth and compaction advice |\n`);
+    stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n\n`);
 
     if (snapshot) {
       const levelEmoji = snapshot.budgetLevel === 'low' ? '🟢'

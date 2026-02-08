@@ -81,6 +81,18 @@
           {
             "name": "model",
             "description": "Show or switch the active AI model"
+          },
+          {
+            "name": "unpin",
+            "description": "Unpin a file so it returns to normal relevance scoring"
+          },
+          {
+            "name": "reset",
+            "description": "Reset session state (chat turn counter)"
+          },
+          {
+            "name": "compaction",
+            "description": "Show per-turn token growth and compaction recommendations"
           }
         ]
       }

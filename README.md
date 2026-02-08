@@ -29,8 +29,11 @@ A sidebar panel that shows your context usage at a glance:
 | `@tokalator /breakdown` | See where tokens are going |
 | `@tokalator /optimize` | Close low-relevance tabs |
 | `@tokalator /pin <file>` | Pin a file as always-relevant |
+| `@tokalator /unpin <file>` | Unpin a file |
 | `@tokalator /instructions` | List instruction files and their token cost |
 | `@tokalator /model [name]` | Show or switch the active model |
+| `@tokalator /compaction` | Per-turn growth and compaction advice |
+| `@tokalator /reset` | Reset session (clear turn counter) |
 
 ### Smart Relevance Scoring
 

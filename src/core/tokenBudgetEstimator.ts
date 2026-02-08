@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TabInfo } from './types';
+import { TabInfo, BudgetBreakdown } from './types';
 import { TokenizerService } from './tokenizerService';
 
 /**
@@ -130,10 +130,4 @@ export class TokenBudgetEstimator {
   }
 }
 
-export interface BudgetBreakdown {
-  files: number;
-  systemPrompt: number;
-  instructions: number;
-  conversation: number;
-  outputReservation: number;
-}
+// BudgetBreakdown is defined in types.ts
