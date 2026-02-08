@@ -35,7 +35,7 @@ A VS Code sidebar that tracks your context budget in real time:
 - Ranks open files by relevance to what you're actually working on
 - One click to close the noise
 - Pin important files so they're always counted
-- Chat commands via `@tokens` -- count, optimize, pin, breakdown
+- Chat commands via `@tokalator` — count, optimize, pin, breakdown, instructions, model
 
 Scores files based on language match, import relationships, path proximity, edit recency, and diagnostics.
 

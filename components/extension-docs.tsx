@@ -7,9 +7,9 @@ const features = [
     command: 'View via sidebar icon',
   },
   {
-    name: '@tokens Chat Participant',
+    name: '@tokalator Chat Participant',
     description: 'Integrated chat commands for inline budget management directly in Copilot or Claude Chat.',
-    command: '@tokens /count, /optimize, /pin, /breakdown',
+    command: '@tokalator /count, /optimize, /breakdown, /pin, /instructions, /model',
   },
   {
     name: 'Tab Relevance Scoring',
@@ -29,7 +29,7 @@ const features = [
   {
     name: 'Pinned Files',
     description: 'Pin important files so they are always treated as high-relevance, even if not actively edited.',
-    command: '@tokens /pin <file>',
+    command: '@tokalator /pin <file>',
   },
 ];
 

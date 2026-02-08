@@ -57,7 +57,7 @@ export default function AboutPage() {
         <h2>Project</h2>
         <p>Tokalator is an open-source project. The codebase includes:</p>
         <ul>
-          <li><strong>VS Code Extension</strong> — Real-time token budget dashboard, tab relevance scoring, and @tokens chat participant</li>
+          <li><strong>VS Code Extension</strong> — Real-time token budget dashboard, tab relevance scoring, and @tokalator chat participant</li>
           <li><strong>Web Tools</strong> — Cost calculators, model comparison, caching ROI analysis, and context optimization guides</li>
           <li><strong>Context Engineering Library</strong> — Curated agents, instructions, and prompts for better AI interactions</li>
         </ul>

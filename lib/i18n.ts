@@ -27,7 +27,7 @@ export const translations = {
     project: "Project",
     projectDesc: "Tokalator is an open-source project. The codebase includes:",
     vsCodeExtension: "VS Code Extension",
-    vsCodeExtensionDesc: "Real-time token budget dashboard, tab relevance scoring, and @tokens chat participant",
+    vsCodeExtensionDesc: "Real-time token budget dashboard, tab relevance scoring, and @tokalator chat participant",
     webTools: "Web Tools",
     webToolsDesc: "Cost calculators, model comparison, caching ROI analysis, and context optimization guides",
     contextLibrary: "Context Engineering Library",
