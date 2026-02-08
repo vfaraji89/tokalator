@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.6 — 2026-02-08
+
+### Changed
+
+- New marketplace icon: minimal abacus with red/dark beads, metallic frame, specular reflections on dark charcoal background — matches site branding
+
 ## 0.2.5 — 2026-02-08
 
 ### Added
