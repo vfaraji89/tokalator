@@ -19,6 +19,32 @@ export interface TabInfo {
 }
 
 /**
+ * Snapshot of token state at a specific chat turn.
+ * Captured each time incrementChatTurns() is called.
+ */
+export interface TurnSnapshot {
+  turn: number;
+  timestamp: number;
+  inputTokens: number;      // files + overhead (everything the model reads)
+  outputReserved: number;    // model's maxOutput reservation
+  fileTokens: number;        // file portion only
+  overheadTokens: number;    // system prompt + instructions + conversation history
+  tabCount: number;
+  pinnedCount: number;
+}
+
+/**
+ * Budget breakdown by category.
+ */
+export interface BudgetBreakdown {
+  files: number;
+  systemPrompt: number;
+  instructions: number;
+  conversation: number;
+  outputReservation: number;
+}
+
+/**
  * Full snapshot of the context window state at a point in time.
  */
 export interface ContextSnapshot {
@@ -40,6 +66,8 @@ export interface ContextSnapshot {
   workspaceFileTokens: number;
   tokenizerType: string;
   tokenizerLabel: string;
+  turnHistory: TurnSnapshot[];
+  budgetBreakdown: BudgetBreakdown;
 }
 
 /**

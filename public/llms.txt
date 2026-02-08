@@ -1,0 +1,58 @@
+# Tokalator
+
+> Real-time context budget calculator for AI coding assistants. Count your tokens like beads on an abacus. A VS Code extension and open catalog of AI instructions, prompts, and agents.
+
+Tokalator helps developers understand and optimize their AI context window usage. It provides real-time token counting with model-specific tokenizers, tab relevance scoring, and context rot warnings.
+
+## VS Code Extension
+
+The Tokalator extension (v0.2.4) runs inside VS Code and provides:
+
+- A sidebar dashboard showing token budget level (LOW/MEDIUM/HIGH), per-file breakdown, and relevance scores
+- A `@tokalator` chat participant with 8 commands for inline context management
+- Real BPE tokenizers: Claude BPE for Anthropic models, o200k_base for OpenAI, heuristic for Gemini
+- 13 built-in model profiles covering Claude Opus 4.6, Sonnet 4.5/4, GPT-5.2/5.1/4o, o3, o4-mini, Gemini 3 Pro/Flash, Gemini 2.5 Pro
+- Tab relevance scoring based on import relationships, path similarity, edit recency, and diagnostics
+- File pinning that persists across sessions
+- Context rot warnings when chat turns exceed model-specific thresholds
+
+### Chat Commands
+
+- `@tokalator /count` — Current token count and budget level
+- `@tokalator /breakdown` — See where tokens are going
+- `@tokalator /optimize` — Close low-relevance tabs
+- `@tokalator /pin <file>` — Pin a file as always-relevant
+- `@tokalator /unpin <file>` — Unpin a file
+- `@tokalator /instructions` — List instruction files and their token cost
+- `@tokalator /model [name]` — Show or switch the active model
+- `@tokalator /compaction` — Per-turn token growth and compaction recommendations
+- `@tokalator /reset` — Reset session state (clear turn counter)
+
+### Configuration
+
+- `tokalator.model` — AI model to calculate budget against (default: claude-opus-4.6)
+- `tokalator.relevanceThreshold` — Tabs below this score are marked low-relevance (default: 0.3)
+- `tokalator.windowSize` — Context window size override in tokens (default: 1,000,000)
+- `tokalator.autoRefreshInterval` — Dashboard refresh interval in ms (default: 2000)
+
+## Open Catalog
+
+The Tokalator website hosts a curated catalog of AI coding resources:
+
+- 146+ agent definitions (.agent.md files)
+- 140+ reusable prompts (.prompt.md files)
+- 161+ instruction sets (.instructions.md files)
+- 39+ curated collections (.collection.yml files)
+
+Resources span multiple ecosystems: GitHub Copilot, Claude Code, and universal formats.
+
+## Tools
+
+- Token Calculator — count tokens across different models and tokenizers
+- Context Window Visualizer — see how your context budget is distributed
+
+## Links
+
+- [Install from VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator)
+- [Source on GitHub](https://github.com/vfaraji89/tokalator)
+- [Website](https://tokalator.wiki)
