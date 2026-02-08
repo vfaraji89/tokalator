@@ -1,0 +1,995 @@
+% !TEX program = pdflatex
+% Tokalator: A Context Engineering Toolkit for AI Coding Assistants
+% Vahid Faraji — February 2026
+% arXiv preprint format
+
+\documentclass[11pt,a4paper]{article}
+
+% ── Packages ──────────────────────────────────────────────
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{lmodern}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{natbib}
+\usepackage{doi}
+\usepackage{authblk}
+\usepackage{microtype}
+\usepackage{fancyhdr}
+\usepackage{float}
+
+% ── Colours ───────────────────────────────────────────────
+\definecolor{tokalatorred}{HTML}{E3120B}
+\definecolor{codebg}{HTML}{F8F8F8}
+\definecolor{codeframe}{HTML}{DDDDDD}
+\definecolor{linkblue}{HTML}{0066CC}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=tokalatorred,
+  citecolor=tokalatorred,
+  urlcolor=linkblue,
+  pdftitle={Tokalator: A Context Engineering Toolkit for AI Coding Assistants},
+  pdfauthor={Vahid Faraji},
+}
+
+% ── Listing style ─────────────────────────────────────────
+\lstset{
+  backgroundcolor=\color{codebg},
+  frame=single,
+  rulecolor=\color{codeframe},
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{tokalatorred}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{teal},
+  breaklines=true,
+  breakatwhitespace=true,
+  tabsize=2,
+  showstringspaces=false,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  xleftmargin=1.5em,
+  framexleftmargin=1.5em,
+}
+
+% ── Theorems ──────────────────────────────────────────────
+\newtheorem{definition}{Definition}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+
+% ── Header ────────────────────────────────────────────────
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textit{Tokalator — Context Engineering Toolkit}}
+\fancyhead[R]{\small\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+
+% ══════════════════════════════════════════════════════════
+%  FRONT MATTER
+% ══════════════════════════════════════════════════════════
+
+\title{%
+  \textbf{Tokalator: A Context Engineering Toolkit\\
+  for AI Coding Assistants}\\[0.5em]
+  \large Token Budget Management, Cobb--Douglas Quality Modeling,\\
+  and Multi-Provider Cost Optimization
+}
+
+\author[1]{Vahid Faraji}
+\affil[1]{Independent Researcher, Istanbul, Turkey}
+\date{February 2026}
+
+\begin{document}
+\maketitle
+
+% ── Abstract ──────────────────────────────────────────────
+\begin{abstract}
+Large language model (LLM) coding assistants operate within finite context windows ranging from 128\,K to 1\,M tokens.
+When developers open dozens of files, the assistant's effective attention degrades and API costs grow super-linearly.
+Yet no standard tooling exists to make this budget visible or optimizable.
+We present \textbf{Tokalator}, an open-source context engineering toolkit comprising three components:
+(1)~a VS~Code extension that monitors token budgets in real time, scores tab relevance, and exposes an interactive \texttt{@tokalator} chat participant;
+(2)~a web platform with seven interactive calculators grounded in a Cobb--Douglas quality-of-output production function;
+and (3)~a reusable library of context engineering prompts, agents, and instructions contributed to the GitHub Copilot ecosystem.
+Tokalator covers 15 models across Anthropic, OpenAI, and Google, and provides closed-form solutions for optimal token allocation, caching break-even analysis, and multi-turn conversation cost projection under three context management strategies.
+The project is MIT-licensed, free, and publicly available at \url{https://tokalator.wiki} and on the VS~Code Marketplace.
+\end{abstract}
+
+\smallskip
+\noindent\textbf{Keywords:}
+context engineering, token economics, LLM cost optimization, context window, prompt caching, VS~Code extension, Cobb--Douglas production function
+
+\tableofcontents
+
+% ══════════════════════════════════════════════════════════
+% 1. INTRODUCTION
+% ══════════════════════════════════════════════════════════
+\section{Introduction}
+\label{sec:intro}
+
+Modern AI coding assistants---GitHub Copilot, Claude Code, Cursor, Windsurf---are powered by large language models with context windows of 128\,K to 1\,M tokens.
+Every open tab, system prompt, instruction file, and conversation turn consumes part of this budget.
+The economic implications are significant: at Anthropic's Claude Opus~4.6 pricing of \$5.00 per million input tokens and \$25.00 per million output tokens, a single 200\,K-token prompt costs \$1.00 in input alone.
+
+Despite this, developers lack visibility into how their context budget is spent.
+The consequences are threefold:
+\begin{enumerate}[label=(\roman*)]
+  \item \textbf{Attention dilution}: irrelevant files compete with relevant ones, degrading output quality~\citep{bergemann2025economics}.
+  \item \textbf{Cost escalation}: multi-turn conversations with full history grow at $O(t^2)$ cumulative cost (Section~\ref{sec:conversation}).
+  \item \textbf{Context rot}: after 20+ turns, stale context introduces inconsistencies.
+\end{enumerate}
+
+\noindent\textbf{Contributions.}
+We present Tokalator, an open-source toolkit that addresses all three problems:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item A \textbf{VS~Code extension} (Section~\ref{sec:extension}) with real-time token budget monitoring, tab relevance scoring ($[0,1]$), and a chat participant with six commands.
+  \item A \textbf{web platform} (Section~\ref{sec:web}) with seven interactive tools grounded in a Cobb--Douglas production function for LLM output quality.
+  \item A \textbf{formal economic model} (Section~\ref{sec:economics}) with closed-form solutions for optimal token allocation and caching break-even analysis.
+  \item A \textbf{context engineering library} (Section~\ref{sec:catalog}) of reusable prompts, agents, and instructions contributed to the \texttt{awesome-copilot} ecosystem.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════
+% 2. RELATED WORK
+% ══════════════════════════════════════════════════════════
+\section{Related Work}
+\label{sec:related}
+
+\paragraph{Token Economics.}
+Bergemann, Bonatti, and Smolin~\citep{bergemann2025economics} introduced the Cobb--Douglas production function framework for LLM economics, modeling output quality as a function of input tokens, output tokens, and cached context.
+Tokalator implements their closed-form cost-minimization results (Lemma~4) and extends them with practical tooling for developers.
+
+\paragraph{Context Engineering.}
+The term ``context engineering'' was popularized by Toby Lutke (CEO, Shopify) and formalized in Anthropic's documentation on prompt caching and context management.
+The practice involves structuring what goes into an LLM's context window---system prompts, retrieved documents, conversation history, tool outputs---to maximize quality within budget constraints.
+Our toolkit provides both theoretical tools (the Cobb--Douglas model) and practical ones (the VS~Code extension, reusable prompts).
+
+\paragraph{Prompt Caching.}
+Anthropic introduced prompt caching in 2024, allowing prefixed prompt content to be cached and reused at reduced cost (10\% of input price for reads).
+Tokalator's caching calculator (Section~\ref{sec:caching}) provides break-even analysis for cache adoption decisions.
+
+\paragraph{Developer Tooling.}
+While token counting libraries exist (OpenAI's \texttt{tiktoken}, Anthropic's BPE tokenizer), no prior tool integrates real-time budget visualization, multi-provider cost comparison, and economic optimization into a unified developer experience.
+
+% ══════════════════════════════════════════════════════════
+% 3. SYSTEM ARCHITECTURE
+% ══════════════════════════════════════════════════════════
+\section{System Architecture}
+\label{sec:architecture}
+
+Tokalator consists of three independently deployable components (Figure~\ref{fig:arch}):
+
+\begin{figure}[H]
+\centering
+\small
+\begin{verbatim}
+ ┌─────────────────────────────────────────────────────────┐
+ │                    Tokalator System                     │
+ ├───────────────────┬────────────────────┬────────────────┤
+ │  VS Code Extension│   Web Platform     │  Catalog       │
+ │  (TypeScript)     │   (Next.js 16)     │  (Markdown)    │
+ ├───────────────────┼────────────────────┼────────────────┤
+ │ • Context Monitor │ • Cost Calculator  │ • Agents       │
+ │ • Tokenizer Svc   │ • Context Optimizer│ • Prompts      │
+ │ • Relevance Score │ • Model Comparison │ • Instructions │
+ │ • Chat Participant│ • Caching ROI      │ • Collections  │
+ │ • Dashboard View  │ • Conversation Est.│               │
+ │                   │ • Economic Analysis│               │
+ │                   │ • Usage Tracker    │               │
+ ├───────────────────┴────────────────────┴────────────────┤
+ │              Shared: lib/pricing · lib/context          │
+ │              lib/caching · lib/conversation             │
+ │              lib/providers (15 models, 3 providers)     │
+ └─────────────────────────────────────────────────────────┘
+\end{verbatim}
+\caption{High-level system architecture. The shared library layer provides pricing, context analysis, caching, and conversation estimation to both the web platform and the VS~Code extension.}
+\label{fig:arch}
+\end{figure}
+
+\subsection{Technology Stack}
+
+\begin{table}[H]
+\centering
+\caption{Technology stack and dependencies.}
+\label{tab:stack}
+\begin{tabular}{@{}llr@{}}
+\toprule
+\textbf{Layer}      & \textbf{Technology}        & \textbf{Version} \\
+\midrule
+Framework           & Next.js                     & 16.1.6   \\
+UI Library          & React                       & 19.2.3   \\
+Language            & TypeScript                  & 5.x      \\
+ORM / Database      & Prisma / PostgreSQL          & 7.3.0    \\
+CSS                 & Tailwind CSS                & 4.x      \\
+Charts              & Recharts                    & 3.7.0    \\
+Math                & mathjs                      & 15.1.0   \\
+Extension Runtime   & VS~Code API                 & $\geq$1.99 \\
+Tokenizers          & \texttt{claude-tokenizer}, \texttt{js-tiktoken} & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% ══════════════════════════════════════════════════════════
+% 4. ECONOMIC MODEL
+% ══════════════════════════════════════════════════════════
+\section{Economic Model}
+\label{sec:economics}
+
+We adopt the Cobb--Douglas production function framework of Bergemann et al.~\citep{bergemann2025economics} and implement it as a practical developer tool.
+
+\subsection{Quality-of-Output Production Function}
+\label{sec:cobbdouglas}
+
+\begin{definition}[Quality Function]
+Let $X$ denote input tokens (in thousands), $Y$ output tokens (in thousands), $Z$ cache/fine-tuning tokens (in thousands), and $b$ the base model quality.
+The quality of LLM output is:
+\begin{equation}
+  Q(X,Y,Z) = X^{\alpha} \cdot Y^{\beta} \cdot (b + Z)^{\gamma}
+  \label{eq:quality}
+\end{equation}
+where $\alpha, \beta, \gamma > 0$ and $\alpha + \beta + \gamma < 1$ (diminishing returns to scale).
+\end{definition}
+
+The parameters are calibrated per model family:
+
+\begin{table}[H]
+\centering
+\caption{Cobb--Douglas parameters by model (Anthropic, February 2026).}
+\label{tab:params}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Model}        & $b$ (base quality) & $\alpha$ (input) & $\beta$ (output) & $\gamma$ (cache) \\
+\midrule
+Claude Opus 4.6       & 1.00 & 0.30 & 0.35 & 0.20 \\
+Claude Sonnet 4.5     & 0.85 & 0.25 & 0.30 & 0.20 \\
+Claude Haiku 4.5      & 0.70 & 0.20 & 0.25 & 0.15 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cost Structure}
+\label{sec:pricing}
+
+Token costs follow a tiered pricing model.
+Let $c_x, c_y, c_w, c_r$ denote the per-million-token costs for input, output, cache write, and cache read, respectively.
+
+\begin{table}[H]
+\centering
+\caption{Anthropic API pricing (\$/MTok, February 2026). Extended pricing applies when the prompt exceeds 200\,K tokens (Opus and Sonnet only).}
+\label{tab:pricing}
+\begin{tabular}{@{}lccccc@{}}
+\toprule
+\textbf{Model} & \textbf{Input} $c_x$ & \textbf{Output} $c_y$ & \textbf{Cache Write} $c_w$ & \textbf{Cache Read} $c_r$ & \textbf{Threshold} \\
+\midrule
+Opus 4.6   & \$5.00  & \$25.00 & \$6.25 & \$0.50 & 200\,K ($2\times$ above) \\
+Sonnet 4.5 & \$3.00  & \$15.00 & \$3.75 & \$0.30 & 200\,K ($2\times$ above) \\
+Haiku 4.5  & \$1.00  & \$5.00  & \$1.25 & \$0.10 & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The total cost for a single API call is:
+\begin{equation}
+  C = \frac{c_x \cdot T_{\text{in}} + c_y \cdot T_{\text{out}} + c_w \cdot T_{\text{cw}} + c_r \cdot T_{\text{cr}}}{10^6} + C_{\text{services}}
+  \label{eq:cost}
+\end{equation}
+where $C_{\text{services}}$ includes web search (\$10.00/1K searches) and code execution (\$0.05/hour).
+
+\subsection{Multi-Provider Model Coverage}
+\label{sec:providers}
+
+Tokalator tracks 15 models across three providers:
+
+\begin{table}[H]
+\centering
+\caption{Complete model coverage (February 2026). Costs in \$/MTok.}
+\label{tab:providers}
+\small
+\begin{tabular}{@{}llrrrr@{}}
+\toprule
+\textbf{Provider} & \textbf{Model} & \textbf{Input} & \textbf{Output} & \textbf{Context} & \textbf{Tier} \\
+\midrule
+Anthropic & Claude Opus 4.6     & 5.00  & 25.00  & 200\,K  & Flagship  \\
+          & Claude Sonnet 4.5   & 3.00  & 15.00  & 200\,K  & Balanced  \\
+          & Claude Haiku 4.5    & 1.00  & 5.00   & 200\,K  & Fast      \\
+\midrule
+OpenAI    & GPT-5.2             & 1.75  & 14.00  & 256\,K  & Flagship  \\
+          & GPT-4.1             & 3.00  & 12.00  & 1\,M    & Balanced  \\
+          & GPT-4.1 Mini        & 0.80  & 3.20   & 1\,M    & Fast      \\
+          & GPT-4.1 Nano        & 0.20  & 0.80   & 1\,M    & Fast      \\
+          & GPT-5 Mini          & 0.25  & 2.00   & 256\,K  & Fast      \\
+          & o4-mini             & 4.00  & 16.00  & 200\,K  & Reasoning \\
+\midrule
+Google    & Gemini 3 Pro        & 2.00  & 12.00  & 1\,M    & Flagship  \\
+          & Gemini 3 Flash      & 0.50  & 3.00   & 1\,M    & Balanced  \\
+          & Gemini 2.5 Pro      & 1.25  & 10.00  & 1\,M    & Balanced  \\
+          & Gemini 2.5 Flash    & 0.30  & 2.50   & 1\,M    & Fast      \\
+          & Gemini 2.5 Flash-Lite & 0.10 & 0.40  & 1\,M    & Fast      \\
+          & Gemini 2.0 Flash    & 0.10  & 0.40   & 1\,M    & Fast      \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Optimal Token Allocation}
+\label{sec:optimization}
+
+Given a target quality $Q^*$, we derive the cost-minimizing token allocation.
+
+\begin{lemma}[Minimum Cost without Caching]
+\label{lem:nocache}
+When $Z = 0$, the optimal input--output allocation is:
+\begin{align}
+  r &= \frac{\alpha \cdot c_y}{\beta \cdot c_x} \label{eq:ratio}\\[6pt]
+  f &= \left(\frac{Q^*}{b^{\gamma}}\right)^{\!\frac{1}{\alpha+\beta}} \label{eq:factor}\\[6pt]
+  X^* &= f \cdot r^{\frac{\beta}{\alpha+\beta}}, \qquad
+  Y^* = f \cdot r^{-\frac{\alpha}{\alpha+\beta}} \label{eq:optimal_nocache}\\[6pt]
+  C^* &= c_x \cdot X^* + c_y \cdot Y^* \label{eq:mincost_nocache}
+\end{align}
+\end{lemma}
+
+\begin{lemma}[Minimum Cost with Caching]
+\label{lem:cache}
+When caching is available ($Z \geq 0$), let $c_z$ denote the cache cost.
+The optimal three-way allocation is:
+\begin{equation}
+  X^* = \frac{\alpha}{c_x} \left(\frac{c_x}{\alpha}\right)^{\!\frac{\alpha}{\sigma}}
+  \left(\frac{c_y}{\beta}\right)^{\!\frac{\beta}{\sigma}}
+  \left(\frac{c_z}{\gamma}\right)^{\!\frac{\gamma}{\sigma}}
+  \cdot (Q^*)^{\frac{1}{\sigma}}
+  \label{eq:optimal_cache}
+\end{equation}
+where $\sigma = \alpha + \beta + \gamma$.
+Analogous expressions hold for $Y^*$ and $Z^*$, with $Z^* = \max(0,\, Z^* - b)$.
+\end{lemma}
+
+\begin{definition}[Caching Threshold]
+The critical quality level above which caching becomes cost-effective is:
+\begin{equation}
+  \hat{\theta} = b^{1-\sigma} \cdot
+  \left(\frac{c_x}{\alpha}\right)^{\!\alpha} \cdot
+  \left(\frac{c_y}{\beta}\right)^{\!\beta} \cdot
+  \left(\frac{c_z}{\gamma}\right)^{\!1-\alpha-\beta}
+  \label{eq:threshold}
+\end{equation}
+\end{definition}
+
+\subsection{Quality Metrics}
+
+For a given API call with cost $C$ and quality $Q$:
+\begin{align}
+  \text{Cost per quality unit} &= \frac{C}{Q} \label{eq:cpq}\\
+  \text{Marginal cost (input)} &= \frac{c_x}{10^6} \label{eq:marginal_in}\\
+  \text{Marginal cost (output)} &= \frac{c_y}{10^6} \label{eq:marginal_out}
+\end{align}
+
+% ══════════════════════════════════════════════════════════
+% 5. CACHING BREAK-EVEN ANALYSIS
+% ══════════════════════════════════════════════════════════
+\section{Prompt Caching Analysis}
+\label{sec:caching}
+
+Anthropic's prompt caching allows a prefix of the prompt to be stored server-side.
+Subsequent requests reusing this prefix pay the cache-read rate ($c_r$) instead of the full input rate ($c_x$).
+
+\subsection{Break-Even Model}
+
+\begin{proposition}[Break-Even Reuse Count]
+\label{prop:breakeven}
+Given $T$ tokens to potentially cache, with write cost $c_w$ and read cost $c_r$ per million tokens, and input cost $c_x$:
+\begin{align}
+  \text{Savings per reuse} &= \frac{(c_x - c_r) \cdot T}{10^6} \label{eq:savings_per}\\[4pt]
+  \text{Break-even reuses} &= \left\lceil \frac{c_w \cdot T / 10^6}{\text{Savings per reuse}} \right\rceil = \left\lceil \frac{c_w}{c_x - c_r} \right\rceil \label{eq:breakeven}
+\end{align}
+\end{proposition}
+
+\noindent For the three Anthropic models, the break-even reuse counts are:
+
+\begin{table}[H]
+\centering
+\caption{Break-even analysis by model.}
+\label{tab:breakeven}
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+\textbf{Model} & $c_w/c_x$ & $c_r/c_x$ & \textbf{Break-even} & \textbf{Savings at 10 reuses} \\
+\midrule
+Opus 4.6   & 1.25$\times$ & 0.10$\times$ & 2 reuses & 76\% \\
+Sonnet 4.5 & 1.25$\times$ & 0.10$\times$ & 2 reuses & 76\% \\
+Haiku 4.5  & 1.25$\times$ & 0.10$\times$ & 2 reuses & 76\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Total Cost Comparison}
+
+Over $N$ reuses after the initial write:
+\begin{align}
+  C_{\text{cached}}   &= \frac{c_w \cdot T}{10^6} + N \cdot \frac{c_r \cdot T}{10^6} \label{eq:cost_cached}\\[4pt]
+  C_{\text{uncached}} &= (N + 1) \cdot \frac{c_x \cdot T}{10^6} \label{eq:cost_uncached}\\[4pt]
+  \text{Net savings}  &= C_{\text{uncached}} - C_{\text{cached}} \label{eq:net_savings}\\[4pt]
+  \text{Savings \%}   &= \frac{\text{Net savings}}{C_{\text{uncached}}} \times 100 \label{eq:savings_pct}
+\end{align}
+
+\subsection{Budget-Constrained Optimization}
+
+Given a fixed dollar budget $B$:
+\begin{align}
+  N_{\text{cached}} &= \left\lfloor \frac{B - c_w \cdot T / 10^6}{c_r \cdot T / 10^6} \right\rfloor \label{eq:budget_cached}\\[4pt]
+  N_{\text{uncached}} &= \left\lfloor \frac{B}{c_x \cdot T / 10^6} \right\rfloor \label{eq:budget_uncached}
+\end{align}
+Caching is preferred when $N_{\text{cached}} > N_{\text{uncached}}$.
+
+% ══════════════════════════════════════════════════════════
+% 6. MULTI-TURN CONVERSATION ANALYSIS
+% ══════════════════════════════════════════════════════════
+\section{Multi-Turn Conversation Estimation}
+\label{sec:conversation}
+
+Multi-turn conversations are the primary driver of context window exhaustion.
+We model three context management strategies and analyze their cost-growth characteristics.
+
+\subsection{Context Growth Strategies}
+
+Let $S$ denote system prompt tokens, $u_t$ user tokens at turn $t$, and $a_t$ assistant tokens at turn $t$.
+
+\begin{table}[H]
+\centering
+\caption{Context management strategies and their growth characteristics.}
+\label{tab:strategies}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Strategy} & \textbf{Context at turn $t$} & \textbf{Growth} \\
+\midrule
+\textsc{Full History}
+  & $\displaystyle S + \sum_{i=1}^{t}(u_i + a_i)$
+  & $O(t^2)$ cumulative cost \\[12pt]
+\textsc{Sliding Window}
+  & $\displaystyle S + \sum_{i=\max(1,\,t-W)}^{t}(u_i + a_i)$
+  & $O(t)$ --- bounded \\[12pt]
+\textsc{Summarize}
+  & $\displaystyle S + \rho \cdot \!\!\sum_{\text{old turns}} + \!\!\sum_{\text{recent}}$
+  & $O(t)$ --- compressed \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent where $W$ is the sliding window size (number of turns retained) and $\rho$ is the compression ratio (default 0.2, i.e., summaries retain 20\% of original tokens).
+In the \textsc{Summarize} strategy, ``recent'' refers to the last 2 turns.
+
+\subsection{Per-Turn Cost Model}
+
+At turn $t$, the input token count depends on the strategy:
+\begin{equation}
+  T_{\text{in}}(t) = \text{contextSize}(t) \quad \text{(strategy-dependent)}
+  \label{eq:input_turn}
+\end{equation}
+
+The output token count is:
+\begin{equation}
+  T_{\text{out}}(t) = a_t
+  \label{eq:output_turn}
+\end{equation}
+
+Per-turn cost:
+\begin{equation}
+  c(t) = \frac{c_x \cdot T_{\text{in}}(t) + c_y \cdot T_{\text{out}}(t)}{10^6}
+  \label{eq:turn_cost}
+\end{equation}
+
+Total conversation cost:
+\begin{equation}
+  C_{\text{total}} = \sum_{t=1}^{T} c(t)
+  \label{eq:total_conv}
+\end{equation}
+
+\subsection{Maximum Turns within Budget}
+
+Given a dollar budget $B$, we use binary search over $[1, 1000]$ to find:
+\begin{equation}
+  T^* = \max\{T : C_{\text{total}}(T) \leq B\}
+  \label{eq:max_turns}
+\end{equation}
+
+\subsection{Strategy Comparison}
+
+The \texttt{compareStrategies()} function evaluates all three strategies with identical parameters, returning a structured comparison to help developers choose:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textsc{Full History}: highest quality (complete context), highest cost, risks exceeding context limits.
+  \item \textsc{Sliding Window}: predictable cost, bounded context, loses early conversation context.
+  \item \textsc{Summarize}: balanced cost, retains key information via compression, introduces summarization noise.
+\end{itemize}
+
+% ══════════════════════════════════════════════════════════
+% 7. VS CODE EXTENSION
+% ══════════════════════════════════════════════════════════
+\section{VS Code Extension}
+\label{sec:extension}
+
+The Tokalator VS~Code extension (v0.2.4) provides real-time context budget monitoring directly in the developer's IDE.
+
+\subsection{Architecture}
+
+The extension follows a four-layer architecture:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Core Engine} (\texttt{contextMonitor.ts}): Subscribes to VS~Code editor events (tab open/close, active editor change), builds context snapshots, manages pinned files and model selection.
+  \item \textbf{Tokenizer Service} (\texttt{tokenizerService.ts}): Real BPE tokenizers per provider---\texttt{claude-tokenizer} for Anthropic, \texttt{js-tiktoken} (\texttt{o200k\_base}) for OpenAI, heuristic ($\sim$4 chars/token) for Google.
+  \item \textbf{Relevance Scorer} (\texttt{tabRelevanceScorer.ts}): Scores open tabs $\in [0, 1]$ using four signals.
+  \item \textbf{Chat Participant} (\texttt{contextChatParticipant.ts}): Registers \texttt{@tokalator} with six slash commands.
+\end{enumerate}
+
+\subsection{Tab Relevance Scoring}
+
+Each open tab receives a relevance score $R \in [0, 1]$ computed from:
+
+\begin{table}[H]
+\centering
+\caption{Relevance scoring signals.}
+\label{tab:relevance}
+\begin{tabular}{@{}lp{8cm}@{}}
+\toprule
+\textbf{Signal}       & \textbf{Description} \\
+\midrule
+Language match        & Whether the tab's language matches the active file \\
+Import analysis       & Whether the active file imports or references the tab \\
+Path similarity       & File path proximity (shared directories) \\
+Edit recency          & Time since the tab was last edited \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Tabs scoring below the configurable threshold (default $R < 0.3$) are flagged as distractors and candidates for the \texttt{/optimize} command, which closes them.
+
+\subsection{Chat Participant Commands}
+
+\begin{table}[H]
+\centering
+\caption{\texttt{@tokalator} chat commands.}
+\label{tab:commands}
+\begin{tabular}{@{}lp{8cm}@{}}
+\toprule
+\textbf{Command}            & \textbf{Description} \\
+\midrule
+\texttt{/count}             & Current token count and budget utilization level \\
+\texttt{/breakdown}         & Per-file token breakdown showing where budget is consumed \\
+\texttt{/optimize}          & Close low-relevance tabs to free context budget \\
+\texttt{/pin <file>}        & Pin a file as always-relevant (persists across sessions) \\
+\texttt{/instructions}      & List instruction files and their token cost \\
+\texttt{/model [name]}      & Show or switch the active model profile \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Model Profiles}
+
+The extension ships with 13 pre-configured model profiles:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \textbf{Anthropic}: Claude Opus 4.6, Sonnet 4.5, Sonnet 4, Haiku 4.5
+  \item \textbf{OpenAI}: GPT-5.2, GPT-5.1, GPT-4.1, o3, o4-mini
+  \item \textbf{Google}: Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro, Gemini 2.5 Flash
+\end{itemize}
+
+\noindent Each profile specifies context window size, max output tokens, output-to-input cost ratio, and context rot warning threshold (default: 20 turns).
+
+\subsection{Configuration}
+
+\begin{table}[H]
+\centering
+\caption{Extension settings.}
+\label{tab:settings}
+\begin{tabular}{@{}llp{6cm}@{}}
+\toprule
+\textbf{Setting}                        & \textbf{Default}       & \textbf{Description} \\
+\midrule
+\texttt{tokalator.model}                & \texttt{claude-opus-4.6} & AI model for budget calculation \\
+\texttt{tokalator.relevanceThreshold}   & 0.3                     & Below this = distractor \\
+\texttt{tokalator.contextWindowOverride}& 1\,000\,000             & Override context window (tokens) \\
+\texttt{tokalator.autoRefreshInterval}  & 2000                    & Dashboard refresh interval (ms) \\
+\texttt{tokalator.contextRotWarningTurns} & 20                   & Warn after $N$ conversation turns \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Instruction File Scanner}
+
+The extension automatically detects and tokenizes instruction files commonly used in AI-assisted development:
+
+\begin{itemize}[leftmargin=1.5em]
+  \item \texttt{.github/copilot-instructions.md} (GitHub Copilot)
+  \item \texttt{.instructions.md} files (VS~Code workspace instructions)
+  \item \texttt{CLAUDE.md}, \texttt{AGENTS.md} (Claude Code, Codex)
+  \item \texttt{.cursorrules} (Cursor)
+\end{itemize}
+
+\noindent This reveals the ``hidden'' token cost of instruction files that are automatically injected into every prompt.
+
+% ══════════════════════════════════════════════════════════
+% 8. WEB PLATFORM
+% ══════════════════════════════════════════════════════════
+\section{Web Platform}
+\label{sec:web}
+
+The web platform at \url{https://tokalator.wiki} provides seven interactive tools, an educational course, a wiki, and a dictionary.
+
+\subsection{Interactive Tools}
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Cost Calculator} (\texttt{/calculator}): Interactive token cost calculator with Cobb--Douglas quality modeling. Supports all three Anthropic models with tiered pricing detection.
+
+  \item \textbf{Context Optimizer} (\texttt{/context}): Visualizes context window budget allocation across system prompt, user input, reserved output, and free space. Computes usage percentage and generates warnings.
+
+  \item \textbf{Model Comparison} (\texttt{/tools/compare}): Cross-provider cost and capability comparison across all 15 tracked models.
+
+  \item \textbf{Caching ROI Calculator} (\texttt{/tools/caching}): Break-even analysis implementing Proposition~\ref{prop:breakeven}, with interactive slider for reuse count.
+
+  \item \textbf{Conversation Estimator} (\texttt{/tools/conversation}): Multi-turn cost projection under all three context strategies (Section~\ref{sec:conversation}), with per-turn breakdown charts.
+
+  \item \textbf{Economic Analysis} (\texttt{/tools/analysis}): Full Cobb--Douglas model visualization including quality isoquants, cost minimization, and caching threshold computation.
+
+  \item \textbf{Usage Tracker} (\texttt{/tools/usage}): Track and analyze historical API usage with cost breakdowns by model, project, and time period.
+\end{enumerate}
+
+\subsection{Context Budget Analysis}
+\label{sec:context_budget}
+
+The context analysis function decomposes the context window into four segments:
+
+\begin{align}
+  \text{Total used} &= T_{\text{sys}} + T_{\text{user}} + T_{\text{output}} \label{eq:total_used}\\
+  \text{Remaining}  &= T_{\text{window}} - \text{Total used} \label{eq:remaining}\\
+  \text{Usage \%}   &= \frac{\text{Total used}}{T_{\text{window}}} \times 100 \label{eq:usage_pct}
+\end{align}
+
+\noindent Extended pricing detection for Sonnet models:
+\begin{equation}
+  \text{isExtendedPricing} = (\text{model} = \text{Sonnet}) \wedge (T_{\text{sys}} + T_{\text{user}} > 200{,}000)
+  \label{eq:extended}
+\end{equation}
+
+\subsection{Educational Content}
+
+The \texttt{/learn} page provides a 10-lesson interactive course on context engineering:
+
+\begin{enumerate}[label=\arabic*.,leftmargin=2em]
+  \item What Is a Prompt?
+  \item Context Window
+  \item Trimming and Truncation
+  \item Token Budget Allocation
+  \item Prompt Caching
+  \item Just-in-Time Context
+  \item Context Pollution
+  \item Context Editing \& Memory
+  \item Multi-Agent Context
+  \item Measuring \& Optimizing
+\end{enumerate}
+
+\subsection{Wiki and Dictionary}
+
+The wiki aggregates 40+ articles from arXiv, OpenAI Cookbook, Anthropic Docs, and Google AI Docs, auto-categorized by keywords.
+The dictionary provides definitions for 100+ terms in token economics and context engineering.
+Both are built at compile time via a custom fetch-and-convert pipeline (\texttt{scripts/fetch-wiki.ts}).
+
+% ══════════════════════════════════════════════════════════
+% 9. CONTEXT ENGINEERING CATALOG
+% ══════════════════════════════════════════════════════════
+\section{Context Engineering Catalog}
+\label{sec:catalog}
+
+Tokalator includes a curated catalog of reusable context engineering artifacts, contributed to the \texttt{awesome-copilot} repository~\citep{awesomecopilot2026}.
+
+\subsection{Artifact Types}
+
+\begin{table}[H]
+\centering
+\caption{Catalog artifact types and file conventions.}
+\label{tab:artifacts}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Type}       & \textbf{Extension}          & \textbf{Ecosystem}  & \textbf{Purpose} \\
+\midrule
+Agent               & \texttt{.agent.md}          & Copilot             & Autonomous task-specific agent \\
+Prompt              & \texttt{.prompt.md}         & Copilot             & Single-use structured prompt \\
+Instruction         & \texttt{.instructions.md}   & Copilot             & Persistent workspace guidelines \\
+Collection          & \texttt{.collection.yml}    & Copilot             & Bundle of related artifacts \\
+Instruction         & \texttt{CLAUDE.md}          & Claude Code         & Claude-specific instructions \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Built-in Artifacts}
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Context Architect Agent} (\texttt{context-architect.agent.md}): Plans multi-file changes by mapping dependencies before writing code.
+  \item \textbf{Context Map Prompt} (\texttt{context-map.prompt.md}): Generates a map of affected files and their relationships before making changes.
+  \item \textbf{What Context Needed Prompt} (\texttt{what-context-needed.prompt.md}): Asks the AI assistant what additional files or information it needs to answer well.
+  \item \textbf{Refactor Plan Prompt} (\texttt{refactor-plan.prompt.md}): Creates phased refactoring plans with verification steps.
+  \item \textbf{Context Engineering Instructions} (\texttt{context-engineering.instructions.md}): Persistent guidelines for structuring code and prompts for optimal AI assistance.
+  \item \textbf{Context Engineering Collection} (\texttt{context-engineering.collection.yml}): Bundles all artifacts into a single installable collection.
+\end{enumerate}
+
+\subsection{User Content System}
+
+The \texttt{user-content/} directory provides a drop-in folder for community contributions.
+The catalog scanner automatically discovers and indexes artifacts from both built-in and user directories, with YAML frontmatter parsing for metadata (title, description, tags, ecosystem).
+
+% ══════════════════════════════════════════════════════════
+% 10. DATABASE SCHEMA
+% ══════════════════════════════════════════════════════════
+\section{Data Model}
+\label{sec:database}
+
+The PostgreSQL database (via Prisma ORM) stores six entities:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Model}: AI model definitions with Cobb--Douglas parameters ($b$, $\alpha$, $\beta$, $\gamma$) and context window limits.
+  \item \textbf{PricingRule}: Tiered pricing with prompt-length thresholds, per-MTok costs, service tier (Priority/Standard/Batch), and time-bounded effective dates.
+  \item \textbf{Project}: Organizes usage records with monthly budget (\$) and alert threshold (default 80\%).
+  \item \textbf{UsageRecord}: Full cost breakdown per API call---input, output, cache write, cache read, web search, code execution---plus quality score from the Cobb--Douglas function.
+  \item \textbf{BudgetAlert}: Threshold-triggered alerts with acknowledgment tracking.
+  \item \textbf{ServicePricing}: Configurable per-service pricing.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════
+% 11. IMPLEMENTATION
+% ══════════════════════════════════════════════════════════
+\section{Implementation Details}
+\label{sec:implementation}
+
+\subsection{Token Estimation}
+
+The extension and web platform use three tokenization strategies:
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{BPE (Anthropic)}: Claude's byte-pair encoding tokenizer via \texttt{claude-tokenizer}. Exact counts.
+  \item \textbf{o200k\_base (OpenAI)}: Tiktoken's encoding for GPT-4+ models via \texttt{js-tiktoken}. Exact counts.
+  \item \textbf{Heuristic (Google and fallback)}: $\text{tokens} \approx \lceil \text{length} / 4 \rceil$. Fast approximation within 10--15\% of exact counts for English text.
+\end{enumerate}
+
+\subsection{Cost Projection}
+
+The usage tracker supports two projection methods:
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Linear regression}: Standard OLS fit $\hat{y} = a + bx$ on historical daily costs.
+  \item \textbf{Exponential smoothing}: $S_t = \alpha \cdot y_t + (1-\alpha) \cdot S_{t-1}$ with $\alpha = 0.3$, projected forward using the trailing growth rate.
+\end{enumerate}
+
+\subsection{Tiered Pricing Detection}
+
+For Anthropic models with extended pricing (Opus and Sonnet), when prompt length exceeds 200\,K tokens, input and cache costs double:
+\begin{equation}
+  c'_x = \begin{cases}
+    c_x     & \text{if } T_{\text{prompt}} \leq 200{,}000 \\
+    2 \cdot c_x & \text{if } T_{\text{prompt}} > 200{,}000
+  \end{cases}
+  \label{eq:tiered}
+\end{equation}
+
+% ══════════════════════════════════════════════════════════
+% 12. AVAILABILITY & LICENSING
+% ══════════════════════════════════════════════════════════
+\section{Availability and Licensing}
+\label{sec:availability}
+
+\begin{table}[H]
+\centering
+\caption{Project distribution.}
+\label{tab:availability}
+\begin{tabular}{@{}lll@{}}
+\toprule
+\textbf{Component}       & \textbf{Location}                          & \textbf{License} \\
+\midrule
+Web Platform             & \url{https://tokalator.wiki}               & MIT \\
+VS~Code Extension        & VS~Code Marketplace (\texttt{vfaraji89.tokalator}) & MIT \\
+Source Code              & \url{https://github.com/vfaraji89/tokalator} & MIT \\
+Context Engineering Catalog & \texttt{awesome-copilot} contribution   & MIT \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent All components are free and open-source under the MIT License.
+
+% ══════════════════════════════════════════════════════════
+% 13. FUTURE WORK
+% ══════════════════════════════════════════════════════════
+\section{Future Work}
+\label{sec:future}
+
+Three extensions are under development:
+
+\begin{enumerate}[label=\arabic*.]
+  \item \textbf{Tokalator Pro}: Team-wide context budget dashboards, historical analytics, CI/CD budget gates that fail builds when context budgets exceed configurable thresholds, and custom model profiles for internal/fine-tuned models.
+
+  \item \textbf{Token Counting API}: A REST endpoint (\texttt{POST /api/count}) providing exact token counts for Claude (BPE), GPT (\texttt{o200k\_base}), and Gemini via a single call. Free tier: 1\,000 requests/day.
+
+  \item \textbf{Context Audits}: A professional service analyzing repositories' instruction files, prompt structure, and context management patterns, delivering actionable optimization reports.
+\end{enumerate}
+
+% ══════════════════════════════════════════════════════════
+% 14. CONCLUSION
+% ══════════════════════════════════════════════════════════
+\section{Conclusion}
+\label{sec:conclusion}
+
+Tokalator addresses a gap in the AI-assisted development workflow: the lack of visibility into how context budgets are consumed and how to optimize them.
+By combining a real-time VS~Code extension with a web platform grounded in Cobb--Douglas production function theory, Tokalator provides both theoretical tools for understanding token economics and practical tools for managing them.
+
+The toolkit covers 15 models across three providers, implements closed-form cost optimization from the academic literature, and offers break-even analysis for prompt caching adoption.
+Its context engineering catalog provides reusable artifacts that help developers structure their projects for optimal AI assistance.
+
+As context windows grow toward 1\,M tokens and API costs continue to evolve, tools like Tokalator become essential infrastructure for cost-aware, quality-maximizing AI-assisted development.
+
+% ══════════════════════════════════════════════════════════
+% REFERENCES
+% ══════════════════════════════════════════════════════════
+\bibliographystyle{plainnat}
+
+\begin{thebibliography}{9}
+
+\bibitem[Bergemann et~al.(2025)]{bergemann2025economics}
+Dirk Bergemann, Alessandro Bonatti, and Alex Smolin.
+\newblock The Economics of Large Language Models.
+\newblock \emph{Working Paper}, 2025.
+\newblock Available at SSRN.
+
+\bibitem[Anthropic(2026)]{anthropic2026pricing}
+Anthropic.
+\newblock Claude API Pricing.
+\newblock \url{https://docs.anthropic.com/en/docs/about-claude/pricing}, February 2026.
+
+\bibitem[Anthropic(2025)]{anthropic2025caching}
+Anthropic.
+\newblock Prompt Caching.
+\newblock \url{https://docs.anthropic.com/en/docs/build-with-claude/prompt-caching}, 2025.
+
+\bibitem[OpenAI(2026)]{openai2026pricing}
+OpenAI.
+\newblock API Pricing.
+\newblock \url{https://openai.com/api/pricing/}, February 2026.
+
+\bibitem[Google(2026)]{google2026pricing}
+Google.
+\newblock Gemini API Pricing.
+\newblock \url{https://ai.google.dev/pricing}, February 2026.
+
+\bibitem[GitHub(2026)]{awesomecopilot2026}
+GitHub.
+\newblock awesome-copilot: Community-curated resources for GitHub Copilot.
+\newblock \url{https://github.com/github/awesome-copilot}, 2026.
+
+\bibitem[Vaswani et~al.(2017)]{vaswani2017attention}
+Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
+\newblock Attention Is All You Need.
+\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2017.
+
+\bibitem[Sennrich et~al.(2016)]{sennrich2016bpe}
+Rico Sennrich, Barry Haddow, and Alexandra Birch.
+\newblock Neural Machine Translation of Rare Words with Subword Units.
+\newblock In \emph{Proceedings of ACL}, 2016.
+
+\bibitem[Microsoft(2026)]{vscode2026api}
+Microsoft.
+\newblock VS~Code Extension API.
+\newblock \url{https://code.visualstudio.com/api}, 2026.
+
+\end{thebibliography}
+
+% ══════════════════════════════════════════════════════════
+% APPENDIX
+% ══════════════════════════════════════════════════════════
+\appendix
+
+\section{Context Analysis Function}
+\label{app:context}
+
+\begin{lstlisting}[language=Java,caption={Context window analysis (simplified).}]
+function analyzeContext(budget: ContextBudget): ContextAnalysis {
+  const limits = getModelLimits(budget.model);
+  const window = limits?.contextWindow ?? 200_000;
+
+  const totalUsed = budget.systemPromptTokens
+    + budget.userInputTokens
+    + budget.reservedOutputTokens;
+  const remaining = Math.max(0, window - totalUsed);
+  const usagePercent = (totalUsed / window) * 100;
+
+  const warnings = [];
+  if (usagePercent > 90) warnings.push("Over 90% budget used");
+  if (usagePercent > 100) warnings.push("Context window exceeded");
+
+  return {
+    totalUsed, totalAvailable: window, remaining,
+    usagePercent, isOverLimit: totalUsed > window,
+    isInExtendedPricing: model === "sonnet"
+      && (systemPromptTokens + userInputTokens) > 200_000,
+    breakdown: { /* per-segment percentages */ },
+    warnings
+  };
+}
+\end{lstlisting}
+
+\section{Caching Break-Even Function}
+\label{app:caching}
+
+\begin{lstlisting}[language=Java,caption={Caching ROI analysis (simplified).}]
+function analyzeCaching(scenario: CachingScenario): CachingAnalysis {
+  const pricing = ANTHROPIC_PRICING[scenario.model];
+  const T = scenario.cacheTokens;
+  const N = scenario.reuseCount;
+
+  const writeCost = (pricing.cacheWrite * T) / 1e6;
+  const readCost  = (pricing.cacheRead * T) / 1e6;
+  const inputCost = (pricing.input * T) / 1e6;
+
+  const savingsPerReuse = inputCost - readCost;
+  const breakEven = Math.ceil(writeCost / savingsPerReuse);
+
+  const totalCached   = writeCost + readCost * N;
+  const totalUncached = inputCost * (N + 1);
+
+  return {
+    cacheWriteCost: writeCost,
+    savingsPerReuse, breakEvenReuses: breakEven,
+    totalWithCaching: totalCached,
+    totalWithoutCaching: totalUncached,
+    netSavings: totalUncached - totalCached,
+    savingsPercent: ((totalUncached - totalCached)
+      / totalUncached) * 100,
+    shouldCache: N >= breakEven,
+  };
+}
+\end{lstlisting}
+
+\section{Conversation Cost Estimation}
+\label{app:conversation}
+
+\begin{lstlisting}[language=Java,caption={Multi-turn conversation estimation (simplified).}]
+function estimateConversation(
+  params: ConversationParams
+): ConversationAnalysis {
+  const turns: TurnBreakdown[] = [];
+  let cumCost = 0, cumIn = 0, cumOut = 0;
+
+  for (let t = 1; t <= params.turns; t++) {
+    let contextSize: number;
+    switch (params.strategy) {
+      case 'full':
+        contextSize = params.systemPromptTokens
+          + t * (params.avgUserTokens
+            + params.avgAssistantTokens);
+        break;
+      case 'sliding-window':
+        const W = params.windowSize ?? 5;
+        const kept = Math.min(t, W);
+        contextSize = params.systemPromptTokens
+          + kept * (params.avgUserTokens
+            + params.avgAssistantTokens);
+        break;
+      case 'summarize':
+        const rho = params.compressionRatio ?? 0.2;
+        const recent = Math.min(t, 2);
+        const old = Math.max(0, t - 2);
+        contextSize = params.systemPromptTokens
+          + rho * old * (params.avgUserTokens
+            + params.avgAssistantTokens)
+          + recent * (params.avgUserTokens
+            + params.avgAssistantTokens);
+        break;
+    }
+    // ... compute per-turn cost, accumulate
+  }
+  return { turnBreakdown: turns, totalCost: cumCost,
+    /* ... */ };
+}
+\end{lstlisting}
+
+\end{document}
