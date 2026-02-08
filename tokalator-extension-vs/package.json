@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "0.2.5",
+  "version": "0.2.6",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
