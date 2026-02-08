@@ -1,11 +1,6 @@
-% !TEX program = pdflatex
-% Tokalator: A Context Engineering Toolkit for AI Coding Assistants
-% Vahid Faraji — February 2026
-% arXiv preprint format
 
 \documentclass[11pt,a4paper]{article}
 
-% ── Packages ──────────────────────────────────────────────
 \usepackage[utf8]{inputenc}
 \usepackage[T1]{fontenc}
 \usepackage{lmodern}
@@ -28,7 +23,6 @@
 \usepackage{fancyhdr}
 \usepackage{float}
 
-% ── Colours ───────────────────────────────────────────────
 \definecolor{tokalatorred}{HTML}{E3120B}
 \definecolor{codebg}{HTML}{F8F8F8}
 \definecolor{codeframe}{HTML}{DDDDDD}
@@ -43,7 +37,6 @@
   pdfauthor={Vahid Faraji},
 }
 
-% ── Listing style ─────────────────────────────────────────
 \lstset{
   backgroundcolor=\color{codebg},
   frame=single,
@@ -62,32 +55,25 @@
   framexleftmargin=1.5em,
 }
 
-% ── Theorems ──────────────────────────────────────────────
 \newtheorem{definition}{Definition}
 \newtheorem{lemma}{Lemma}
 \newtheorem{proposition}{Proposition}
 
-% ── Header ────────────────────────────────────────────────
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\small\textit{Tokalator — Context Engineering Toolkit}}
 \fancyhead[R]{\small\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 
-% ══════════════════════════════════════════════════════════
 %  FRONT MATTER
-% ══════════════════════════════════════════════════════════
 
 \title{%
   \textbf{Tokalator: A Context Engineering Toolkit\\
   for AI Coding Assistants}\\[0.5em]
-  \large Token Budget Management, Cobb--Douglas Quality Modeling,\\
-  and Multi-Provider Cost Optimization
+
 }
 
-\author[1]{Vahid Faraji}
-\affil[1]{Independent Researcher, Istanbul, Turkey}
-\date{February 2026}
+\author[1]{Vahid Farajijobehdar}
 
 \begin{document}
 \maketitle
@@ -109,11 +95,8 @@ The project is MIT-licensed, free, and publicly available at \url{https://tokala
 \noindent\textbf{Keywords:}
 context engineering, token economics, LLM cost optimization, context window, prompt caching, VS~Code extension, Cobb--Douglas production function
 
-\tableofcontents
 
-% ══════════════════════════════════════════════════════════
-% 1. INTRODUCTION
-% ══════════════════════════════════════════════════════════
+
 \section{Introduction}
 \label{sec:intro}
 
@@ -866,10 +849,6 @@ GitHub.
 \newblock awesome-copilot: Community-curated resources for GitHub Copilot.
 \newblock \url{https://github.com/github/awesome-copilot}, 2026.
 
-\bibitem[Vaswani et~al.(2017)]{vaswani2017attention}
-Ashish Vaswani, Noam Shazeer, Niki Parmar, Jakob Uszkoreit, Llion Jones, Aidan~N. Gomez, {\L}ukasz Kaiser, and Illia Polosukhin.
-\newblock Attention Is All You Need.
-\newblock In \emph{Advances in Neural Information Processing Systems (NeurIPS)}, 2017.
 
 \bibitem[Sennrich et~al.(2016)]{sennrich2016bpe}
 Rico Sennrich, Barry Haddow, and Alexandra Birch.
@@ -993,3 +972,4 @@ function estimateConversation(
 \end{lstlisting}
 
 \end{document}
+

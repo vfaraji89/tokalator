@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TabInfo, ContextSnapshot } from './types';
+import { TabInfo, ContextSnapshot, TurnSnapshot } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
@@ -31,6 +31,7 @@ export class ContextMonitor implements vscode.Disposable {
 
   private pinnedFiles = new Set<string>();
   private chatTurnCount = 0;
+  private turnHistory: TurnSnapshot[] = [];
   private lastEditTimestamps = new Map<string, number>();
   private disposables: vscode.Disposable[] = [];
   private refreshTimer: ReturnType<typeof setInterval> | undefined;
@@ -152,19 +153,38 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   /**
-   * Increment the conversation turn counter.
+   * Increment the conversation turn counter and capture a turn snapshot.
    * Only call this for actual user interactions, not status checks.
    */
-  incrementChatTurns(): void {
+  async incrementChatTurns(): Promise<void> {
     this.chatTurnCount++;
+
+    // Capture a turn snapshot for compaction tracking
+    const snapshot = this.latestSnapshot;
+    if (snapshot) {
+      const fileTokens = snapshot.tabs.reduce((s, t) => s + t.estimatedTokens, 0);
+      const overheadTokens = snapshot.totalEstimatedTokens - fileTokens;
+      this.turnHistory.push({
+        turn: this.chatTurnCount,
+        timestamp: Date.now(),
+        inputTokens: snapshot.totalEstimatedTokens,
+        outputReserved: this.activeModel.maxOutput,
+        fileTokens,
+        overheadTokens,
+        tabCount: snapshot.tabs.length,
+        pinnedCount: this.pinnedFiles.size,
+      });
+    }
+
     this.refresh();
   }
 
   /**
-   * Reset conversation turn counter (on /clear or new conversation).
+   * Reset conversation turn counter and clear turn history.
    */
   resetChatTurns(): void {
     this.chatTurnCount = 0;
+    this.turnHistory = [];
     this.refresh();
   }
 
@@ -173,6 +193,13 @@ export class ContextMonitor implements vscode.Disposable {
    */
   getChatTurnCount(): number {
     return this.chatTurnCount;
+  }
+
+  /**
+   * Get the per-turn snapshot history for compaction analysis.
+   */
+  getTurnHistory(): TurnSnapshot[] {
+    return [...this.turnHistory];
   }
 
   /**
@@ -301,6 +328,8 @@ export class ContextMonitor implements vscode.Disposable {
       workspaceFileTokens: this.workspaceFileTokens,
       tokenizerType: this.tokenizer.getTokenizerType(this.activeModel.provider),
       tokenizerLabel: this.tokenizer.getTokenizerLabel(this.activeModel.provider),
+      turnHistory: [...this.turnHistory],
+      budgetBreakdown: budget.breakdown,
     };
   }
 

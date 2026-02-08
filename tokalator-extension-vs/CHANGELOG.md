@@ -1,5 +1,41 @@
 # Changelog
 
+## 0.2.4 — 2026-02-08
+
+### Fixed
+
+- Renamed chat participant handle from `@tokens` to `@tokalator` across entire codebase
+- Fixed missing commands not appearing on VS Code Marketplace listing
+- Updated README commands to match new handle
+
+## 0.2.3 — 2026-02-08
+
+### Added
+
+- Real tokenizer integration — Claude BPE and OpenAI o200k_base encoders
+- Accurate token counting instead of heuristic estimation
+
+## 0.2.2 — 2026-02-08
+
+### Added
+
+- `@tokalator` chat participant handle
+- `/instructions` command for inline prompt guidance
+- `/model` command for model info and context limits
+
+## 0.2.0 — 2026-02-08
+
+### Added
+
+- Model selector for switching between AI models
+- Workspace file scanning for context-aware analysis
+- Updated model catalog: GPT-5.1/5.2, Gemini 3 Pro/Flash
+
+### Fixed
+
+- Close/pin buttons now always visible (not hover-only)
+- LM API wording, folder path, and icon fixes
+
 ## 0.1.0 — 2026-02-07
 
 ### Added
