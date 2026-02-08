@@ -262,7 +262,6 @@ export default function HomePage() {
       <section className="community-section">
         <div className="community-glow" aria-hidden />
         <div className="community-content">
-          <span className="community-emoji" aria-hidden>🧮</span>
           <h2 className="community-headline">Built in the open.<br />Powered by people like you.</h2>
           <p className="community-text">
             Tokalator is free, open-source, and shaped by its community.
