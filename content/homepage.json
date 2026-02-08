@@ -8,7 +8,7 @@
     "installCmd": "ext install tokalator",
     "primaryCta": {
       "label": "Install Extension",
-      "href": "/extension"
+      "href": "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
     },
     "secondaryCta": {
       "label": "Explore Tools",
@@ -52,7 +52,7 @@
       {
         "name": "Chat Participant",
         "description": "@tokalator commands for inline budget management",
-        "command": "/count /optimize /pin /breakdown",
+        "command": "/count /optimize /pin /unpin /breakdown /instructions /model /compaction /reset",
         "number": 3
       },
       {
@@ -138,6 +138,20 @@
         "description": "We analyze your repo's instruction files, Copilot usage, and context structure — then deliver a report with concrete optimizations.",
         "badge": "Service",
         "number": 3
+      },
+      {
+        "icon": "▸",
+        "name": "Cursor Extension",
+        "description": "Full Tokalator experience inside Cursor. Same token dashboard, relevance scoring, and chat commands — native to your Cursor workflow.",
+        "badge": "Extension",
+        "number": 4
+      },
+      {
+        "icon": "◆",
+        "name": "Claude Code Integration",
+        "description": "Context monitoring for Claude Code CLI. Track token budgets across sessions, get compaction alerts, and optimize /compact timing.",
+        "badge": "CLI",
+        "number": 5
       }
     ]
   },
