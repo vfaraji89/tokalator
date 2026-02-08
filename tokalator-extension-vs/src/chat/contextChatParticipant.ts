@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import * as path from 'path';
+import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
 import { ContextSnapshot, TabInfo } from '../core/types';
 
@@ -134,26 +136,38 @@ export class ContextChatParticipant implements vscode.Disposable {
     request: vscode.ChatRequest,
     stream: vscode.ChatResponseStream,
   ): Promise<vscode.ChatResult> {
-    const filePath = request.prompt.trim();
+    const promptValue = this.stripQuotes(request.prompt.trim());
+    let targets: vscode.Uri[] = [];
 
-    if (!filePath) {
-      stream.markdown('Specify a file to pin. Example: `@tokens /pin src/auth.ts`\n');
-      return {};
+    if (!promptValue) {
+      const activeUri = vscode.window.activeTextEditor?.document.uri;
+      if (!activeUri) {
+        stream.markdown('Specify a file to pin or focus the file you want to pin. Example: `@tokalator /pin src/auth.ts`\n');
+        return {};
+      }
+      targets = [activeUri];
+    } else {
+      targets = await this.resolveUrisFromInput(promptValue);
+      if (targets.length === 0) {
+        stream.markdown(`No file found matching \`${promptValue}\`\n`);
+        return {};
+      }
     }
 
-    const matches = await vscode.workspace.findFiles(`**/${filePath}`, '**/node_modules/**', 5);
+    const uniqueTargets = this.dedupeUris(targets);
+    const pinnedLabels = new Set<string>();
 
-    if (matches.length === 0) {
-      stream.markdown(`No file found matching \`${filePath}\`\n`);
-      return {};
-    }
-
-    for (const uri of matches) {
+    for (const uri of uniqueTargets) {
       this.monitor.pinFile(uri.toString());
-      stream.markdown(`Pinned: \`${vscode.workspace.asRelativePath(uri)}\`\n`);
+      pinnedLabels.add(vscode.workspace.asRelativePath(uri, false));
     }
 
-    stream.markdown(`\nPinned files stay at max relevance and won't be closed by optimize.\n`);
+    const header = pinnedLabels.size === 1 ? 'Pinned file:' : 'Pinned files:';
+    const list = Array.from(pinnedLabels)
+      .map(label => `- \`${label}\``)
+      .join('\n');
+
+    stream.markdown(`${header}\n${list}\n\nPinned files stay at max relevance and won't be closed by optimize.\n`);
     return {};
   }
 
@@ -366,6 +380,93 @@ export class ContextChatParticipant implements vscode.Disposable {
     if (score >= 0.6) { return 'high'; }
     if (score >= 0.3) { return 'med'; }
     return 'low';
+  }
+
+  private stripQuotes(value: string): string {
+    if (value.length >= 2) {
+      const first = value[0];
+      const last = value[value.length - 1];
+      if (first === last && ['"', "'", '`'].includes(first)) {
+        return value.slice(1, -1);
+      }
+    }
+    return value;
+  }
+
+  private async resolveUrisFromInput(input: string): Promise<vscode.Uri[]> {
+    const normalized = this.normalizeInputPath(input);
+    if (!normalized) { return []; }
+
+    if (this.isAbsolutePath(normalized)) {
+      const absoluteUri = vscode.Uri.file(normalized);
+      if (await this.fileExists(absoluteUri)) {
+        return [absoluteUri];
+      }
+    }
+
+    const relativeUri = await this.tryResolveRelative(normalized);
+    if (relativeUri) {
+      return [relativeUri];
+    }
+
+    return this.searchWorkspace(normalized);
+  }
+
+  private normalizeInputPath(value: string): string {
+    if (!value) { return ''; }
+    const expanded = value.startsWith('~')
+      ? path.join(os.homedir(), value.slice(1))
+      : value;
+    return path.normalize(expanded);
+  }
+
+  private isAbsolutePath(p: string): boolean {
+    return path.isAbsolute(p) || /^[A-Za-z]:[\\/]/.test(p);
+  }
+
+  private async tryResolveRelative(relativePath: string): Promise<vscode.Uri | null> {
+    const trimmed = relativePath.replace(/^(\.\\|\.\/)+/, '').replace(/^\\+|^\/+/, '');
+    if (!trimmed) { return null; }
+    const folders = vscode.workspace.workspaceFolders || [];
+    for (const folder of folders) {
+      const candidate = vscode.Uri.file(path.join(folder.uri.fsPath, trimmed));
+      if (await this.fileExists(candidate)) {
+        return candidate;
+      }
+    }
+    return null;
+  }
+
+  private async searchWorkspace(target: string): Promise<vscode.Uri[]> {
+    const globTarget = target.replace(/^[/\\]+/, '').replace(/\\/g, '/');
+    if (!globTarget) { return []; }
+    try {
+      return await vscode.workspace.findFiles(`**/${globTarget}`, '**/node_modules/**', 5);
+    } catch {
+      return [];
+    }
+  }
+
+  private async fileExists(uri: vscode.Uri): Promise<boolean> {
+    try {
+      const stat = await vscode.workspace.fs.stat(uri);
+      return stat.type === vscode.FileType.File;
+    } catch {
+      return false;
+    }
+  }
+
+  private dedupeUris(uris: vscode.Uri[]): vscode.Uri[] {
+    const seen = new Set<string>();
+    const unique: vscode.Uri[] = [];
+    for (const uri of uris) {
+      const key = uri.toString();
+      if (!seen.has(key)) {
+        seen.add(key);
+        unique.push(uri);
+      }
+    }
+    return unique;
   }
 
   dispose(): void {

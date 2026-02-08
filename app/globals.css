@@ -1482,6 +1482,16 @@ html, body {
   color: var(--accent);
 }
 
+.feature-badge--soon {
+  background: rgba(168, 85, 247, 0.12);
+  color: #a855f7;
+}
+
+.feature-item--coming-soon {
+  border: 1px dashed rgba(168, 85, 247, 0.25);
+  opacity: 0.92;
+}
+
 .feature-item h3 {
   font-size: 0.875rem;
   margin-bottom: 0.5rem;
