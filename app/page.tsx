@@ -88,6 +88,15 @@ export default function HomePage() {
           <Link href={hero.secondaryCta.href} className="cta-secondary">
             {hero.secondaryCta.label}
           </Link>
+          <a
+            href="https://github.com/vfaraji89/tokalator"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-star"
+          >
+            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+            Star on GitHub
+          </a>
         </div>
         <div className="install-cmd">
           <code>{hero.installCmd}</code>
@@ -246,6 +255,43 @@ export default function HomePage() {
             </li>
           ))}
         </ol>
+      </section>
+
+      {/* Open Source Love */}
+      <section className="community-section">
+        <div className="community-glow" aria-hidden />
+        <div className="community-content">
+          <span className="community-emoji" aria-hidden>🧮</span>
+          <h2 className="community-headline">Built in the open.<br />Powered by people like you.</h2>
+          <p className="community-text">
+            Tokalator is free, open-source, and shaped by its community.
+            Every star, issue, and contribution makes the tools better for everyone.
+          </p>
+          <div className="community-ctas">
+            <a
+              href="https://github.com/vfaraji89/tokalator"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta-star cta-star--large"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
+              Star on GitHub
+            </a>
+            <a
+              href="https://github.com/vfaraji89/tokalator/issues"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="cta-secondary"
+            >
+              Report a bug or idea
+            </a>
+          </div>
+          <div className="community-values">
+            <span className="community-value"><span className="community-value-icon">♥</span> Free forever</span>
+            <span className="community-value"><span className="community-value-icon">◎</span> MIT licensed</span>
+            <span className="community-value"><span className="community-value-icon">⬡</span> Made in Istanbul</span>
+          </div>
+        </div>
       </section>
 
       <footer className="footer">
