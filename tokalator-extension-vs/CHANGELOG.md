@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.5 — 2026-02-08
+
+### Added
+
+- `/unpin` command to unpin files and return them to normal relevance scoring
+- `/reset` command to clear session state (turn counter and context rot tracking)
+- `/compaction` command with per-turn token growth analysis and actionable recommendations
+- Budget breakdown panel in sidebar dashboard (files, system, instructions, conversation, output)
+- Context growth sparkline visualization in sidebar with per-turn history
+- Turn snapshot tracking for compaction analysis
+
+### Changed
+
+- `TurnSnapshot` and `BudgetBreakdown` types moved to shared types module
+
 ## 0.2.4 — 2026-02-08
 
 ### Fixed
