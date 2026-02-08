@@ -49,7 +49,7 @@ export default function HomePage() {
     <article className="article">
       {/* Hero — Agentation-inspired marker highlight */}
       <header className="hero">
-        <a href="/extension" className="update-pill">
+        <a href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
           <span className="update-dot" /> Now on VS Code Marketplace
           <span className="update-arrow">→</span>
         </a>
@@ -83,9 +83,14 @@ export default function HomePage() {
           {hero.description}
         </p>
         <div className="hero-ctas">
-          <Link href={hero.primaryCta.href} className="cta-primary">
+          <a
+            href={hero.primaryCta.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="cta-primary"
+          >
             {hero.primaryCta.label}
-          </Link>
+          </a>
           <Link href={hero.secondaryCta.href} className="cta-secondary">
             {hero.secondaryCta.label}
           </Link>
