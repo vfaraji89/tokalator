@@ -1,26 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import content from "../content/homepage.json";
 import { DemoMockup } from "../components/demo-mockup";
-import { IstanbulCat } from "../components/istanbul-cat";
-
-function LiveClock() {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  if (!now) return null;
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    weekday: "short", month: "short", day: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hour12: false, timeZone: "Europe/Istanbul",
-  });
-  return <span className="footer-clock">{fmt.format(now)} IST</span>;
-}
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -83,14 +66,6 @@ export default function HomePage() {
           {hero.description}
         </p>
         <div className="hero-ctas">
-          <a
-            href={hero.primaryCta.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cta-primary"
-          >
-            {hero.primaryCta.label}
-          </a>
           <Link href={hero.secondaryCta.href} className="cta-secondary">
             {hero.secondaryCta.label}
           </Link>
@@ -103,6 +78,36 @@ export default function HomePage() {
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
             Star on GitHub
           </a>
+        </div>
+
+        {/* IDE Install Options */}
+        <div className="ide-install">
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ide-install-btn ide-install-btn--primary"
+          >
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M1.29 3.802l4.768-1.783L15.5.025v15.95l-9.442-1.994-4.77-1.783L1.29 3.8zm4.768 7.293V4.905L2.835 6.468v4.064l3.223 1.563z" fill="currentColor" opacity="0.9"/>
+            </svg>
+            VS Code
+          </a>
+          <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M13.7 2.3C12.9.9 11.5 0 10 0H6C4.5 0 3.1.9 2.3 2.3L0 6.5v3l2.3 4.2C3.1 15.1 4.5 16 6 16h4c1.5 0 2.9-.9 3.7-2.3L16 9.5v-3l-2.3-4.2zM8 12a4 4 0 110-8 4 4 0 010 8z" fill="currentColor" opacity="0.9"/>
+            </svg>
+            Cursor
+            <span className="ide-soon-tag">Soon</span>
+          </span>
+          <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
+            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+              <path d="M8 0L14.9 4v8L8 16l-6.9-4V4L8 0z" fill="currentColor" opacity="0.9"/>
+              <path d="M8 3.5L12.1 6v4L8 12.5 3.9 10V6L8 3.5z" fill="var(--grey-900)" opacity="0.7"/>
+            </svg>
+            Claude Code
+            <span className="ide-soon-tag">Soon</span>
+          </span>
         </div>
         <div className="install-cmd">
           <code>{hero.installCmd}</code>
@@ -263,14 +268,13 @@ export default function HomePage() {
         </ol>
       </section>
 
-      {/* Open Source Love */}
+      {/* Open Source */}
       <section className="community-section">
         <div className="community-glow" aria-hidden />
         <div className="community-content">
-          <h2 className="community-headline">Built in the open.<br />Powered by people like you.</h2>
+          <h2 className="community-headline">Every token you save<br />makes the next prompt better.</h2>
           <p className="community-text">
-            Tokalator is free, open-source, and shaped by its community.
-            Every star, issue, and contribution makes the tools better for everyone.
+            Open source. Community shaped. Free forever.
           </p>
           <div className="community-ctas">
             <a
@@ -282,22 +286,6 @@ export default function HomePage() {
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
               Star on GitHub
             </a>
-            <a
-              href="https://github.com/vfaraji89/tokalator/issues"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-secondary"
-            >
-              Report a bug or idea
-            </a>
-          </div>
-          <div className="community-values">
-            <span className="community-value"><span className="community-value-icon community-value-icon--pulse">♥</span> Free forever</span>
-            <span className="community-value"><span className="community-value-icon community-value-icon--orbit">◎</span> MIT licensed</span>
-            <span className="community-value community-value--istanbul">
-              <IstanbulCat />
-              Made in Istanbul
-            </span>
           </div>
         </div>
       </section>
@@ -305,18 +293,11 @@ export default function HomePage() {
       <footer className="footer">
         <div className="footer-main">
           <span className="footer-brand">&copy; 2026 @Tokalator</span>
-          <span className="footer-divider">·</span>
-          <span className="footer-author">
-            Made by{" "}
-            <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer">Vahid Faraji</a>
-            {" "}with <span className="footer-heart">♥</span> from Istanbul
-          </span>
         </div>
         <div className="footer-meta">
           <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer" className="footer-github" aria-label="GitHub">
             <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
           </a>
-          <LiveClock />
         </div>
       </footer>
     </article>
