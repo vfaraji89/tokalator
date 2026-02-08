@@ -1387,6 +1387,42 @@ html, body {
   text-decoration: none;
 }
 
+/* Cat agent — minimal idle motion */
+.cat-agent {
+  display: inline-flex;
+  align-items: center;
+  color: var(--text-muted);
+  opacity: 0.55;
+  transition: opacity 0.4s ease;
+}
+
+.cat-agent:hover {
+  opacity: 0.85;
+}
+
+.cat-eye {
+  animation: cat-blink 4s ease-in-out infinite;
+}
+
+.cat-eye-right {
+  animation-delay: 0.1s;
+}
+
+@keyframes cat-blink {
+  0%, 90%, 100% { ry: 1.2; }
+  94%, 96% { ry: 0.15; }
+}
+
+.cat-tail {
+  transform-origin: 42px 27px;
+  animation: cat-tail-sway 3s ease-in-out infinite;
+}
+
+@keyframes cat-tail-sway {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(8deg); }
+}
+
 /* About page */
 .about-role {
   font-size: 0.8125rem;

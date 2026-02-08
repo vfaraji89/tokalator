@@ -54,17 +54,40 @@ export default function AboutPage() {
         <h2>Author</h2>
         <div className="author-card">
           <div className="author-info">
-            <h3>Vahid Faraji</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <h3 style={{ margin: 0 }}>Vahid Faraji</h3>
+              <span className="cat-agent" aria-hidden="true">
+                <svg width="28" height="20" viewBox="0 0 56 40" fill="currentColor">
+                  {/* Body */}
+                  <ellipse cx="28" cy="28" rx="14" ry="9" opacity="0.85"/>
+                  {/* Head */}
+                  <circle cx="16" cy="20" r="7" opacity="0.85"/>
+                  {/* Left ear */}
+                  <polygon points="11,14 9,6 15,12" opacity="0.85"/>
+                  {/* Right ear */}
+                  <polygon points="19,12 21,4 23,12" opacity="0.85"/>
+                  {/* Eyes — blink via CSS */}
+                  <ellipse className="cat-eye cat-eye-left" cx="13.5" cy="19" rx="1.2" ry="1.2" fill="var(--bg)"/>
+                  <ellipse className="cat-eye cat-eye-right" cx="18.5" cy="19" rx="1.2" ry="1.2" fill="var(--bg)"/>
+                  {/* Nose */}
+                  <polygon points="15.5,21.5 16.5,21.5 16,22.5" fill="var(--accent)" opacity="0.7"/>
+                  {/* Tail — sways via CSS */}
+                  <path className="cat-tail" d="M42,27 Q48,18 52,22 Q56,26 50,28" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" opacity="0.7"/>
+                  {/* Front paws */}
+                  <ellipse cx="20" cy="35" rx="2.5" ry="1.8" opacity="0.65"/>
+                  <ellipse cx="26" cy="36" rx="2.5" ry="1.8" opacity="0.65"/>
+                </svg>
+              </span>
+            </div>
             <p className="about-role">Sr. Applied AI Specialist · Istanbul</p>
             <p>
-              8+ years leading cross-functional engineering and AI teams.
+              8+ years of expericne in data product and recently as Appleid AI.
               Currently driving enterprise LLM pipelines and AI-powered automation at Kariyer.net — designing
-              token-efficient prompt architectures adopted as organizational standards.
+              products with AI-native approach and AI-transofmation leader.
             </p>
             <p style={{ marginTop: "0.75rem" }}>
-              Previously shipped a metadata management system serving 5M+ monthly users across 15+ ML models,
-              led a $40K+ cost optimization initiative with intelligent model routing and response caching,
-              and built self-service analytics platforms that cut team backlog by 40%.
+              Contributed for metadata management system serving 5M+ monthly user data, work on text retrival, context engineering, spec desgin and fast-prototyping.
+              Selected projects: text-to-SQL agent for internal data access, feedback automation for Sales Team, drag and drop for finance operation.
             </p>
             <div className="about-links">
               <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="github-link">
