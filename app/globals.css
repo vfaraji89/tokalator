@@ -1262,6 +1262,79 @@ html, body {
   color: var(--white);
 }
 
+/* IDE Install Row */
+.ide-install {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  overflow: hidden;
+  margin-bottom: 0.75rem;
+  animation: fadeInUp 0.4s ease-out 0.35s both;
+}
+
+.ide-install-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.25rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  border-right: 1px solid var(--border);
+  position: relative;
+  font-family: var(--font-primary);
+  white-space: nowrap;
+}
+
+.ide-install-btn:last-child {
+  border-right: none;
+}
+
+.ide-install-btn svg {
+  flex-shrink: 0;
+}
+
+.ide-install-btn--primary {
+  background: var(--grey-900);
+  color: var(--white);
+  cursor: pointer;
+}
+
+.ide-install-btn--primary:hover {
+  background: var(--black);
+  color: var(--white);
+  text-decoration: none;
+}
+
+.ide-install-btn--primary svg {
+  color: var(--accent);
+}
+
+.ide-install-btn--soon {
+  background: var(--bg);
+  color: var(--text-muted);
+  cursor: default;
+}
+
+.ide-install-btn--soon svg {
+  opacity: 0.4;
+}
+
+.ide-soon-tag {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--accent);
+  background: var(--accent-bg);
+  padding: 0.1rem 0.35rem;
+  border-radius: 3px;
+  line-height: 1;
+}
+
 /* Why Section */
 .why-section {
   margin-top: 2.5rem;
@@ -2817,6 +2890,24 @@ kbd {
   .install-cmd {
     width: 100%;
     justify-content: space-between;
+  }
+
+  .ide-install {
+    flex-direction: column;
+    width: 100%;
+    border-radius: 10px;
+  }
+
+  .ide-install-btn {
+    width: 100%;
+    justify-content: center;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    padding: 0.75rem 1rem;
+  }
+
+  .ide-install-btn:last-child {
+    border-bottom: none;
   }
 
   .why-stats {
