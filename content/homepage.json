@@ -51,7 +51,7 @@
       },
       {
         "name": "Chat Participant",
-        "description": "@tokens commands for inline budget management",
+        "description": "@tokalator commands for inline budget management",
         "command": "/count /optimize /pin /breakdown",
         "number": 3
       },
@@ -147,7 +147,7 @@
       "Open any project in VS Code",
       "Install the Tokalator extension",
       "Open the sidebar to see real-time token budgets",
-      "Use @tokens in Copilot Chat for inline commands",
+      "Use @tokalator in Copilot Chat for inline commands",
       "Switch to the web tools for deep analysis",
       "Optimize your context and cut costs"
     ]
