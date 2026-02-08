@@ -288,8 +288,8 @@ export default function HomePage() {
             </a>
           </div>
           <div className="community-values">
-            <span className="community-value"><span className="community-value-icon">♥</span> Free forever</span>
-            <span className="community-value"><span className="community-value-icon">◎</span> MIT licensed</span>
+            <span className="community-value"><span className="community-value-icon community-value-icon--pulse">♥</span> Free forever</span>
+            <span className="community-value"><span className="community-value-icon community-value-icon--orbit">◎</span> MIT licensed</span>
             <span className="community-value community-value--istanbul">
               <IstanbulCat />
               Made in Istanbul
