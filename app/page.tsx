@@ -104,22 +104,32 @@ export default function HomePage() {
             rel="noopener noreferrer"
             className="ide-install-btn ide-install-btn--primary"
           >
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M1.29 3.802l4.768-1.783L15.5.025v15.95l-9.442-1.994-4.77-1.783L1.29 3.8zm4.768 7.293V4.905L2.835 6.468v4.064l3.223 1.563z" fill="currentColor" opacity="0.9"/>
+            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+              <path d="M97.15 8.354L75.06.263a4.85 4.85 0 00-5.53 1.09L30.5 37.04 12.64 23.26a3.24 3.24 0 00-4.13.14L2.12 29.12a3.24 3.24 0 000 4.76L17.67 48 2.12 62.12a3.24 3.24 0 000 4.76l6.39 5.72a3.24 3.24 0 004.13.14L30.5 58.96l39.03 35.69a4.85 4.85 0 005.53 1.09l22.09-8.09A4.85 4.85 0 00100 83.08V12.92a4.85 4.85 0 00-2.85-4.57zM75 72.29L45.13 48 75 23.71v48.58z" fill="#007ACC"/>
             </svg>
             VS Code
           </a>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M13.7 2.3C12.9.9 11.5 0 10 0H6C4.5 0 3.1.9 2.3 2.3L0 6.5v3l2.3 4.2C3.1 15.1 4.5 16 6 16h4c1.5 0 2.9-.9 3.7-2.3L16 9.5v-3l-2.3-4.2zM8 12a4 4 0 110-8 4 4 0 010 8z" fill="currentColor" opacity="0.9"/>
+            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+              <path d="M50 0L93.3 25v50L50 100 6.7 75V25L50 0z" fill="#000000"/>
+              <path d="M50 25L75 40v20L50 80V55L25 40l25-15z" fill="#ffffff"/>
             </svg>
             Cursor
             <span className="ide-soon-tag">Soon</span>
           </span>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-              <path d="M8 0L14.9 4v8L8 16l-6.9-4V4L8 0z" fill="currentColor" opacity="0.9"/>
-              <path d="M8 3.5L12.1 6v4L8 12.5 3.9 10V6L8 3.5z" fill="var(--grey-900)" opacity="0.7"/>
+            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
+              <path d="M50 10c-4 0-7.5 3-7.5 3L20 33c-3 3-4 6-4 6v22c0 0 1 3 4 6l22.5 20s3.5 3 7.5 3 7.5-3 7.5-3L80 67c3-3 4-6 4-6V39s-1-3-4-6L57.5 13s-3.5-3-7.5-3z" fill="none" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="50" y1="15" x2="50" y2="5" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="50" y1="95" x2="50" y2="85" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="15" y1="35" x2="7" y2="30" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="85" y1="35" x2="93" y2="30" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="15" y1="65" x2="7" y2="70" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="85" y1="65" x2="93" y2="70" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="30" y1="87" x2="23" y2="93" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="70" y1="87" x2="77" y2="93" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="30" y1="13" x2="23" y2="7" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <line x1="70" y1="13" x2="77" y2="7" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
             </svg>
             Claude Code
             <span className="ide-soon-tag">Soon</span>
@@ -308,13 +318,11 @@ export default function HomePage() {
 
       <footer className="footer">
         <div className="footer-main">
-          <span className="footer-brand">&copy; 2026 @Tokalator</span>
-          <span className="footer-divider">&middot;</span>
-          <span className="footer-author">
-            Made by{" "}
-            <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer">Vahid Faraji</a>
-            {" "}from Istanbul
-          </span>
+          <span className="footer-brand">&copy; 2026 @Tokalator.</span>
+          <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="footer-author-link">Vahid Faraji</a>
+        </div>
+        <div className="footer-love">
+          Made with <span className="footer-love-icon">♥</span> from Istanbul
         </div>
         <div className="footer-meta">
           <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer" className="footer-github" aria-label="GitHub">
