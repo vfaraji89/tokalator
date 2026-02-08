@@ -38,7 +38,7 @@ function CopyButton({ text }: { text: string }) {
 }
 
 export default function HomePage() {
-  const { hero, whySection, extensionFeatures, webTools, contextEngineering, howToUse } =
+  const { hero, whySection, extensionFeatures, webTools, contextEngineering, comingSoon, howToUse } =
     content;
 
   // Split headline on newlines
@@ -205,6 +205,33 @@ export default function HomePage() {
             </li>
           ))}
         </ul>
+      </section>
+
+      {/* Coming Soon */}
+      <section className="extension-section">
+        <div className="section-divider" />
+        <h2 className="section-header">{comingSoon.title}</h2>
+        <p>{comingSoon.subtitle}</p>
+        <div className="feature-grid">
+          {comingSoon.items.map((item: { icon: string; name: string; description: string; badge: string; number: number }) => (
+            <div
+              key={item.name}
+              className="feature-item feature-item--extension feature-item--coming-soon"
+            >
+              <span className="feature-number">{item.number}</span>
+              <h3>{item.icon} {item.name}</h3>
+              <p>{item.description}</p>
+              <span className="feature-badge feature-badge--soon">
+                {item.badge} · Coming Soon
+              </span>
+            </div>
+          ))}
+        </div>
+        <div className="section-cta">
+          <Link href="/pro" className="cta-secondary">
+            Learn more →
+          </Link>
+        </div>
       </section>
 
       {/* How you use it — Agentation-inspired numbered steps */}

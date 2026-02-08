@@ -114,6 +114,33 @@
       }
     ]
   },
+  "comingSoon": {
+    "title": "Coming Soon",
+    "subtitle": "We're building the next layer of Tokalator.",
+    "items": [
+      {
+        "icon": "⬡",
+        "name": "Tokalator Pro",
+        "description": "Team dashboards, historical token usage analytics, CI/CD budget gates, and custom model profiles. Free core stays open source — Pro adds enterprise power.",
+        "badge": "Pro",
+        "number": 1
+      },
+      {
+        "icon": "◈",
+        "name": "Token Counting API",
+        "description": "Real BPE tokenizers as a service. Count tokens for Claude, GPT, and Gemini with a single API call. Free tier: 1K requests/day.",
+        "badge": "API",
+        "number": 2
+      },
+      {
+        "icon": "◎",
+        "name": "Context Audits",
+        "description": "We analyze your repo's instruction files, Copilot usage, and context structure — then deliver a report with concrete optimizations.",
+        "badge": "Service",
+        "number": 3
+      }
+    ]
+  },
   "howToUse": {
     "title": "How you use it",
     "steps": [
