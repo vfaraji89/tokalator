@@ -157,29 +157,30 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
   <title>Tokalator</title>
   <style>
     :root {
+      /* GitHub Primer-aligned palette with VS Code theme fallbacks */
       --bg: var(--vscode-sideBar-background);
       --fg: var(--vscode-sideBar-foreground);
       --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border));
-      --low: var(--vscode-charts-green, #4ec9b0);
-      --medium: var(--vscode-charts-yellow, #dcdcaa);
-      --high: var(--vscode-charts-red, #f44747);
+      --low: var(--vscode-charts-green, #3fb950);
+      --medium: var(--vscode-charts-yellow, #d29922);
+      --high: var(--vscode-charts-red, #f85149);
       --btn-bg: var(--vscode-button-background);
       --btn-fg: var(--vscode-button-foreground);
       --btn-hover: var(--vscode-button-hoverBackground);
       --list-hover: var(--vscode-list-hoverBackground);
-      --card-bg: var(--vscode-editor-inactiveSelectionBackground, rgba(128,128,128,0.08));
-      --accent: var(--vscode-focusBorder);
+      --card-bg: var(--vscode-editor-inactiveSelectionBackground, rgba(128,128,128,0.06));
+      --accent: var(--vscode-focusBorder, #58a6ff);
       --input-bg: var(--vscode-input-background);
       --input-fg: var(--vscode-input-foreground);
       --input-border: var(--vscode-input-border, transparent);
       --badge-bg: var(--vscode-badge-background);
       --badge-fg: var(--vscode-badge-foreground);
       --desc-fg: var(--vscode-descriptionForeground);
-      --chart-blue: var(--vscode-charts-blue, #60a5fa);
-      --chart-purple: var(--vscode-charts-purple, #a78bfa);
-      --chart-orange: var(--vscode-charts-orange, #f59e0b);
-      --chart-grey: var(--vscode-disabledForeground, #6b7280);
-      --link-fg: var(--vscode-textLink-foreground);
+      --chart-blue: var(--vscode-charts-blue, #58a6ff);
+      --chart-purple: var(--vscode-charts-purple, #bc8cff);
+      --chart-orange: var(--vscode-charts-orange, #d29922);
+      --chart-grey: var(--vscode-disabledForeground, #8b949e);
+      --link-fg: var(--vscode-textLink-foreground, #58a6ff);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -205,9 +206,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       margin-bottom: 12px;
       text-align: center;
     }
-    .budget-level.low { background: color-mix(in srgb, var(--low) 20%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 30%, transparent); }
-    .budget-level.medium { background: color-mix(in srgb, var(--medium) 20%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 30%, transparent); }
-    .budget-level.high { background: color-mix(in srgb, var(--high) 20%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 30%, transparent); }
+    .budget-level.low { background: color-mix(in srgb, var(--low) 12%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 25%, transparent); }
+    .budget-level.medium { background: color-mix(in srgb, var(--medium) 12%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 25%, transparent); }
+    .budget-level.high { background: color-mix(in srgb, var(--high) 12%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 25%, transparent); }
     .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
     .budget-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
     .budget-tokens { font-size: 12px; margin-top: 4px; }
@@ -221,10 +222,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .stat {
       background: var(--vscode-textBlockQuote-background, var(--card-bg));
       border: 1px solid var(--border);
-      padding: 6px 10px;
-      border-radius: 4px;
-      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 6px;
+      font-size: 11px;
       color: var(--fg);
+      font-weight: 500;
+      font-variant-numeric: tabular-nums;
     }
 
     .section {
@@ -234,10 +237,10 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     }
     .section-title {
       font-size: 11px;
-      font-weight: 700;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: var(--fg);
+      color: var(--desc-fg);
       margin-bottom: 8px;
     }
 
@@ -258,9 +261,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .tab-dot.high { background: var(--low); }
-    .tab-dot.med { background: var(--medium); }
-    .tab-dot.low { background: var(--high); }
+    .tab-dot.high { background: var(--low); opacity: 0.9; }
+    .tab-dot.med { background: var(--medium); opacity: 0.9; }
+    .tab-dot.low { background: var(--high); opacity: 0.9; }
     .tab-name {
       flex: 1;
       overflow: hidden;
@@ -288,17 +291,20 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       background: var(--btn-bg);
       color: var(--btn-fg);
       border: none;
-      padding: 8px 12px;
-      border-radius: 4px;
+      padding: 6px 12px;
+      border-radius: 6px;
       font-size: 12px;
+      font-weight: 500;
       cursor: pointer;
       width: 100%;
       margin-top: 8px;
+      transition: background 0.1s;
     }
     .action-btn:hover { background: var(--btn-hover); }
     .action-btn.secondary {
       background: var(--card-bg);
       color: var(--fg);
+      border: 1px solid var(--border);
     }
     .action-btn.secondary:hover {
       background: var(--list-hover);
@@ -351,9 +357,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       margin-top: 8px;
       color: var(--fg);
     }
-    .ws-warn { color: var(--chart-orange); font-weight: 600; }
-    .ws-ok { color: var(--low); font-weight: 600; }
-    .tokenizer { color: var(--link-fg); font-weight: 600; }
+    .ws-warn { color: var(--medium); font-weight: 600; }
+    .ws-ok { color: var(--low); font-weight: 500; }
+    .tokenizer { color: var(--chart-blue); font-weight: 500; }
 
     .breakdown-grid {
       display: grid;
@@ -394,8 +400,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       min-width: 4px;
       border-radius: 2px 2px 0 0;
       background: var(--chart-blue);
-      opacity: 0.7;
+      opacity: 0.6;
       position: relative;
+      transition: opacity 0.15s;
     }
     .growth-bar:last-child { opacity: 1; }
     .growth-bar:hover { opacity: 1; }
@@ -407,8 +414,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     }
     .suggestion {
       font-size: 12px;
-      color: var(--chart-orange);
-      font-weight: 600;
+      color: var(--medium);
+      font-weight: 500;
       margin-top: 4px;
     }
 
@@ -448,7 +455,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
     .preview-box {
       background: var(--vscode-textBlockQuote-background, var(--card-bg));
-      border: 1px solid var(--accent);
+      border: 1px solid color-mix(in srgb, var(--chart-blue) 40%, var(--border));
       border-radius: 6px;
       padding: 8px 10px;
       margin-bottom: 12px;
@@ -459,7 +466,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      color: var(--accent);
+      color: var(--chart-blue);
       margin-bottom: 4px;
     }
     .preview-stats {

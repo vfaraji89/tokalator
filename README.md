@@ -17,9 +17,11 @@ Still, when you have 30 tabs open, your assistant's attention gets diluted acros
 A sidebar panel that shows your context usage at a glance:
 
 - **Budget level** — LOW (good), MEDIUM (warning), or HIGH (critical)
+- **Next turn preview** — estimated token cost before you send your next message
 - **File list** — ranked by relevance to your current task
 - **One-click cleanup** — close low-relevance tabs instantly
 - **Pinned files** — mark files as always-relevant (persists across sessions)
+- **Session tracking** — see last session stats on activation
 
 ### Chat Commands (`@tokalator`)
 
@@ -33,7 +35,9 @@ A sidebar panel that shows your context usage at a glance:
 | `@tokalator /instructions` | List instruction files and their token cost |
 | `@tokalator /model [name]` | Show or switch the active model |
 | `@tokalator /compaction` | Per-turn growth and compaction advice |
+| `@tokalator /preview` | Preview token cost before sending |
 | `@tokalator /reset` | Reset session (clear turn counter) |
+| `@tokalator /exit` | End session and save summary |
 
 ### Smart Relevance Scoring
 
@@ -68,9 +72,10 @@ Files are scored based on:
 
 ## Known Limitations
 
-- Token counting uses heuristics (~1 token per 4 characters) when the Language Model API isn't available
+- Real BPE tokenizers for Claude and OpenAI; Gemini uses heuristic (~1 token per 4 characters)
 - Import parsing uses regex, which misses some edge cases (multi-line imports, dynamic imports)
 - Relevance weights are not scientifically tuned
+- Conversation cost estimated at ~800 tokens/turn (varies by message length)
 
 ## Requirements
 
