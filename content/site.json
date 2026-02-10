@@ -1,6 +1,6 @@
 {
   "name": "@Tokalator",
-  "version": "v0.2.9",
+  "version": "v0.3.0",
   "footer": "\u00a9 2026 @Tokalator. Made by Vahid Faraji with love from Istanbul.",
   "github": "https://github.com/vfaraji89/tokalator",
   "authorGithub": "https://github.com/vfaraji89",
@@ -10,7 +10,7 @@
       "items": [
         {
           "href": "/",
-          "label": "Overview"
+          "label": "Home"
         },
         {
           "href": "/about",

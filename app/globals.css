@@ -1341,7 +1341,8 @@ html, body {
   border-right: none;
 }
 
-.ide-install-btn svg {
+.ide-install-btn svg,
+.ide-install-btn img {
   flex-shrink: 0;
   width: 18px;
   height: 18px;
@@ -1359,8 +1360,8 @@ html, body {
   text-decoration: none;
 }
 
-.ide-install-btn--primary svg {
-  color: var(--accent);
+.ide-install-btn--primary img {
+  filter: brightness(1.2);
 }
 
 .ide-install-btn--soon {
@@ -1369,8 +1370,9 @@ html, body {
   cursor: default;
 }
 
-.ide-install-btn--soon svg {
-  opacity: 0.4;
+.ide-install-btn--soon svg,
+.ide-install-btn--soon img {
+  opacity: 0.5;
 }
 
 .ide-soon-tag {
