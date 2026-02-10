@@ -31,7 +31,7 @@ function formatTimeAgo(iso: string): string {
  *  3. ContextChatParticipant — @tokalator chat commands
  *  4. Commands — refresh, optimize, clearPins
  */
-export function activate(context: vscode.ExtensionContext): void {
+export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
   // 1. Core monitor (with persistence for pinned files)
   const monitor = new ContextMonitor(context.workspaceState);
@@ -84,6 +84,9 @@ export function activate(context: vscode.ExtensionContext): void {
     100,
   );
   statusBar.command = 'tokalator.refresh';
+  statusBar.text = '$(loading~spin) Tokalator';
+  statusBar.tooltip = 'Tokalator — initializing...';
+  statusBar.show();
   context.subscriptions.push(statusBar);
 
   monitor.onDidUpdateSnapshot(snapshot => {
@@ -114,6 +117,9 @@ export function activate(context: vscode.ExtensionContext): void {
   }
 
   console.log('Tokalator is now active');
+
+  // Force an initial refresh now that all listeners (status bar, dashboard) are registered
+  await monitor.refresh();
 }
 
 export function deactivate(): void {

@@ -33,6 +33,21 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       localResourceRoots: [this.extensionUri],
     };
 
+    // Keep webview alive when the sidebar is collapsed / user switches panels
+    webviewView.onDidChangeVisibility(() => {
+      if (webviewView.visible) {
+        const snapshot = this.monitor.getLatestSnapshot();
+        if (snapshot) {
+          this.postSnapshot(snapshot);
+        }
+      }
+    });
+
+    // Clear reference when the webview is disposed (panel closed completely)
+    webviewView.onDidDispose(() => {
+      this.view = undefined;
+    });
+
     webviewView.webview.html = this.getHtml(webviewView.webview);
 
     webviewView.webview.onDidReceiveMessage(async (message) => {
@@ -96,10 +111,13 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       }
     });
 
+    // Post existing snapshot immediately, then force a fresh refresh
     const snapshot = this.monitor.getLatestSnapshot();
     if (snapshot) {
       this.postSnapshot(snapshot);
     }
+    // Trigger a fresh snapshot in case data changed while panel was hidden
+    this.monitor.refresh();
   }
 
   private postSnapshot(snapshot: ContextSnapshot): void {
@@ -427,6 +445,36 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .last-session-stat {
       color: var(--fg);
     }
+
+    .preview-box {
+      background: var(--vscode-textBlockQuote-background, var(--card-bg));
+      border: 1px solid var(--accent);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .preview-title {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+    .preview-stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .preview-stat {
+      color: var(--fg);
+    }
+    .preview-warn {
+      color: var(--chart-orange);
+      font-weight: 600;
+      margin-top: 4px;
+    }
   </style>
 </head>
 <body>
@@ -504,6 +552,24 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           <div class="budget-value">\${budgetLevel.toUpperCase()}</div>
           <div class="budget-tokens">~\${fmtTokens(totalEstimatedTokens)} / \${fmtTokens(windowCapacity)}</div>
         </div>
+
+        \${(function() {
+          var perTurn = 800;
+          var nextInput = totalEstimatedTokens + perTurn;
+          var nextPct = Math.min((nextInput / windowCapacity) * 100, 100).toFixed(1);
+          var remaining = Math.max(windowCapacity - nextInput, 0);
+          var turnsLeft = Math.floor(remaining / perTurn);
+          var warn = nextPct >= 90 ? 'High risk of overflow on next turn' : nextPct >= 75 ? 'Approaching context limit' : '';
+          return '<div class="preview-box">' +
+            '<div class="preview-title">🔮 Next Turn Preview</div>' +
+            '<div class="preview-stats">' +
+            '<span class="preview-stat">+~' + fmtTokens(perTurn) + '</span>' +
+            '<span class="preview-stat">→ ~' + fmtTokens(nextInput) + ' (' + nextPct + '%)</span>' +
+            '<span class="preview-stat">~' + turnsLeft + ' turns left</span>' +
+            '</div>' +
+            (warn ? '<div class="preview-warn">⚠️ ' + warn + '</div>' : '') +
+            '</div>';
+        })()}
 
         <div class="stats">
           <div class="stat">\${tabs.length} open</div>
