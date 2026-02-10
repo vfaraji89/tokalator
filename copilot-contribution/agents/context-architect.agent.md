@@ -1,7 +1,7 @@
 ---
 description: 'An agent that helps plan and execute multi-file changes by identifying relevant context and dependencies'
-model: 'Claude Opus 4.6'
-tools: ['codebase', 'runInTerminal']
+model: 'gpt-4o'
+tools: ['codebase', 'terminalCommand']
 name: 'Context Architect'
 ---
 

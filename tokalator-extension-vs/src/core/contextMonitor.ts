@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TabInfo, ContextSnapshot, TurnSnapshot } from './types';
+import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
@@ -7,6 +7,7 @@ import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './mode
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
 const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
+const SESSION_KEY = 'tokalator.lastSession';
 
 /**
  * Core engine that tracks all editor state and produces real-time ContextSnapshots.
@@ -44,11 +45,16 @@ export class ContextMonitor implements vscode.Disposable {
   private workspaceFileTokens = 0;
   private workspaceFileCount = 0;
 
+  // Session tracking
+  private peakTokens = 0;
+  private peakPercent = 0;
+  private fileEditCounts = new Map<string, number>();
+
   constructor(private readonly workspaceState?: vscode.Memento) {
-    // Load persisted pinned files
+    // Load persisted pinned files (normalize URIs for consistent matching)
     if (workspaceState) {
       const saved = workspaceState.get<string[]>(PINNED_FILES_KEY, []);
-      this.pinnedFiles = new Set(saved);
+      this.pinnedFiles = new Set(saved.map(u => this.normalizeUri(u)));
     }
 
     // Load persisted model selection
@@ -71,7 +77,9 @@ export class ContextMonitor implements vscode.Disposable {
       vscode.window.onDidChangeTextEditorSelection(() => debouncedRefresh()),
       vscode.window.tabGroups.onDidChangeTabs(() => debouncedRefresh()),
       vscode.workspace.onDidChangeTextDocument(e => {
-        this.lastEditTimestamps.set(e.document.uri.toString(), Date.now());
+        const uri = e.document.uri.toString();
+        this.lastEditTimestamps.set(uri, Date.now());
+        this.fileEditCounts.set(uri, (this.fileEditCounts.get(uri) || 0) + 1);
         debouncedRefresh();
       }),
       vscode.workspace.onDidOpenTextDocument(() => debouncedRefresh()),
@@ -83,6 +91,14 @@ export class ContextMonitor implements vscode.Disposable {
         debouncedRefresh();
       }),
       vscode.languages.onDidChangeDiagnostics(() => debouncedRefresh()),
+      // Sync model when settings change
+      vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('tokalator.model')) {
+          const cfg = vscode.workspace.getConfiguration('tokalator');
+          const modelId = cfg.get<string>('model', DEFAULT_MODEL_ID);
+          this.setModel(modelId);
+        }
+      }),
     );
 
     // Periodic refresh for time-based scoring (recency decay)
@@ -117,10 +133,21 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   /**
+   * Normalize a URI string for consistent Set matching.
+   */
+  private normalizeUri(uri: string): string {
+    try {
+      return vscode.Uri.parse(uri).toString();
+    } catch {
+      return uri;
+    }
+  }
+
+  /**
    * Pin a file URI so it's always scored as maximum relevance.
    */
   pinFile(uri: string): void {
-    this.pinnedFiles.add(uri);
+    this.pinnedFiles.add(this.normalizeUri(uri));
     this.persistPins();
     this.refresh();
   }
@@ -129,7 +156,7 @@ export class ContextMonitor implements vscode.Disposable {
    * Unpin a file.
    */
   unpinFile(uri: string): void {
-    this.pinnedFiles.delete(uri);
+    this.pinnedFiles.delete(this.normalizeUri(uri));
     this.persistPins();
     this.refresh();
   }
@@ -266,6 +293,12 @@ export class ContextMonitor implements vscode.Disposable {
       instructionFiles,
       windowCapacity
     );
+
+    // Track peak usage for session summary
+    if (budget.used > this.peakTokens) {
+      this.peakTokens = budget.used;
+      this.peakPercent = budget.percent;
+    }
 
     // 8. Determine budget level (simplified from percentage)
     let budgetLevel: 'low' | 'medium' | 'high';
@@ -496,7 +529,50 @@ export class ContextMonitor implements vscode.Disposable {
     }
   }
 
+  /**
+   * Save a session summary to workspace state for next activation.
+   */
+  saveSessionSummary(): void {
+    const snapshot = this.latestSnapshot;
+    if (!snapshot || !this.workspaceState) return;
+
+    const topFiles = [...this.fileEditCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([uri]) => {
+        try {
+          return vscode.workspace.asRelativePath(vscode.Uri.parse(uri));
+        } catch {
+          return uri;
+        }
+      });
+
+    const summary: SessionSummary = {
+      endedAt: new Date().toISOString(),
+      modelId: this.activeModel.id,
+      modelLabel: this.activeModel.label,
+      totalTurns: this.chatTurnCount,
+      peakTokens: this.peakTokens,
+      peakPercent: this.peakPercent,
+      tabCount: snapshot.tabs.length,
+      pinnedCount: this.pinnedFiles.size,
+      filesWorkedOn: topFiles,
+      budgetLevel: snapshot.budgetLevel,
+      healthStatus: snapshot.contextHealth,
+    };
+
+    this.workspaceState.update(SESSION_KEY, summary);
+  }
+
+  /**
+   * Get last session summary (if any).
+   */
+  getLastSession(): SessionSummary | undefined {
+    return this.workspaceState?.get<SessionSummary>(SESSION_KEY);
+  }
+
   dispose(): void {
+    this.saveSessionSummary();
     if (this.refreshTimer) { clearInterval(this.refreshTimer); }
     if (this.debounceTimer) { clearTimeout(this.debounceTimer); }
     this._onDidUpdateSnapshot.dispose();
