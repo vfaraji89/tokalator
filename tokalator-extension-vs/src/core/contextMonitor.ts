@@ -1,8 +1,11 @@
 import * as vscode from 'vscode';
-import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary } from './types';
+import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary, SecretScanSummary, CostEstimateSummary, OptimizationPlan } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
+import { SecretScanner } from './secretScanner';
+import { CostEstimator } from './costEstimator';
+import { ContextOptimizer } from './contextOptimizer';
 import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel, findModel } from './modelProfiles';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
@@ -29,6 +32,10 @@ export class ContextMonitor implements vscode.Disposable {
   private readonly scorer = new TabRelevanceScorer();
   private readonly tokenizer = new TokenizerService();
   private readonly estimator = new TokenBudgetEstimator(this.tokenizer);
+  private readonly secretScanner = new SecretScanner();
+  private readonly costEstimator = new CostEstimator();
+  private readonly contextOptimizer = new ContextOptimizer();
+  private latestSecretScan: SecretScanSummary | null = null;
 
   private pinnedFiles = new Set<string>();
   private chatTurnCount = 0;
@@ -400,6 +407,41 @@ export class ContextMonitor implements vscode.Disposable {
       healthReasons.push(`${distractors.length} low-relevance tabs open`);
     }
 
+    // 10. Secret scan — guardrail for sensitive data
+    let secretScan: SecretScanSummary | null = null;
+    const secretGuardEnabled = config.get<boolean>('secretGuard', true);
+    if (secretGuardEnabled) {
+      try {
+      const scanResult = await this.secretScanner.scanOpenTabs();
+      secretScan = {
+        totalFindings: scanResult.totalFindings,
+        critical: scanResult.critical,
+        high: scanResult.high,
+        warning: scanResult.warning,
+        envFilesOpen: scanResult.envFilesOpen,
+        findings: scanResult.findings,
+        scannedAt: scanResult.scannedAt,
+      };
+      this.latestSecretScan = secretScan;
+
+      // Add secret warnings to health
+      if (scanResult.critical > 0) {
+        contextHealth = 'critical';
+        healthReasons.push(`🔐 ${scanResult.critical} critical secret(s) exposed in context`);
+      }
+      if (scanResult.high > 0) {
+        contextHealth = contextHealth === 'critical' ? 'critical' : 'warning';
+        healthReasons.push(`🔑 ${scanResult.high} high-risk credential(s) detected`);
+      }
+      if (scanResult.envFilesOpen.length > 0) {
+        contextHealth = 'critical';
+        healthReasons.push(`⚠️ ${scanResult.envFilesOpen.length} sensitive file(s) open: ${scanResult.envFilesOpen.join(', ')}`);
+      }
+    } catch {
+      // Secret scan is best-effort — don't block snapshot
+    }
+    } // end secretGuardEnabled
+
     if (healthReasons.length === 0) {
       healthReasons.push('Token budget looks good');
     }
@@ -427,6 +469,8 @@ export class ContextMonitor implements vscode.Disposable {
       tokenizerLabel: this.tokenizer.getTokenizerLabel(this.activeModel.provider),
       turnHistory: [...this.turnHistory],
       budgetBreakdown: budget.breakdown,
+      secretScan,
+      costEstimate: this.buildCostEstimate(budget.breakdown, budget.used),
     };
   }
 
@@ -671,6 +715,81 @@ export class ContextMonitor implements vscode.Disposable {
    */
   getLastSession(): SessionSummary | undefined {
     return this.workspaceState?.get<SessionSummary>(SESSION_KEY);
+  }
+
+  /**
+   * Get latest secret scan results.
+   */
+  getLatestSecretScan(): SecretScanSummary | null {
+    return this.latestSecretScan;
+  }
+
+  /**
+   * Get the secret scanner for direct use by chat commands.
+   */
+  getSecretScanner(): SecretScanner {
+    return this.secretScanner;
+  }
+
+  /**
+   * Generate a full optimization plan from the current snapshot.
+   */
+  async getOptimizationPlan(): Promise<OptimizationPlan | null> {
+    const snapshot = this.latestSnapshot;
+    if (!snapshot) return null;
+
+    const config = vscode.workspace.getConfiguration('tokalator');
+    const threshold = config.get<number>('relevanceThreshold', 0.3);
+
+    return this.contextOptimizer.analyze(snapshot, this.activeModel, threshold);
+  }
+
+  /**
+   * Build a cost estimate from the current budget breakdown.
+   */
+  private buildCostEstimate(
+    breakdown: import('./types').BudgetBreakdown,
+    totalInputTokens: number,
+  ): CostEstimateSummary {
+    const est = this.costEstimator.estimate(
+      this.activeModel, breakdown, totalInputTokens, this.chatTurnCount
+    );
+    return {
+      inputTokens: est.inputTokens,
+      inputCostUSD: est.inputCostUSD,
+      outputTokensEstimate: est.outputTokensEstimate,
+      outputCostUSD: est.outputCostUSD,
+      totalCostUSD: est.totalCostUSD,
+      cachingSupported: est.caching.supported,
+      cachingType: est.caching.type,
+      cachingDescription: est.caching.description,
+      cacheableTokens: est.caching.cacheableTokens,
+      uncacheableTokens: est.caching.uncacheableTokens,
+      estimatedHitRatio: est.caching.estimatedHitRatio,
+      cachedCostUSD: est.caching.cachedCostUSD,
+      uncachedCostUSD: est.caching.uncachedCostUSD,
+      savingsPerTurnUSD: est.caching.savingsPerTurnUSD,
+      savingsPercent: est.caching.savingsPercent,
+      turnsCompleted: est.session.turnsCompleted,
+      estimatedSessionCostUSD: est.session.estimatedSessionCostUSD,
+      cost10Turns: est.session.cost10Turns,
+      cost25Turns: est.session.cost25Turns,
+      cost50Turns: est.session.cost50Turns,
+      cachedCost10Turns: est.session.cachedCost10Turns,
+      cachedCost25Turns: est.session.cachedCost25Turns,
+      cachedCost50Turns: est.session.cachedCost50Turns,
+      dailyCostUSD: est.session.dailyCostUSD,
+      monthlyCostUSD: est.session.monthlyCostUSD,
+      cachedDailyCostUSD: est.session.cachedDailyCostUSD,
+      cachedMonthlyCostUSD: est.session.cachedMonthlyCostUSD,
+    };
+  }
+
+  /**
+   * Get the cost estimator for direct use by chat commands.
+   */
+  getCostEstimator(): CostEstimator {
+    return this.costEstimator;
   }
 
   dispose(): void {
