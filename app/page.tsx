@@ -61,7 +61,7 @@ function FooterHeart() {
 }
 
 export default function HomePage() {
-  const { hero, whySection, extensionFeatures, webTools, contextEngineering, comingSoon, howToUse } =
+  const { hero, quickStart, commands, comingSoon } =
     content;
 
   // Split headline on newlines
@@ -164,49 +164,47 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* Why This Matters */}
-      <section className="why-section">
-        <h2 className="section-header">{whySection.title}</h2>
-        <p className="why-subtext">{whySection.subtitle}</p>
-        <div className="why-stats">
-          {whySection.stats.map((stat) => (
-            <div key={stat.label} className="why-stat-card">
-              <span className="why-stat-number">{stat.number}</span>
-              {stat.unit && (
-                <span className="why-stat-unit">{stat.unit}</span>
-              )}
-              <span className="why-stat-label">{stat.label}</span>
-            </div>
+      {/* Quick Start */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">{quickStart.title}</h2>
+        <ol className="how-to-steps">
+          {quickStart.steps.map((step: string, i: number) => (
+            <li key={i} className="how-to-step">
+              <span className="how-to-num">{i + 1}</span>
+              <span>{step}</span>
+            </li>
           ))}
+        </ol>
+        <div className="tech-details">
+          <h3 className="tech-details-title">{quickStart.technical.title}</h3>
+          <dl className="tech-details-list">
+            {quickStart.technical.items.map((item: { label: string; value: string }) => (
+              <div key={item.label} className="tech-details-item">
+                <dt>{item.label}</dt>
+                <dd>{item.value}</dd>
+              </div>
+            ))}
+          </dl>
         </div>
       </section>
 
-      {/* VS Code Extension */}
+      {/* All Commands */}
       <section className="extension-section">
         <div className="section-divider" />
-        <h2 className="section-header">{extensionFeatures.title}</h2>
-        <p>{extensionFeatures.description}</p>
-        <div className="feature-grid">
-          {extensionFeatures.items.map((f) => (
-            <div
-              key={f.name}
-              className="feature-item feature-item--extension"
-            >
-              <span className="feature-number">{f.number}</span>
-              <h3>
-                {f.name}
-              </h3>
-              <p>{f.description}</p>
-              {f.command && <code>{f.command}</code>}
-              <span className="feature-badge feature-badge--extension">
-                VS Code
-              </span>
+        <h2 className="section-header">{commands.title}</h2>
+        <p>{commands.description}</p>
+        <div className="command-grid">
+          {commands.items.map((cmd: { command: string; description: string }) => (
+            <div key={cmd.command} className="command-card">
+              <code className="command-name">{cmd.command}</code>
+              <p className="command-desc">{cmd.description}</p>
             </div>
           ))}
         </div>
         <div className="section-cta">
           <a
-            href={extensionFeatures.githubUrl}
+            href="https://github.com/vfaraji89/tokalator"
             target="_blank"
             rel="noopener noreferrer"
             className="cta-secondary"
@@ -216,65 +214,19 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Web Tools — same card pattern as VS Code Extension */}
-      <section className="extension-section">
-        <div className="section-divider" />
-        <h2 className="section-header">{webTools.title}</h2>
-        <div className="feature-grid">
-          {webTools.items.map((tool: { name: string; description: string; href: string; number?: number }) => (
-            <Link
-              key={tool.href}
-              href={tool.href}
-              className="feature-item feature-item--extension"
-              style={{ textDecoration: "none" }}
-            >
-              {tool.number && <span className="feature-number">{tool.number}</span>}
-              <h3>{tool.name}</h3>
-              <p>{tool.description}</p>
-              <span className="feature-badge feature-badge--web">
-                Web Tool
-              </span>
-            </Link>
-          ))}
-        </div>
-      </section>
-
-      {/* Context Engineering */}
-      <section>
-        <div className="section-divider" />
-        <h2 className="section-header">{contextEngineering.title}</h2>
-        <p>
-          {contextEngineering.description} Contributed to{" "}
-          <a
-            href={contextEngineering.awesomeCopilotUrl}
-            style={{ textDecoration: "underline" }}
-          >
-            awesome-copilot
-          </a>
-          .
-        </p>
-        <ul>
-          {contextEngineering.items.map((item) => (
-            <li key={item.name}>
-              <strong>{item.name}</strong> &mdash; {item.description}
-            </li>
-          ))}
-        </ul>
-      </section>
-
       {/* Coming Soon */}
       <section className="extension-section">
         <div className="section-divider" />
         <h2 className="section-header">{comingSoon.title}</h2>
         <p>{comingSoon.subtitle}</p>
         <div className="feature-grid">
-          {comingSoon.items.map((item: { icon: string; name: string; description: string; badge: string; number: number }) => (
+          {comingSoon.items.map((item: { name: string; description: string; badge: string; number: number }) => (
             <div
               key={item.name}
               className="feature-item feature-item--extension feature-item--coming-soon"
             >
               <span className="feature-number">{item.number}</span>
-              <h3>{item.icon} {item.name}</h3>
+              <h3>{item.name}</h3>
               <p>{item.description}</p>
               <span className="feature-badge feature-badge--soon">
                 {item.badge} · Coming Soon
@@ -282,25 +234,6 @@ export default function HomePage() {
             </div>
           ))}
         </div>
-        <div className="section-cta">
-          <Link href="/pro" className="cta-secondary">
-            Learn more →
-          </Link>
-        </div>
-      </section>
-
-      {/* How you use it — Agentation-inspired numbered steps */}
-      <section>
-        <div className="section-divider" />
-        <h2 className="section-header">{howToUse.title}</h2>
-        <ol className="how-to-steps">
-          {howToUse.steps.map((step: string, i: number) => (
-            <li key={i} className="how-to-step">
-              <span className="how-to-num">{i + 1}</span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
       </section>
 
       {/* Open Source */}
@@ -331,19 +264,12 @@ export default function HomePage() {
             <h4 className="footer-nav-heading">Get Started</h4>
             <Link href="/extension">Install Extension</Link>
             <Link href="/learn">Learn Tokens</Link>
-            <Link href="/calculator">Cost Calculator</Link>
           </div>
           <div className="footer-nav-col">
             <h4 className="footer-nav-heading">Resources</h4>
             <Link href="/wiki">Wiki</Link>
             <Link href="/dictionary">Dictionary</Link>
             <Link href="/context-engineering">Context Engineering</Link>
-          </div>
-          <div className="footer-nav-col">
-            <h4 className="footer-nav-heading">Catalog</h4>
-            <Link href="/agents">Agents</Link>
-            <Link href="/prompts">Prompts</Link>
-            <Link href="/instructions">Instructions</Link>
           </div>
           <div className="footer-nav-col">
             <h4 className="footer-nav-heading">Project</h4>
