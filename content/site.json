@@ -1,6 +1,6 @@
 {
   "name": "@Tokalator",
-  "version": "v0.3.0",
+  "version": "v0.4.0",
   "footer": "\u00a9 2026 @Tokalator. Made by Vahid Faraji with love from Istanbul.",
   "github": "https://github.com/vfaraji89/tokalator",
   "authorGithub": "https://github.com/vfaraji89",
@@ -48,70 +48,6 @@
           "href": "/pro",
           "label": "Tokalator Pro",
           "badge": "Soon"
-        }
-      ]
-    },
-    {
-      "section": "Tools",
-      "collapsible": true,
-      "items": [
-        {
-          "href": "/calculator",
-          "label": "Cost Calculator"
-        },
-        {
-          "href": "/context",
-          "label": "Context Optimizer"
-        },
-        {
-          "href": "/tools/compare",
-          "label": "Model Comparison"
-        },
-        {
-          "href": "/tools/caching",
-          "label": "Caching ROI"
-        },
-        {
-          "href": "/tools/conversation",
-          "label": "Conversation Cost"
-        },
-        {
-          "href": "/tools/analysis",
-          "label": "Economic Analysis"
-        },
-        {
-          "href": "/tools/pricing",
-          "label": "Pricing Reference"
-        },
-        {
-          "href": "/tools/usage",
-          "label": "Usage Tracker"
-        }
-      ]
-    },
-    {
-      "section": "Catalog",
-      "collapsible": true,
-      "items": [
-        {
-          "href": "/agents",
-          "label": "Agents"
-        },
-        {
-          "href": "/prompts",
-          "label": "Prompts"
-        },
-        {
-          "href": "/instructions",
-          "label": "Instructions"
-        },
-        {
-          "href": "/collections",
-          "label": "Collections"
-        },
-        {
-          "href": "/context-engineering",
-          "label": "Context Engineering"
         }
       ]
     }

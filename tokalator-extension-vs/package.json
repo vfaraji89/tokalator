@@ -154,7 +154,7 @@
       },
       {
         "command": "tokalator.optimize",
-        "title": "Optimize (Close Low-Relevance Tabs)",
+        "title": "Context Optimization Report",
         "category": "Tokalator",
         "icon": "$(sparkle)"
       },
