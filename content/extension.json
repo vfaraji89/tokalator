@@ -1,5 +1,5 @@
 {
-  "version": "0.2.4",
+  "version": "0.2.9",
   "icon": "⬡",
   "headline": "Real-time context monitoring.\nInside your editor.",
   "highlightPhrase": "context monitoring",
@@ -19,8 +19,8 @@
     {
       "icon": "◎",
       "name": "@tokalator Chat Participant",
-      "description": "Six chat commands for inline budget management directly in Copilot Chat.",
-      "command": "@tokalator /count, /optimize, /breakdown, /pin, /instructions, /model",
+      "description": "Eleven chat commands for inline budget management directly in Copilot Chat.",
+      "command": "@tokalator /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit",
       "number": 2
     },
     {
@@ -39,8 +39,8 @@
     },
     {
       "icon": "◇",
-      "name": "13 Model Profiles",
-      "description": "Built-in profiles for Opus 4.6, Sonnet 4.5/4, GPT-5.2, GPT-5.1, o3, o4-mini, Gemini 3 Pro/Flash, and more. Context windows and rot thresholds auto-configured.",
+      "name": "14 Model Profiles",
+      "description": "Built-in profiles for Opus 4.6, Sonnet 4.5/4, Haiku 4.5, GPT-5.2, GPT-5.2 Codex, GPT-5.1, GPT-5 Mini, GPT-4.1, o3, o4-mini, Gemini 3 Pro/Flash, Gemini 2.5 Pro. Context windows and rot thresholds auto-configured.",
       "command": "Settings: tokalator.model",
       "number": 5
     },
@@ -64,6 +64,20 @@
       "description": "Finds all instruction files in your workspace (.instructions.md, .prompt.md, AGENTS.md, .cursorrules) and counts their real token cost.",
       "command": "@tokalator /instructions",
       "number": 8
+    },
+    {
+      "icon": "🔮",
+      "name": "Next Turn Preview",
+      "description": "See estimated token cost of your next message before sending. Dashboard shows a live preview box with growth projections and overflow warnings.",
+      "command": "@tokalator /preview",
+      "number": 9
+    },
+    {
+      "icon": "◉",
+      "name": "Session Management",
+      "description": "Track per-turn context growth with compaction analysis. Reset sessions, save summaries, and see last session stats on activation.",
+      "command": "@tokalator /compaction, /reset, /exit",
+      "number": 10
     }
   ],
   "settings": [
@@ -106,20 +120,20 @@
     },
     {
       "layer": "Chat Participant",
-      "purpose": "@tokalator chat commands — /count, /optimize, /breakdown, /pin, /instructions, /model",
+      "purpose": "@tokalator chat commands — /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit",
       "number": 4
     }
   ],
   "tokenizers": [
     {
       "provider": "Anthropic",
-      "models": "Opus 4.6, Sonnet 4.5, Sonnet 4, Haiku 3.5",
+      "models": "Opus 4.6, Sonnet 4.5, Sonnet 4, Haiku 4.5",
       "tokenizer": "Claude BPE",
       "source": "@anthropic-ai/tokenizer"
     },
     {
       "provider": "OpenAI",
-      "models": "GPT-5.2, GPT-5.1, GPT-4o, o3, o4-mini",
+      "models": "GPT-5.2, GPT-5.2 Codex, GPT-5.1, GPT-5 Mini, GPT-4.1, o3, o4-mini",
       "tokenizer": "o200k_base",
       "source": "js-tiktoken"
     },
@@ -141,11 +155,11 @@
       "title": "VSIX",
       "icon": "◇",
       "steps": [
-        "Download tokalator-0.2.3.vsix from releases",
+        "Download tokalator-0.2.9.vsix from releases",
         "Cmd+Shift+P → Extensions: Install from VSIX...",
         "Select the downloaded .vsix file"
       ],
-      "command": "code --install-extension tokalator-0.2.3.vsix"
+      "command": "code --install-extension tokalator-0.2.9.vsix"
     },
     "source": {
       "title": "Build from Source",
