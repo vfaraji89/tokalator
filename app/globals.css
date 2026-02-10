@@ -497,7 +497,7 @@ html, body {
     text-decoration: none;
   }
 
-  .mobile-logo-slash {
+  .mobile-logo-at {
     font-weight: 800;
     font-size: 1.25rem;
     color: var(--accent);
@@ -790,11 +790,11 @@ html, body {
   text-decoration: none;
 }
 
-.sidebar-slash {
+.sidebar-at {
   font-size: 1.125rem;
-  font-weight: 300;
-  color: var(--text-muted);
-  margin-right: 0.125rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-right: 0.0625rem;
 }
 
 .sidebar-logo-text {
@@ -851,13 +851,14 @@ html, body {
   text-decoration: underline;
 }
 .sidebar-heart {
+  display: inline-block;
+  font-size: 1.1em;
   color: var(--accent);
-  animation: heartbeat 1.5s ease-in-out infinite;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
-@keyframes heartbeat {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.15); }
+.sidebar-heart.heart-active {
+  animation: heartBeat 1.2s ease-in-out infinite, heartColors 3s ease-in-out infinite;
 }
 
 /* Update Pill */
@@ -1242,6 +1243,51 @@ html, body {
   color: var(--grey-100);
   padding: 0;
   font-size: 0.8125rem;
+}
+
+/* Command Typer — typewriter animation below install */
+.command-typer {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  padding: 0.5rem 0.875rem;
+  background: var(--bg-subtle);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin-top: 0.75rem;
+  margin-bottom: 0.25rem;
+  animation: fadeInUp 0.4s ease-out 0.5s both;
+  min-height: 2.125rem;
+}
+
+.command-typer-mention {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.command-typer-space {
+  white-space: pre;
+}
+
+.command-typer-cmd {
+  color: var(--text-primary);
+  font-weight: 500;
+  min-width: 0;
+}
+
+.command-typer-cursor {
+  color: var(--accent);
+  font-weight: 300;
+  animation: cursorBlink 0.8s step-end infinite;
+  margin-left: 1px;
+}
+
+@keyframes cursorBlink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
 }
 
 .copy-btn {
@@ -2365,22 +2411,32 @@ kbd {
 
 .footer-love-icon {
   display: inline-block;
+  font-size: 1.25em;
   color: var(--text-primary);
   cursor: default;
-  transition: color 0.3s ease, transform 0.2s ease;
+  transition: transform 0.3s ease, color 0.3s ease;
 }
 
-.footer-love:hover .footer-love-icon {
-  color: var(--accent);
-  transform: scale(1.2);
-  animation: loveColors 1.5s ease-in-out infinite;
+.footer-love-icon.heart-active {
+  animation: heartBeat 1.2s ease-in-out infinite, heartColors 3s ease-in-out infinite;
 }
 
-@keyframes loveColors {
-  0%   { color: #000000; }
-  33%  { color: #e3120b; }
-  66%  { color: #d4a017; }
-  100% { color: #000000; }
+/* Shared heart animations — realistic double-pulse + color cycling */
+@keyframes heartBeat {
+  0%   { transform: scale(1); }
+  14%  { transform: scale(1.25); }
+  28%  { transform: scale(1); }
+  42%  { transform: scale(1.2); }
+  56%  { transform: scale(1); }
+  100% { transform: scale(1); }
+}
+
+@keyframes heartColors {
+  0%   { color: var(--accent); }
+  25%  { color: #d4a017; }
+  50%  { color: #e3120b; }
+  75%  { color: #cc3366; }
+  100% { color: var(--accent); }
 }
 
 .footer-meta {
