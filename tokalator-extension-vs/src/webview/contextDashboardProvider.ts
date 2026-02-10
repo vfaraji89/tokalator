@@ -157,30 +157,54 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
   <title>Tokalator</title>
   <style>
     :root {
-      /* GitHub Primer-aligned palette with VS Code theme fallbacks */
+      /* Clean palette: green, yellow, red, blue, white, black — no grey */
       --bg: var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e));
       --fg: var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc));
-      --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border, rgba(128,128,128,0.2)));
+      --border: var(--vscode-contrastBorder, var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border, rgba(128,128,128,0.35))));
       --low: var(--vscode-charts-green, #3fb950);
       --medium: var(--vscode-charts-yellow, #d29922);
       --high: var(--vscode-charts-red, #f85149);
       --btn-bg: var(--vscode-button-background, #0078d4);
       --btn-fg: var(--vscode-button-foreground, #ffffff);
       --btn-hover: var(--vscode-button-hoverBackground, #026ec1);
-      --list-hover: var(--vscode-list-hoverBackground, rgba(128,128,128,0.1));
-      --card-bg: var(--vscode-editor-inactiveSelectionBackground, rgba(128,128,128,0.06));
+      --list-hover: var(--vscode-list-hoverBackground, var(--vscode-list-activeSelectionBackground, rgba(255,255,255,0.1)));
+      --card-bg: var(--vscode-textBlockQuote-background, var(--vscode-editor-inactiveSelectionBackground, rgba(255,255,255,0.04)));
       --accent: var(--vscode-focusBorder, #58a6ff);
       --input-bg: var(--vscode-input-background, var(--bg));
       --input-fg: var(--vscode-input-foreground, var(--fg));
-      --input-border: var(--vscode-input-border, transparent);
-      --badge-bg: var(--vscode-badge-background, #4d4d4d);
+      --input-border: var(--vscode-contrastBorder, var(--vscode-input-border, var(--border)));
+      --badge-bg: var(--vscode-badge-background, #0078d4);
       --badge-fg: var(--vscode-badge-foreground, #ffffff);
       --desc-fg: var(--vscode-descriptionForeground, var(--fg));
       --chart-blue: var(--vscode-charts-blue, #58a6ff);
       --chart-purple: var(--vscode-charts-purple, #bc8cff);
       --chart-orange: var(--vscode-charts-orange, #d29922);
-      --chart-grey: var(--vscode-disabledForeground, #8b949e);
+      --chart-green: var(--vscode-charts-green, #3fb950);
       --link-fg: var(--vscode-textLink-foreground, #58a6ff);
+    }
+    /* High Contrast themes — strong borders, no translucent backgrounds */
+    @media (forced-colors: active) {
+      :root {
+        --border: var(--vscode-contrastBorder, CanvasText);
+        --fg: CanvasText;
+        --bg: Canvas;
+        --low: #00ff00;
+        --medium: #ffff00;
+        --high: #ff0000;
+        --btn-bg: ButtonFace;
+        --btn-fg: ButtonText;
+        --btn-hover: Highlight;
+        --list-hover: Highlight;
+        --card-bg: Canvas;
+        --accent: Highlight;
+        --chart-blue: #00bfff;
+        --chart-purple: #da70d6;
+        --chart-orange: #ffa500;
+        --chart-green: #00ff00;
+      }
+      .tab-item:hover, .action-btn:hover { outline: 1px solid Highlight; }
+      .budget-level { border-width: 2px; }
+      .stat { border-width: 1px; }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -206,9 +230,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       margin-bottom: 12px;
       text-align: center;
     }
-    .budget-level.low { background: color-mix(in srgb, var(--low) 12%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 25%, transparent); }
-    .budget-level.medium { background: color-mix(in srgb, var(--medium) 12%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 25%, transparent); }
-    .budget-level.high { background: color-mix(in srgb, var(--high) 12%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 25%, transparent); }
+    .budget-level.low { background: var(--card-bg); color: var(--low); border: 2px solid var(--low); }
+    .budget-level.medium { background: var(--card-bg); color: var(--medium); border: 2px solid var(--medium); }
+    .budget-level.high { background: var(--card-bg); color: var(--high); border: 2px solid var(--high); }
     .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
     .budget-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
     .budget-tokens { font-size: 12px; margin-top: 4px; }
@@ -261,9 +285,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .tab-dot.high { background: var(--low); opacity: 0.9; }
-    .tab-dot.med { background: var(--medium); opacity: 0.9; }
-    .tab-dot.low { background: var(--high); opacity: 0.9; }
+    .tab-dot.high { background: var(--low); }
+    .tab-dot.med { background: var(--medium); }
+    .tab-dot.low { background: var(--high); }
     .tab-name {
       flex: 1;
       overflow: hidden;
@@ -271,7 +295,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       white-space: nowrap;
     }
     .tab-name.active { font-weight: 600; }
-    .tab-tokens { font-size: 11px; color: var(--fg); opacity: 0.8; }
+    .tab-tokens { font-size: 11px; color: var(--desc-fg); }
     .tab-actions {
       display: flex;
       gap: 2px;
@@ -386,7 +410,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .breakdown-bar-fill.files { background: var(--chart-blue); }
     .breakdown-bar-fill.system { background: var(--chart-purple); }
     .breakdown-bar-fill.conversation { background: var(--chart-orange); }
-    .breakdown-bar-fill.output { background: var(--chart-grey); }
+    .breakdown-bar-fill.output { background: var(--vscode-descriptionForeground, var(--fg)); opacity: 0.5; }
 
     .growth-bars {
       display: flex;
@@ -400,12 +424,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       min-width: 4px;
       border-radius: 2px 2px 0 0;
       background: var(--chart-blue);
-      opacity: 0.6;
       position: relative;
-      transition: opacity 0.15s;
+      transition: filter 0.15s;
+      filter: brightness(0.7);
     }
-    .growth-bar:last-child { opacity: 1; }
-    .growth-bar:hover { opacity: 1; }
+    .growth-bar:last-child { filter: brightness(1); }
+    .growth-bar:hover { filter: brightness(1); }
     .growth-label {
       font-size: 11px;
       color: var(--fg);
@@ -455,7 +479,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
     .preview-box {
       background: var(--vscode-textBlockQuote-background, var(--card-bg));
-      border: 1px solid color-mix(in srgb, var(--chart-blue) 40%, var(--border));
+      border: 1px solid var(--chart-blue);
       border-radius: 6px;
       padding: 8px 10px;
       margin-bottom: 12px;
@@ -492,6 +516,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     const app = document.getElementById('app');
 
     function fmtTokens(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
       if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
       return n.toString();
     }
@@ -549,7 +574,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
         <div class="model-selector">
           <label>Model</label>
-          <select onchange="setModel(this.value)">
+          <select id="model-select">
             \${modelOptions}
           </select>
         </div>
@@ -614,10 +639,10 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
             </div>
             <div class="breakdown-bar">
               <div style="display:flex;height:100%">
-                <div class="breakdown-bar-fill files" style="width:\${Math.round((budgetBreakdown.files/totalEstimatedTokens)*100)}%"></div>
-                <div class="breakdown-bar-fill system" style="width:\${Math.round(((budgetBreakdown.systemPrompt+budgetBreakdown.instructions)/totalEstimatedTokens)*100)}%"></div>
-                <div class="breakdown-bar-fill conversation" style="width:\${Math.round((budgetBreakdown.conversation/totalEstimatedTokens)*100)}%"></div>
-                <div class="breakdown-bar-fill output" style="width:\${Math.round((budgetBreakdown.outputReservation/totalEstimatedTokens)*100)}%"></div>
+                <div class="breakdown-bar-fill files" style="width:\${totalEstimatedTokens > 0 ? Math.round((budgetBreakdown.files/totalEstimatedTokens)*100) : 0}%"></div>
+                <div class="breakdown-bar-fill system" style="width:\${totalEstimatedTokens > 0 ? Math.round(((budgetBreakdown.systemPrompt+budgetBreakdown.instructions)/totalEstimatedTokens)*100) : 0}%"></div>
+                <div class="breakdown-bar-fill conversation" style="width:\${totalEstimatedTokens > 0 ? Math.round((budgetBreakdown.conversation/totalEstimatedTokens)*100) : 0}%"></div>
+                <div class="breakdown-bar-fill output" style="width:\${totalEstimatedTokens > 0 ? Math.round((budgetBreakdown.outputReservation/totalEstimatedTokens)*100) : 0}%"></div>
               </div>
             </div>
           </div>
@@ -654,7 +679,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
             <ul class="tab-list">
               \${distractors.map(t => renderTab(t)).join('')}
             </ul>
-            <button class="action-btn" onclick="optimize()">
+            <button class="action-btn" data-action="optimize">
               Close \${distractors.length} Low-Relevance Tabs
             </button>
           </div>
@@ -664,36 +689,81 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           \${healthReasons.map(r => '<li>' + r + '</li>').join('')}
         </ul>
 
-        \${chatTurnCount > 0 ? '<button class="action-btn secondary" onclick="resetTurns()">Reset Turn Counter</button>' : ''}
+        \${chatTurnCount > 0 ? '<button class="action-btn secondary" data-action="resetTurns">Reset Turn Counter</button>' : ''}
       \`;
     }
 
     function renderTab(t) {
       const safeUri = encodeURIComponent(t.uri);
-      const pinBtn = t.isPinned
-        ? '<button title="Unpin" onclick="event.stopPropagation(); unpin(\\'' + safeUri + '\\')">\u{1F4CC}</button>'
-        : '<button title="Pin" onclick="event.stopPropagation(); pin(\\'' + safeUri + '\\')">\u{1F4CD}</button>';
+      const pinAction = t.isPinned ? 'unpin' : 'pin';
+      const pinIcon = t.isPinned ? '\u{1F4CC}' : '\u{1F4CD}';
+      const pinTitle = t.isPinned ? 'Unpin' : 'Pin';
 
       return \`
-        <li class="tab-item" ondblclick="openFile('\${safeUri}')">
+        <li class="tab-item" data-action="openFile" data-uri="\${safeUri}">
           <div class="tab-dot \${relClass(t.relevanceScore)}"></div>
           <span class="tab-name \${t.isActive ? 'active' : ''}">\${t.label}\${t.isDirty ? ' •' : ''}</span>
           <span class="tab-tokens">~\${fmtTokens(t.estimatedTokens)}</span>
           <div class="tab-actions">
-            \${pinBtn}
-            \${!t.isActive ? '<button title="Close" onclick="event.stopPropagation(); closeTab(\\'' + safeUri + '\\')">✕</button>' : ''}
+            <button title="\${pinTitle}" data-action="\${pinAction}" data-uri="\${safeUri}">\${pinIcon}</button>
+            \${!t.isActive ? '<button title="Close" data-action="closeTab" data-uri="' + safeUri + '">✕</button>' : ''}
           </div>
         </li>
       \`;
     }
 
-    function optimize() { vscode.postMessage({ command: 'optimize' }); }
-    function pin(uri) { vscode.postMessage({ command: 'pin', uri: decodeURIComponent(uri) }); }
-    function unpin(uri) { vscode.postMessage({ command: 'unpin', uri: decodeURIComponent(uri) }); }
-    function closeTab(uri) { vscode.postMessage({ command: 'closeTab', uri: decodeURIComponent(uri) }); }
-    function openFile(uri) { vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(uri) }); }
-    function resetTurns() { vscode.postMessage({ command: 'resetTurns' }); }
-    function setModel(modelId) { vscode.postMessage({ command: 'setModel', modelId }); }
+    // Event delegation — handles all clicks via data-action attributes
+    // This works with CSP nonce-based script-src (inline onclick is blocked)
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      // Walk up to find the element with data-action
+      while (target && target !== document && !target.dataset.action) {
+        target = target.parentElement;
+      }
+      if (!target || !target.dataset.action) return;
+
+      var action = target.dataset.action;
+      var uri = target.dataset.uri ? decodeURIComponent(target.dataset.uri) : undefined;
+
+      switch (action) {
+        case 'pin':
+          e.stopPropagation();
+          vscode.postMessage({ command: 'pin', uri: uri });
+          break;
+        case 'unpin':
+          e.stopPropagation();
+          vscode.postMessage({ command: 'unpin', uri: uri });
+          break;
+        case 'closeTab':
+          e.stopPropagation();
+          vscode.postMessage({ command: 'closeTab', uri: uri });
+          break;
+        case 'optimize':
+          vscode.postMessage({ command: 'optimize' });
+          break;
+        case 'resetTurns':
+          vscode.postMessage({ command: 'resetTurns' });
+          break;
+      }
+    });
+
+    // Double-click on tab items to open file
+    document.addEventListener('dblclick', function(e) {
+      var target = e.target;
+      while (target && target !== document && !target.dataset.action) {
+        target = target.parentElement;
+      }
+      if (target && target.dataset.action === 'openFile' && target.dataset.uri) {
+        vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(target.dataset.uri) });
+      }
+    });
+
+    // Model selector change
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.id === 'model-select') {
+        vscode.postMessage({ command: 'setModel', modelId: e.target.value });
+      }
+    });
 
     let lastSessionData = null;
     window.addEventListener('message', e => {

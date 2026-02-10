@@ -38,6 +38,11 @@ export class ContextChatParticipant implements vscode.Disposable {
     token: vscode.CancellationToken,
   ): Promise<vscode.ChatResult> {
 
+    // Auto-sync model from Copilot's active chat model
+    if (request.model) {
+      this.monitor.syncFromChatRequest(request.model);
+    }
+
     // Only count turns for commands that modify state (optimize, pin, unpin)
     // Read-only commands (count, breakdown) don't contribute to context rot
     const isModifyingCommand = request.command === 'optimize' || request.command === 'pin' || request.command === 'unpin';
@@ -620,7 +625,9 @@ export class ContextChatParticipant implements vscode.Disposable {
   }
 
   private fmtTokens(n: number): string {
-    return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n.toString();
+    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
+    if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
+    return n.toString();
   }
 
   private relevanceLabel(score: number): string {
