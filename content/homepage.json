@@ -52,13 +52,23 @@
       {
         "name": "Chat Participant",
         "description": "@tokalator commands for inline budget management",
-        "command": "/count /optimize /pin /unpin /breakdown /instructions /model /compaction /reset",
+        "command": "/count /optimize /pin /unpin /breakdown /instructions /model /compaction /preview /reset /exit",
         "number": 3
       },
       {
-        "name": "Context Rot Warnings",
-        "description": "Alerts when conversation turns exceed threshold",
+        "name": "Next Turn Preview",
+        "description": "See estimated token cost before sending your next message",
         "number": 4
+      },
+      {
+        "name": "Context Rot Warnings",
+        "description": "Alerts when conversation turns exceed model-specific threshold",
+        "number": 5
+      },
+      {
+        "name": "Session Management",
+        "description": "Track per-turn growth, compaction advice, save session summaries",
+        "number": 6
       }
     ]
   },
