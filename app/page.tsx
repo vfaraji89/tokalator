@@ -127,25 +127,16 @@ export default function HomePage() {
             rel="noopener noreferrer"
             className="ide-install-btn ide-install-btn--primary"
           >
-            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
-              <path d="M97.15 8.354L75.06.263a4.85 4.85 0 00-5.53 1.09L30.5 37.04 12.64 23.26a3.24 3.24 0 00-4.13.14L2.12 29.12a3.24 3.24 0 000 4.76L17.67 48 2.12 62.12a3.24 3.24 0 000 4.76l6.39 5.72a3.24 3.24 0 004.13.14L30.5 58.96l39.03 35.69a4.85 4.85 0 005.53 1.09l22.09-8.09A4.85 4.85 0 00100 83.08V12.92a4.85 4.85 0 00-2.85-4.57zM75 72.29L45.13 48 75 23.71v48.58z" fill="#007ACC"/>
-            </svg>
+            <img src="/icons/vscode.svg" alt="VS Code" width={18} height={18} />
             VS Code
           </a>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
-              <path d="M50 0L93.3 25v50L50 100 6.7 75V25L50 0z" fill="#000000"/>
-              <path d="M50 25L75 40v20L50 80V55L25 40l25-15z" fill="#ffffff"/>
-            </svg>
+            <img src="/icons/cursor.svg" alt="Cursor" width={18} height={18} />
             Cursor
             <span className="ide-soon-tag">Soon</span>
           </span>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
-              <rect x="5" y="5" width="90" height="90" rx="16" fill="#E07A42"/>
-              <path d="M28 38l16 12-16 12" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
-              <line x1="50" y1="62" x2="72" y2="62" stroke="#fff" strokeWidth="8" strokeLinecap="round"/>
-            </svg>
+            <img src="/icons/claude.svg" alt="Claude" width={18} height={18} />
             Claude Code
             <span className="ide-soon-tag">Soon</span>
           </span>
