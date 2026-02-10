@@ -1,5 +1,37 @@
 # Changelog
 
+## 0.4.0 — 2026-02-11
+
+### Added
+
+- **🔐 Secret Guardrail**: New `SecretScanner` module detects 25+ types of exposed credentials in open files
+  - API keys (AWS, GitHub, OpenAI, Anthropic, Google, Stripe, Slack, npm, PyPI, and more)
+  - Passwords, PEM private keys, database connection URLs, JWTs, Bearer tokens, internal IP addresses
+  - Dashboard shows red alert badges when secrets are detected in AI context
+  - New `@tokalator /secrets` chat command for full scan reports with recommendations
+  - Configurable via `tokalator.secretGuard` setting (enabled by default)
+- **💰 Cost Estimation**: New `CostEstimator` module calculates dollar cost of AI context
+  - Per-turn input/output cost based on model-specific pricing for all 14 models
+  - Prompt caching savings analysis with provider-specific discount rates (Anthropic 90%, OpenAI 50%, Google 75%)
+  - Blended cost calculation mixing cached and uncached token rates
+  - Session and monthly cost projections based on usage patterns
+  - New `@tokalator /cost` chat command with full cost breakdown tables
+  - Dashboard shows cost section with per-turn cost, caching analysis, and projections
+- **Model Pricing Data**: Added `inputCostPer1M`, `outputCostPer1M`, `cachedInputCostPer1M`, `supportsCaching`, `cachingType` fields to all 14 model profiles
+
+### Changed
+
+- `ContextSnapshot` now includes `secretScan` and `costEstimate` summaries
+- `package.json` enhanced with marketplace metadata (`galleryBanner`, `badges`, `markdown`, `qna`)
+- Keywords expanded with `cost-estimation`, `prompt-caching`, `secret-detection`, `token-counter`
+- Added `Chat` category for better marketplace discoverability
+
+### Fixed
+
+- Dashboard CSS now uses proper VS Code theme variables with full fallback chains
+- High Contrast theme support with explicit `--vscode-contrastBorder` handling
+- Budget breakdown bar widths no longer break due to template literal escaping issue
+
 ## 0.3.0 — 2026-02-10
 
 ### Fixed

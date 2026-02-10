@@ -6,6 +6,22 @@ import { ContextChatParticipant } from './chat/contextChatParticipant';
 // Module-level reference so deactivate() can save session
 let monitorRef: ContextMonitor | undefined;
 
+/** Current extension version from package.json */
+const EXTENSION_VERSION = '0.4.0';
+
+/** Key for storing last-seen version in globalState */
+const VERSION_STATE_KEY = 'tokalator.lastSeenVersion';
+
+/** Release highlights keyed by version — shown in the "What's New" notification */
+const RELEASE_HIGHLIGHTS: Record<string, string[]> = {
+  '0.4.0': [
+    '🔐 Secret Guardrail — detects API keys & credentials before they leak into AI context',
+    '💰 Cost Estimation — per-turn dollar costs, caching savings, monthly projections',
+    '📊 Prompt Caching Analysis — Anthropic 90%, OpenAI 50%, Google 75% discount rates',
+    '🎨 Improved theme compatibility for all VS Code themes',
+  ],
+};
+
 function fmtTokens(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
   if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
@@ -30,7 +46,52 @@ function formatTimeAgo(iso: string): string {
  *  2. ContextDashboardProvider — sidebar webview panel
  *  3. ContextChatParticipant — @tokalator chat commands
  *  4. Commands — refresh, optimize, clearPins
+ *  5. Auto-update notification for new features
  */
+
+/** Show a "What's New" notification when the extension updates to a new version */
+async function showWhatsNew(context: vscode.ExtensionContext): Promise<void> {
+  const lastSeen = context.globalState.get<string>(VERSION_STATE_KEY);
+
+  if (lastSeen === EXTENSION_VERSION) {
+    return; // Already seen this version
+  }
+
+  // Always persist the current version (first install or upgrade)
+  await context.globalState.update(VERSION_STATE_KEY, EXTENSION_VERSION);
+
+  if (!lastSeen) {
+    return; // First install — don't show "what's new" on fresh installs
+  }
+
+  // Extension was updated — show highlights
+  const highlights = RELEASE_HIGHLIGHTS[EXTENSION_VERSION];
+  if (!highlights || highlights.length === 0) {
+    return;
+  }
+
+  const summary = highlights[0]; // Lead with the top highlight
+  const response = await vscode.window.showInformationMessage(
+    `Tokalator updated to v${EXTENSION_VERSION}: ${summary}`,
+    'What\'s New',
+    'Changelog',
+    'Dismiss',
+  );
+
+  if (response === 'What\'s New') {
+    // Show all highlights in a detailed notification
+    const detail = highlights.map(h => `  • ${h}`).join('\n');
+    vscode.window.showInformationMessage(
+      `Tokalator v${EXTENSION_VERSION}\n\n${detail}`,
+      { modal: true },
+    );
+  } else if (response === 'Changelog') {
+    vscode.env.openExternal(
+      vscode.Uri.parse('https://marketplace.visualstudio.com/items/vfaraji89.tokalator/changelog'),
+    );
+  }
+}
+
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
 
   // 1. Core monitor (with persistence for pinned files)
@@ -115,6 +176,9 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       }
     });
   }
+
+  // Show "What's New" notification on version upgrade
+  showWhatsNew(context);
 
   console.log('Tokalator is now active');
 
