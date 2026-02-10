@@ -73,6 +73,9 @@ export class ContextChatParticipant implements vscode.Disposable {
       case 'compaction':
         return this.handleCompaction(stream);
 
+      case 'exit':
+        return this.handleExit(stream);
+
       default:
         return this.handleDefault(request, stream);
     }
@@ -236,6 +239,24 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`- Chat turns: ${turnsBefore} → 0\n`);
     stream.markdown(`- Context rot tracking cleared\n\n`);
     stream.markdown(`> To also clear pinned files, run \`@tokalator /unpin\` or use the **Clear All Pinned Files** command.\n`);
+    return {};
+  }
+
+  /**
+   * /exit — End session, save summary, clear state
+   */
+  private async handleExit(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
+    this.monitor.saveSessionSummary();
+
+    const turns = this.monitor.getChatTurnCount();
+    this.monitor.resetChatTurns();
+    this.monitor.clearPins();
+
+    stream.markdown(`## Session Ended\n\n`);
+    stream.markdown(`- ${turns} turns completed\n`);
+    stream.markdown(`- All pins cleared\n`);
+    stream.markdown(`- Session summary saved\n\n`);
+    stream.markdown(`> Start a new session anytime with \`@tokalator /count\`\n`);
     return {};
   }
 
@@ -415,7 +436,8 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| \`@tokalator /instructions\` | List instruction files and their token cost |\n`);
     stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n`);
     stream.markdown(`| \`@tokalator /compaction\` | Per-turn growth and compaction advice |\n`);
-    stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n\n`);
+    stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n`);
+    stream.markdown(`| \`@tokalator /exit\` | End session and save summary |\n\n`);
 
     if (snapshot) {
       const levelEmoji = snapshot.budgetLevel === 'low' ? '🟢'

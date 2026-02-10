@@ -71,6 +71,23 @@ export interface ContextSnapshot {
 }
 
 /**
+ * Persisted summary of a previous session.
+ */
+export interface SessionSummary {
+  endedAt: string;
+  modelId: string;
+  modelLabel: string;
+  totalTurns: number;
+  peakTokens: number;
+  peakPercent: number;
+  tabCount: number;
+  pinnedCount: number;
+  filesWorkedOn: string[];
+  budgetLevel: string;
+  healthStatus: string;
+}
+
+/**
  * Events emitted by the ContextMonitor.
  */
 export interface ContextMonitorEvents {

@@ -1,0 +1,6 @@
+agno
+anthropic
+google-generativeai
+arxiv
+pypdf
+python-dotenv

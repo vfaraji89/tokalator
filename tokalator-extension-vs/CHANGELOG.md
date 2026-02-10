@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.7 — 2026-02-10
+
+### Added
+
+- GPT-5.2 Codex, GPT-5 Mini, GPT-4.1 model profiles
+- Claude Haiku 4.5 (replacing outdated Haiku 3.5)
+
+### Removed
+
+- Deprecated models: GPT-4o, GPT-4o Mini, Claude Haiku 3.5
+
+### Fixed
+
+- Model profile test counts updated for 14 models (4 Anthropic, 7 OpenAI, 3 Google)
+
 ## 0.2.6 — 2026-02-08
 
 ### Changed
