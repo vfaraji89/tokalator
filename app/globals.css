@@ -1323,6 +1323,7 @@ html, body {
 .ide-install-btn {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
   padding: 0.625rem 1.25rem;
   font-size: 0.8125rem;
@@ -1333,6 +1334,7 @@ html, body {
   position: relative;
   font-family: var(--font-primary);
   white-space: nowrap;
+  min-height: 2.5rem;
 }
 
 .ide-install-btn:last-child {
@@ -1341,6 +1343,8 @@ html, body {
 
 .ide-install-btn svg {
   flex-shrink: 0;
+  width: 18px;
+  height: 18px;
 }
 
 .ide-install-btn--primary {

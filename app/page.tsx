@@ -142,17 +142,9 @@ export default function HomePage() {
           </span>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
             <svg width="18" height="18" viewBox="0 0 100 100" fill="none">
-              <path d="M50 10c-4 0-7.5 3-7.5 3L20 33c-3 3-4 6-4 6v22c0 0 1 3 4 6l22.5 20s3.5 3 7.5 3 7.5-3 7.5-3L80 67c3-3 4-6 4-6V39s-1-3-4-6L57.5 13s-3.5-3-7.5-3z" fill="none" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="50" y1="15" x2="50" y2="5" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="50" y1="95" x2="50" y2="85" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="15" y1="35" x2="7" y2="30" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="85" y1="35" x2="93" y2="30" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="15" y1="65" x2="7" y2="70" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="85" y1="65" x2="93" y2="70" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="30" y1="87" x2="23" y2="93" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="70" y1="87" x2="77" y2="93" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="30" y1="13" x2="23" y2="7" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
-              <line x1="70" y1="13" x2="77" y2="7" stroke="#E07A42" strokeWidth="6" strokeLinecap="round"/>
+              <rect x="5" y="5" width="90" height="90" rx="16" fill="#E07A42"/>
+              <path d="M28 38l16 12-16 12" stroke="#fff" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round"/>
+              <line x1="50" y1="62" x2="72" y2="62" stroke="#fff" strokeWidth="8" strokeLinecap="round"/>
             </svg>
             Claude Code
             <span className="ide-soon-tag">Soon</span>
