@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.3.0 — 2026-02-10
+
+### Fixed
+
+- Dashboard text now readable in all VS Code themes (Dark, Abyss, High Contrast)
+- Added full fallback chain for CSS variables: sidebar → general foreground → safe defaults
+- Buttons, inputs, badges, and borders all inherit theme colors correctly when sidebar-specific vars are undefined
+
 ## 0.2.9 — 2026-02-10
 
 ### Changed
