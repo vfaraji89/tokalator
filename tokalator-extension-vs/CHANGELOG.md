@@ -1,5 +1,18 @@
 # Changelog
 
+## 0.2.9 — 2026-02-10
+
+### Changed
+
+- Dashboard colors aligned to GitHub Primer palette — green (#3fb950), yellow (#d29922), red (#f85149), blue (#58a6ff)
+- Subtler budget level tints, rounded buttons, muted section titles, tabular-nums stat badges
+- Preview box uses blue accent; growth bars with smooth hover transition
+
+### Fixed
+
+- Marketplace README and tokalator.wiki extension page now list all 11 chat commands and 10 features (was 6 commands / 8 features)
+- extension.json updated to 14 model profiles, current tokenizer model names, and v0.2.9 install references
+
 ## 0.2.8 — 2026-02-10
 
 ### Added
