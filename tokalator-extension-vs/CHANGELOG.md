@@ -1,5 +1,20 @@
 # Changelog
 
+## 0.2.8 — 2026-02-10
+
+### Added
+
+- **Next Turn Preview**: New `/preview` chat command estimates token cost before sending
+- Dashboard now shows a "🔮 Next Turn Preview" box with estimated growth, remaining turns, and overflow warnings
+- Status bar shows a loading spinner during initialization
+
+### Fixed
+
+- **Dashboard sync bug**: Dashboard now refreshes when sidebar becomes visible again after being hidden/collapsed
+- **Stale webview reference**: Properly clears webview reference on dispose, preventing errors when posting to destroyed views
+- **Initial activation**: Extension activation is now async; forces a fresh snapshot after all listeners are registered
+- Dashboard triggers a fresh refresh on panel open to catch any changes made while it was hidden
+
 ## 0.2.7 — 2026-02-10
 
 ### Added
