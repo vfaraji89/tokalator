@@ -122,7 +122,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       budgetBreakdown: snapshot.budgetBreakdown,
     };
 
-    this.view.webview.postMessage({ type: 'snapshot', data: serialized });
+    const lastSession = this.monitor.getLastSession();
+    this.view.webview.postMessage({ type: 'snapshot', data: serialized, lastSession });
   }
 
   private getHtml(webview: vscode.Webview): string {
@@ -140,14 +141,27 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     :root {
       --bg: var(--vscode-sideBar-background);
       --fg: var(--vscode-sideBar-foreground);
-      --border: var(--vscode-sideBarSectionHeader-border);
-      --low: #4ec9b0;
-      --medium: #dcdcaa;
-      --high: #f44747;
+      --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border));
+      --low: var(--vscode-charts-green, #4ec9b0);
+      --medium: var(--vscode-charts-yellow, #dcdcaa);
+      --high: var(--vscode-charts-red, #f44747);
       --btn-bg: var(--vscode-button-background);
       --btn-fg: var(--vscode-button-foreground);
       --btn-hover: var(--vscode-button-hoverBackground);
       --list-hover: var(--vscode-list-hoverBackground);
+      --card-bg: var(--vscode-editor-inactiveSelectionBackground, rgba(128,128,128,0.08));
+      --accent: var(--vscode-focusBorder);
+      --input-bg: var(--vscode-input-background);
+      --input-fg: var(--vscode-input-foreground);
+      --input-border: var(--vscode-input-border, transparent);
+      --badge-bg: var(--vscode-badge-background);
+      --badge-fg: var(--vscode-badge-foreground);
+      --desc-fg: var(--vscode-descriptionForeground);
+      --chart-blue: var(--vscode-charts-blue, #60a5fa);
+      --chart-purple: var(--vscode-charts-purple, #a78bfa);
+      --chart-orange: var(--vscode-charts-orange, #f59e0b);
+      --chart-grey: var(--vscode-disabledForeground, #6b7280);
+      --link-fg: var(--vscode-textLink-foreground);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -173,12 +187,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       margin-bottom: 12px;
       text-align: center;
     }
-    .budget-level.low { background: rgba(78,201,176,0.15); color: var(--low); }
-    .budget-level.medium { background: rgba(220,220,170,0.15); color: var(--medium); }
-    .budget-level.high { background: rgba(244,71,71,0.15); color: var(--high); }
-    .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; opacity: 0.8; }
+    .budget-level.low { background: color-mix(in srgb, var(--low) 20%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 30%, transparent); }
+    .budget-level.medium { background: color-mix(in srgb, var(--medium) 20%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 30%, transparent); }
+    .budget-level.high { background: color-mix(in srgb, var(--high) 20%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 30%, transparent); }
+    .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
     .budget-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
-    .budget-tokens { font-size: 11px; opacity: 0.7; margin-top: 4px; }
+    .budget-tokens { font-size: 12px; margin-top: 4px; }
 
     .stats {
       display: flex;
@@ -187,10 +201,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       flex-wrap: wrap;
     }
     .stat {
-      background: rgba(255,255,255,0.05);
+      background: var(--vscode-textBlockQuote-background, var(--card-bg));
+      border: 1px solid var(--border);
       padding: 6px 10px;
       border-radius: 4px;
-      font-size: 11px;
+      font-size: 12px;
+      color: var(--fg);
     }
 
     .section {
@@ -200,10 +216,10 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     }
     .section-title {
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 700;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      opacity: 0.6;
+      color: var(--fg);
       margin-bottom: 8px;
     }
 
@@ -234,7 +250,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       white-space: nowrap;
     }
     .tab-name.active { font-weight: 600; }
-    .tab-tokens { font-size: 10px; opacity: 0.5; }
+    .tab-tokens { font-size: 11px; color: var(--fg); opacity: 0.8; }
     .tab-actions {
       display: flex;
       gap: 2px;
@@ -244,12 +260,11 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       border: none;
       color: var(--fg);
       cursor: pointer;
-      font-size: 11px;
-      padding: 2px 4px;
+      font-size: 12px;
+      padding: 2px 5px;
       border-radius: 3px;
-      opacity: 0.7;
     }
-    .tab-actions button:hover { opacity: 1; background: rgba(255,255,255,0.1); }
+    .tab-actions button:hover { background: var(--list-hover); }
 
     .action-btn {
       background: var(--btn-bg);
@@ -264,18 +279,21 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     }
     .action-btn:hover { background: var(--btn-hover); }
     .action-btn.secondary {
-      background: rgba(255,255,255,0.08);
+      background: var(--card-bg);
       color: var(--fg);
+    }
+    .action-btn.secondary:hover {
+      background: var(--list-hover);
     }
 
     .notes {
-      font-size: 11px;
-      opacity: 0.6;
+      font-size: 12px;
+      color: var(--fg);
       margin-top: 8px;
     }
-    .notes li { margin-bottom: 2px; }
+    .notes li { margin-bottom: 4px; }
 
-    .empty { text-align: center; opacity: 0.4; padding: 20px; font-size: 12px; }
+    .empty { text-align: center; color: var(--desc-fg); padding: 20px; font-size: 12px; }
 
     .model-selector {
       display: flex;
@@ -285,63 +303,66 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       padding: 0 2px;
     }
     .model-selector label {
-      font-size: 11px;
-      opacity: 0.6;
+      font-size: 12px;
+      color: var(--fg);
       white-space: nowrap;
     }
     .model-selector select {
       flex: 1;
-      background: var(--card-bg);
-      color: var(--fg);
-      border: 1px solid rgba(255,255,255,0.12);
+      background: var(--input-bg);
+      color: var(--input-fg);
+      border: 1px solid var(--input-border);
       border-radius: 4px;
       padding: 4px 6px;
       font-size: 11px;
       cursor: pointer;
       outline: none;
     }
-    .model-selector select:hover { border-color: rgba(255,255,255,0.25); }
+    .model-selector select:hover { border-color: var(--accent); }
     .model-selector select:focus { border-color: var(--accent); }
 
     .workspace-info {
       display: flex;
       flex-direction: column;
-      gap: 3px;
-      padding: 6px 8px;
-      background: var(--card-bg);
+      gap: 4px;
+      padding: 8px 10px;
+      background: var(--vscode-textBlockQuote-background, var(--card-bg));
+      border: 1px solid var(--border);
       border-radius: 6px;
-      font-size: 11px;
-      margin-top: 6px;
+      font-size: 12px;
+      margin-top: 8px;
+      color: var(--fg);
     }
-    .ws-warn { color: #f59e0b; }
-    .ws-ok { color: #22c55e; opacity: 0.8; }
-    .tokenizer { color: #60a5fa; font-style: italic; }
+    .ws-warn { color: var(--chart-orange); font-weight: 600; }
+    .ws-ok { color: var(--low); font-weight: 600; }
+    .tokenizer { color: var(--link-fg); font-weight: 600; }
 
     .breakdown-grid {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 2px 8px;
-      font-size: 11px;
+      gap: 4px 12px;
+      font-size: 12px;
       margin-bottom: 8px;
     }
-    .breakdown-label { opacity: 0.7; }
-    .breakdown-value { text-align: right; font-variant-numeric: tabular-nums; }
+    .breakdown-label { color: var(--fg); }
+    .breakdown-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); font-weight: 500; }
     .breakdown-bar {
       grid-column: 1 / -1;
-      height: 4px;
-      border-radius: 2px;
-      background: rgba(255,255,255,0.08);
-      margin: 2px 0 4px;
+      height: 6px;
+      border-radius: 3px;
+      background: var(--vscode-textBlockQuote-background, var(--card-bg));
+      border: 1px solid var(--border);
+      margin: 4px 0 6px;
       overflow: hidden;
     }
     .breakdown-bar-fill {
       height: 100%;
       border-radius: 2px;
     }
-    .breakdown-bar-fill.files { background: #60a5fa; }
-    .breakdown-bar-fill.system { background: #a78bfa; }
-    .breakdown-bar-fill.conversation { background: #f59e0b; }
-    .breakdown-bar-fill.output { background: #6b7280; }
+    .breakdown-bar-fill.files { background: var(--chart-blue); }
+    .breakdown-bar-fill.system { background: var(--chart-purple); }
+    .breakdown-bar-fill.conversation { background: var(--chart-orange); }
+    .breakdown-bar-fill.output { background: var(--chart-grey); }
 
     .growth-bars {
       display: flex;
@@ -354,22 +375,57 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       flex: 1;
       min-width: 4px;
       border-radius: 2px 2px 0 0;
-      background: #60a5fa;
+      background: var(--chart-blue);
       opacity: 0.7;
       position: relative;
     }
     .growth-bar:last-child { opacity: 1; }
     .growth-bar:hover { opacity: 1; }
     .growth-label {
-      font-size: 10px;
-      opacity: 0.5;
+      font-size: 11px;
+      color: var(--fg);
       display: flex;
       justify-content: space-between;
     }
     .suggestion {
-      font-size: 11px;
-      color: #f59e0b;
+      font-size: 12px;
+      color: var(--chart-orange);
+      font-weight: 600;
       margin-top: 4px;
+    }
+
+    .last-session {
+      background: var(--vscode-textBlockQuote-background, var(--card-bg));
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .last-session-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+    .last-session-title {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--desc-fg);
+    }
+    .last-session-time {
+      font-size: 11px;
+      color: var(--desc-fg);
+    }
+    .last-session-stats {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .last-session-stat {
+      color: var(--fg);
     }
   </style>
 </head>
@@ -385,13 +441,23 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       return n.toString();
     }
 
+    function formatTimeAgo(iso) {
+      var ms = Date.now() - new Date(iso).getTime();
+      var mins = Math.floor(ms / 60000);
+      if (mins < 60) return mins + 'm ago';
+      var hours = Math.floor(mins / 60);
+      if (hours < 24) return hours + 'h ago';
+      var days = Math.floor(hours / 24);
+      return days + 'd ago';
+    }
+
     function relClass(score) {
       if (score >= 0.6) return 'high';
       if (score >= 0.3) return 'med';
       return 'low';
     }
 
-    function render(s) {
+    function render(s, lastSession) {
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
               healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
               models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel,
@@ -410,6 +476,21 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           <span class="header-icon">🧮</span>
           <span class="header-title">Tokalator</span>
         </div>
+
+        \${lastSession && lastSession.totalTurns > 0 ? \`
+          <div class="last-session">
+            <div class="last-session-header">
+              <span class="last-session-title">Last Session</span>
+              <span class="last-session-time">\${formatTimeAgo(lastSession.endedAt)}</span>
+            </div>
+            <div class="last-session-stats">
+              <span class="last-session-stat">\${lastSession.modelLabel}</span>
+              <span class="last-session-stat">\${lastSession.totalTurns} turns</span>
+              <span class="last-session-stat">peak \${fmtTokens(lastSession.peakTokens)}</span>
+              <span class="last-session-stat">\${lastSession.tabCount} tabs</span>
+            </div>
+          </div>
+        \` : ''}
 
         <div class="model-selector">
           <label>Model</label>
@@ -541,8 +622,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     function resetTurns() { vscode.postMessage({ command: 'resetTurns' }); }
     function setModel(modelId) { vscode.postMessage({ command: 'setModel', modelId }); }
 
+    let lastSessionData = null;
     window.addEventListener('message', e => {
-      if (e.data.type === 'snapshot') render(e.data.data);
+      if (e.data.type === 'snapshot') {
+        if (e.data.lastSession) lastSessionData = e.data.lastSession;
+        render(e.data.data, lastSessionData);
+      }
     });
   </script>
 </body>

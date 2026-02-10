@@ -1,0 +1,35 @@
+name: Monthly Wiki Fetch
+
+on:
+  schedule:
+    # 1st of every month at 06:00 UTC
+    - cron: "0 6 1 * *"
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run agentic wiki fetcher
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: python scripts/fetch-wiki-agent.py
+
+      - name: Commit updated articles
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add content/wiki/articles.json
+          git diff --cached --quiet || git commit -m "chore: monthly wiki fetch $(date +%Y-%m)"
+          git push

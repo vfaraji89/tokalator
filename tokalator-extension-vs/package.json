@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "0.2.6",
+  "version": "0.2.7",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
@@ -93,6 +93,10 @@
           {
             "name": "compaction",
             "description": "Show per-turn token growth and compaction recommendations"
+          },
+          {
+            "name": "exit",
+            "description": "End the current session and save summary"
           }
         ]
       }
@@ -152,11 +156,12 @@
             "claude-opus-4.6",
             "claude-sonnet-4.5",
             "claude-sonnet-4",
-            "claude-haiku-3.5",
+            "claude-haiku-4.5",
             "gpt-5.2",
+            "gpt-5.2-codex",
             "gpt-5.1",
-            "gpt-4o",
-            "gpt-4o-mini",
+            "gpt-5-mini",
+            "gpt-4.1",
             "o3",
             "o4-mini",
             "gemini-3-pro",
@@ -167,11 +172,12 @@
             "Claude Opus 4.6 — 1M tokens",
             "Claude Sonnet 4.5 — 200K tokens",
             "Claude Sonnet 4 — 200K tokens",
-            "Claude Haiku 3.5 — 200K tokens",
-            "GPT-5.2 — 1M tokens",
-            "GPT-5.1 — 1M tokens",
-            "GPT-4o — 128K tokens",
-            "GPT-4o Mini — 128K tokens",
+            "Claude Haiku 4.5 — 200K tokens",
+            "GPT-5.2 — 256K tokens",
+            "GPT-5.2 Codex — 256K tokens",
+            "GPT-5.1 — 256K tokens",
+            "GPT-5 Mini — 256K tokens",
+            "GPT-4.1 — 1M tokens",
             "o3 — 200K tokens",
             "o4-mini — 200K tokens",
             "Gemini 3 Pro — 1M tokens",
@@ -197,12 +203,16 @@
     "vscode:prepublish": "npm run compile",
     "compile": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap",
     "watch": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
-    "lint": "eslint src --ext ts"
+    "lint": "eslint src --ext ts",
+    "test": "jest --verbose"
   },
   "devDependencies": {
+    "@types/jest": "^30.0.0",
     "@types/node": "^20.11.0",
     "@types/vscode": "^1.99.0",
     "esbuild": "^0.24.0",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
     "typescript": "^5.5.0"
   },
   "dependencies": {
