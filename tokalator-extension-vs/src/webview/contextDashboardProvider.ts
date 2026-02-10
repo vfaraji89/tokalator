@@ -158,24 +158,24 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
   <style>
     :root {
       /* GitHub Primer-aligned palette with VS Code theme fallbacks */
-      --bg: var(--vscode-sideBar-background);
-      --fg: var(--vscode-sideBar-foreground);
-      --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border));
+      --bg: var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e));
+      --fg: var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc));
+      --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border, rgba(128,128,128,0.2)));
       --low: var(--vscode-charts-green, #3fb950);
       --medium: var(--vscode-charts-yellow, #d29922);
       --high: var(--vscode-charts-red, #f85149);
-      --btn-bg: var(--vscode-button-background);
-      --btn-fg: var(--vscode-button-foreground);
-      --btn-hover: var(--vscode-button-hoverBackground);
-      --list-hover: var(--vscode-list-hoverBackground);
+      --btn-bg: var(--vscode-button-background, #0078d4);
+      --btn-fg: var(--vscode-button-foreground, #ffffff);
+      --btn-hover: var(--vscode-button-hoverBackground, #026ec1);
+      --list-hover: var(--vscode-list-hoverBackground, rgba(128,128,128,0.1));
       --card-bg: var(--vscode-editor-inactiveSelectionBackground, rgba(128,128,128,0.06));
       --accent: var(--vscode-focusBorder, #58a6ff);
-      --input-bg: var(--vscode-input-background);
-      --input-fg: var(--vscode-input-foreground);
+      --input-bg: var(--vscode-input-background, var(--bg));
+      --input-fg: var(--vscode-input-foreground, var(--fg));
       --input-border: var(--vscode-input-border, transparent);
-      --badge-bg: var(--vscode-badge-background);
-      --badge-fg: var(--vscode-badge-foreground);
-      --desc-fg: var(--vscode-descriptionForeground);
+      --badge-bg: var(--vscode-badge-background, #4d4d4d);
+      --badge-fg: var(--vscode-badge-foreground, #ffffff);
+      --desc-fg: var(--vscode-descriptionForeground, var(--fg));
       --chart-blue: var(--vscode-charts-blue, #58a6ff);
       --chart-purple: var(--vscode-charts-purple, #bc8cff);
       --chart-orange: var(--vscode-charts-orange, #d29922);
