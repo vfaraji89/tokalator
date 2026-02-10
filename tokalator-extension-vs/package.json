@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
@@ -10,22 +10,54 @@
     "url": "https://github.com/vfaraji89/tokalator"
   },
   "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#1a1a2e",
+    "theme": "dark"
+  },
+  "badges": [
+    {
+      "url": "https://img.shields.io/visual-studio-marketplace/v/vfaraji89.tokalator?style=flat-square&label=Marketplace",
+      "href": "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator",
+      "description": "Visual Studio Marketplace Version"
+    },
+    {
+      "url": "https://img.shields.io/visual-studio-marketplace/i/vfaraji89.tokalator?style=flat-square",
+      "href": "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator",
+      "description": "Visual Studio Marketplace Installs"
+    },
+    {
+      "url": "https://img.shields.io/github/license/vfaraji89/tokalator?style=flat-square",
+      "href": "https://github.com/vfaraji89/tokalator/blob/main/LICENSE",
+      "description": "License"
+    }
+  ],
+  "markdown": "github",
+  "qna": "marketplace",
+  "preview": false,
   "engines": {
     "vscode": "^1.99.0"
   },
   "categories": [
     "AI",
-    "Other"
+    "Other",
+    "Chat"
   ],
   "keywords": [
     "tokens",
     "context",
     "context-engineering",
+    "context-window",
     "ai",
     "copilot",
     "claude",
+    "chatgpt",
+    "gemini",
     "tokalator",
-    "abacus"
+    "abacus",
+    "cost-estimation",
+    "prompt-caching",
+    "secret-detection",
+    "token-counter"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -64,7 +96,7 @@
           },
           {
             "name": "optimize",
-            "description": "Close low-relevance tabs to free up tokens"
+            "description": "Context optimization report — tokens, cost, security, and health analysis"
           },
           {
             "name": "pin",
@@ -97,6 +129,14 @@
           {
             "name": "preview",
             "description": "Preview token cost of your next message before sending"
+          },
+          {
+            "name": "secrets",
+            "description": "Scan open files for exposed secrets, API keys, and credentials"
+          },
+          {
+            "name": "cost",
+            "description": "Show cost estimation, caching savings, and monthly projections"
           },
           {
             "name": "exit",
@@ -199,6 +239,11 @@
           "type": "number",
           "default": 2000,
           "description": "Dashboard refresh interval in milliseconds"
+        },
+        "tokalator.secretGuard": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable secret detection guardrail — scans open files for API keys, passwords, and credentials that could leak into AI context"
         }
       }
     }
