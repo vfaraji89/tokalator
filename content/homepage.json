@@ -4,176 +4,130 @@
     "headline": "Count your tokens.\nLike beads on an abacus.",
     "markerLine": "Count your tokens.",
     "highlightPhrase": "Every token counts",
-    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. Calculator, optimizer, and AI IDE Code extensions (Github Copilot, Claude Code and Cursor) in one place.",
+    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. A VS Code extension that makes the invisible visible.",
     "installCmd": "ext install tokalator",
     "primaryCta": {
       "label": "Install Extension",
       "href": "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
     },
     "secondaryCta": {
-      "label": "Explore Tools",
-      "href": "/calculator"
+      "label": "Learn More",
+      "href": "/learn"
     }
   },
-  "whySection": {
-    "title": "Why count tokens?",
-    "subtitle": "Because context is money and you're burning it.",
-    "stats": [
-      {
-        "number": "~$0.015",
-        "unit": "/1K tokens",
-        "label": "Average input cost"
-      },
-      {
-        "number": "128K–200K",
-        "label": "Context windows to manage"
-      },
-      {
-        "number": "Up to 30%",
-        "label": "Savings with optimization"
-      }
-    ]
+  "quickStart": {
+    "title": "Quick Start",
+    "steps": [
+      "Install from the VS Code Marketplace or run `ext install tokalator`",
+      "Click the Tokalator icon in the Activity Bar — the sidebar dashboard opens",
+      "Type `@tokalator /count` in Copilot or Claude Chat to see your token budget",
+      "Pin important files with `/pin` so they always stay in context",
+      "Run `/optimize` to get a full health report on your context window"
+    ],
+    "technical": {
+      "title": "Under the hood",
+      "items": [
+        {
+          "label": "Tokenizers",
+          "value": "Claude BPE (Anthropic), o200k_base (OpenAI), heuristic (Gemini)"
+        },
+        {
+          "label": "Models",
+          "value": "14 profiles — Opus 4.6, Sonnet 4.5/4, Haiku 4.5, GPT-5.2, Codex, o3, o4-mini, Gemini 3 Pro/Flash, and more"
+        },
+        {
+          "label": "Caching",
+          "value": "Prompt caching (Anthropic 90%), automatic (OpenAI 50%), context caching (Google 75%)"
+        },
+        {
+          "label": "Security",
+          "value": "25+ regex patterns for secrets — AWS, GitHub, OpenAI, Stripe, Slack, PEM, JWT, database URLs"
+        },
+        {
+          "label": "Scoring",
+          "value": "Relevance from 0 to 1 based on imports, language, path similarity, recency, and diagnostics"
+        }
+      ]
+    }
   },
-  "extensionFeatures": {
-    "title": "VS Code Extension",
-    "description": "Real-time context window monitoring inside your editor. Track token budgets, score tab relevance, and manage context through chat commands.",
-    "githubUrl": "https://github.com/vfaraji89/tokalator",
+  "commands": {
+    "title": "All Commands",
+    "description": "Available through @tokalator in VS Code Chat.",
     "items": [
       {
-        "name": "Token Budget Dashboard",
-        "description": "Sidebar panel showing real-time token usage and per-file breakdown",
-        "number": 1
+        "command": "/count",
+        "description": "Current token count and budget level"
       },
       {
-        "name": "Tab Relevance Scoring",
-        "description": "Ranks open tabs by imports, path similarity, edit recency, and diagnostics",
-        "number": 2
+        "command": "/breakdown",
+        "description": "See where tokens are going by category"
       },
       {
-        "name": "Chat Participant",
-        "description": "@tokalator commands for inline budget management",
-        "command": "/count /optimize /pin /unpin /breakdown /instructions /model /compaction /preview /reset /exit",
-        "number": 3
+        "command": "/optimize",
+        "description": "Full optimization report — tokens, cost, security, and health"
       },
       {
-        "name": "Next Turn Preview",
-        "description": "See estimated token cost before sending your next message",
-        "number": 4
+        "command": "/optimize --apply",
+        "description": "Close low-relevance tabs to free up context"
       },
       {
-        "name": "Context Rot Warnings",
-        "description": "Alerts when conversation turns exceed model-specific threshold",
-        "number": 5
+        "command": "/pin <file>",
+        "description": "Pin a file so it always stays in context"
       },
       {
-        "name": "Session Management",
-        "description": "Track per-turn growth, compaction advice, save session summaries",
-        "number": 6
-      }
-    ]
-  },
-  "webTools": {
-    "title": "Web Tools",
-    "items": [
-      {
-        "name": "Cost Calculator",
-        "description": "Token cost calculator with Cobb-Douglas quality modeling",
-        "href": "/calculator",
-        "number": 1
+        "command": "/unpin <file>",
+        "description": "Remove a pinned file"
       },
       {
-        "name": "Context Optimizer",
-        "description": "Visualize your context budget and optimize token usage",
-        "href": "/context",
-        "number": 2
+        "command": "/instructions",
+        "description": "List instruction files and their token cost"
       },
       {
-        "name": "Model Comparison",
-        "description": "Cross-provider cost and capability comparison",
-        "href": "/tools/compare",
-        "number": 3
+        "command": "/model [name]",
+        "description": "Show or switch the active AI model"
       },
       {
-        "name": "Caching ROI",
-        "description": "Break-even analysis for prompt caching",
-        "href": "/tools/caching",
-        "number": 4
-      }
-    ]
-  },
-  "contextEngineering": {
-    "title": "Context Engineering",
-    "description": "A collection of agents, prompts, and instructions for maximizing AI coding assistant effectiveness through better context management.",
-    "awesomeCopilotUrl": "https://github.com/github/awesome-copilot",
-    "items": [
-      {
-        "name": "Context Architect Agent",
-        "description": "Maps dependencies before suggesting changes"
+        "command": "/compaction",
+        "description": "Per-turn token growth and compaction advice"
       },
       {
-        "name": "Context Map Prompt",
-        "description": "Generates a map of affected files"
+        "command": "/preview",
+        "description": "Preview token cost before sending your next message"
       },
       {
-        "name": "What Context Needed",
-        "description": "Asks the AI what files it needs"
+        "command": "/secrets",
+        "description": "Scan open files for exposed secrets and credentials"
       },
       {
-        "name": "Refactor Plan Prompt",
-        "description": "Creates phased refactor plans with verification"
+        "command": "/cost",
+        "description": "Cost estimation, caching savings, and monthly projections"
+      },
+      {
+        "command": "/reset",
+        "description": "Reset session state and clear the turn counter"
+      },
+      {
+        "command": "/exit",
+        "description": "End session and save summary"
       }
     ]
   },
   "comingSoon": {
     "title": "Coming Soon",
-    "subtitle": "We're building the next layer of Tokalator.",
+    "subtitle": "Next on the roadmap.",
     "items": [
       {
-        "icon": "⬡",
         "name": "Tokalator Pro",
-        "description": "Team dashboards, historical token usage analytics, CI/CD budget gates, and custom model profiles. Free core stays open source — Pro adds enterprise power.",
+        "description": "Team dashboards, historical token usage analytics, CI/CD budget gates, and custom model profiles.",
         "badge": "Pro",
         "number": 1
       },
       {
-        "icon": "◈",
-        "name": "Token Counting API",
-        "description": "Real BPE tokenizers as a service. Count tokens for Claude, GPT, and Gemini with a single API call. Free tier: 1K requests/day.",
-        "badge": "API",
-        "number": 2
-      },
-      {
-        "icon": "◎",
-        "name": "Context Audits",
-        "description": "We analyze your repo's instruction files, Copilot usage, and context structure — then deliver a report with concrete optimizations.",
-        "badge": "Service",
-        "number": 3
-      },
-      {
-        "icon": "▸",
         "name": "Cursor Extension",
-        "description": "Full Tokalator experience inside Cursor. Same token dashboard, relevance scoring, and chat commands — native to your Cursor workflow.",
+        "description": "Full Tokalator experience inside Cursor. Same dashboard, scoring, and chat commands — native to your workflow.",
         "badge": "Extension",
-        "number": 4
-      },
-      {
-        "icon": "◆",
-        "name": "Claude Code Integration",
-        "description": "Context monitoring for Claude Code CLI. Track token budgets across sessions, get compaction alerts, and optimize /compact timing.",
-        "badge": "CLI",
-        "number": 5
+        "number": 2
       }
-    ]
-  },
-  "howToUse": {
-    "title": "How you use it",
-    "steps": [
-      "Open any project in VS Code",
-      "Install the Tokalator extension",
-      "Open the sidebar to see real-time token budgets",
-      "Use @tokalator in Copilot Chat for inline commands",
-      "Switch to the web tools for deep analysis",
-      "Optimize your context and cut costs"
     ]
   }
 }

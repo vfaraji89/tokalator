@@ -11,6 +11,8 @@ const COMMANDS = [
   "/model",
   "/compaction",
   "/instructions",
+  "/secrets",
+  "/cost",
   "/reset",
 ];
 
