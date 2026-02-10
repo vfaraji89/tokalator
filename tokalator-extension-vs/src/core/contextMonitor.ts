@@ -3,7 +3,7 @@ import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary } from './types'
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
-import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './modelProfiles';
+import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel, findModel } from './modelProfiles';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
 const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
@@ -100,6 +100,15 @@ export class ContextMonitor implements vscode.Disposable {
         }
       }),
     );
+
+    // Auto-detect model when Copilot's available models change
+    if (vscode.lm?.onDidChangeChatModels) {
+      this.disposables.push(
+        vscode.lm.onDidChangeChatModels(() => this.syncModelFromCopilot()),
+      );
+      // Initial sync attempt
+      this.syncModelFromCopilot();
+    }
 
     // Periodic refresh for time-based scoring (recency decay)
     const config = vscode.workspace.getConfiguration('tokalator');
@@ -517,6 +526,44 @@ export class ContextMonitor implements vscode.Disposable {
       css: 'css', html: 'html', sh: 'shellscript', sql: 'sql',
     };
     return map[ext] || ext;
+  }
+
+  /**
+   * Auto-detect the active model from Copilot's available chat models.
+   * Called on startup and when vscode.lm models change.
+   */
+  private async syncModelFromCopilot(): Promise<void> {
+    try {
+      const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
+      if (models && models.length > 0) {
+        // Use the first (usually the selected) model
+        const copilotModel = models[0];
+        const match = findModel(copilotModel.name || copilotModel.id);
+        if (match && match.id !== this.activeModel.id) {
+          this.setModel(match.id);
+          console.log(`Tokalator: auto-synced model to ${match.label} from Copilot`);
+        }
+      }
+    } catch {
+      // vscode.lm may not be available — ignore
+    }
+  }
+
+  /**
+   * Sync model from a chat request (called from chat participant).
+   * This captures the exact model the user selected in Copilot chat.
+   */
+  syncFromChatRequest(requestModel: vscode.LanguageModelChat): void {
+    try {
+      const modelName = requestModel.name || requestModel.id;
+      const match = findModel(modelName);
+      if (match && match.id !== this.activeModel.id) {
+        this.setModel(match.id);
+        console.log(`Tokalator: synced model to ${match.label} from chat request`);
+      }
+    } catch {
+      // ignore
+    }
   }
 
   /**
