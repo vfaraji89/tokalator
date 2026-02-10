@@ -73,6 +73,9 @@ export class ContextChatParticipant implements vscode.Disposable {
       case 'compaction':
         return this.handleCompaction(stream);
 
+      case 'preview':
+        return this.handlePreview(request, stream);
+
       case 'exit':
         return this.handleExit(stream);
 
@@ -239,6 +242,50 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`- Chat turns: ${turnsBefore} → 0\n`);
     stream.markdown(`- Context rot tracking cleared\n\n`);
     stream.markdown(`> To also clear pinned files, run \`@tokalator /unpin\` or use the **Clear All Pinned Files** command.\n`);
+    return {};
+  }
+
+  /**
+   * /preview — Preview token cost of the next message before sending
+   */
+  private async handlePreview(
+    request: vscode.ChatRequest,
+    stream: vscode.ChatResponseStream,
+  ): Promise<vscode.ChatResult> {
+    const preview = await this.monitor.previewNextTurn();
+    const model = this.monitor.getActiveModel();
+
+    stream.markdown(`## 🔮 Next Turn Preview\n\n`);
+
+    // Current state
+    const barLen = 20;
+    const currentFilled = Math.round(((preview.currentInput / preview.windowCapacity) * 100 / 100) * barLen);
+    const nextFilled = Math.round((preview.percentAfterTurn / 100) * barLen);
+    const currentBar = '█'.repeat(currentFilled) + '░'.repeat(barLen - currentFilled);
+    const nextBar = '█'.repeat(nextFilled) + '░'.repeat(barLen - nextFilled);
+
+    stream.markdown(`| | Tokens | Window |\n|---|---|---|\n`);
+    stream.markdown(`| **Now** | ~${this.fmtTokens(preview.currentInput)} | \`${currentBar}\` |\n`);
+    stream.markdown(`| **After next turn** | ~${this.fmtTokens(preview.nextTurnEstimate)} | \`${nextBar}\` |\n`);
+    stream.markdown(`| **Growth** | +~${this.fmtTokens(preview.conversationGrowth)} | |\n`);
+    stream.markdown(`| **Output reserve** | ~${this.fmtTokens(preview.outputReserved)} | |\n`);
+    stream.markdown(`| **Remaining** | ~${this.fmtTokens(preview.remainingCapacity)} | |\n\n`);
+
+    // If user typed extra text, count those tokens too
+    const userText = request.prompt.trim();
+    if (userText) {
+      const tokenizer = this.monitor.getTokenizer();
+      const textTokens = tokenizer.countTokens(userText, model.provider);
+      stream.markdown(`Your message "**${userText.slice(0, 50)}${userText.length > 50 ? '...' : ''}**" ≈ ${this.fmtTokens(textTokens)} tokens\n\n`);
+    }
+
+    if (preview.warning) {
+      stream.markdown(`> ⚠️ **${preview.warning}**\n\n`);
+    } else {
+      stream.markdown(`> ✅ You have room for ~**${Math.floor(preview.remainingCapacity / 800)}** more turns at current rate\n\n`);
+    }
+
+    stream.markdown(`*Model: ${model.label} · Window: ${this.fmtTokens(model.contextWindow)}*\n`);
     return {};
   }
 
@@ -436,6 +483,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| \`@tokalator /instructions\` | List instruction files and their token cost |\n`);
     stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n`);
     stream.markdown(`| \`@tokalator /compaction\` | Per-turn growth and compaction advice |\n`);
+    stream.markdown(`| \`@tokalator /preview\` | Preview token cost before sending |\n`);
     stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n`);
     stream.markdown(`| \`@tokalator /exit\` | End session and save summary |\n\n`);
 

@@ -207,6 +207,61 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   /**
+   * Estimate the token cost of the *next* chat turn before sending.
+   * This gives users a preview of what will be consumed.
+   */
+  async previewNextTurn(): Promise<{
+    currentInput: number;
+    nextTurnEstimate: number;
+    conversationGrowth: number;
+    outputReserved: number;
+    remainingCapacity: number;
+    percentAfterTurn: number;
+    windowCapacity: number;
+    warning: string | null;
+  }> {
+    await this.refresh();
+    const snapshot = this.latestSnapshot;
+    if (!snapshot) {
+      return {
+        currentInput: 0, nextTurnEstimate: 0, conversationGrowth: 800,
+        outputReserved: this.activeModel.maxOutput, remainingCapacity: this.activeModel.contextWindow,
+        percentAfterTurn: 0, windowCapacity: this.activeModel.contextWindow, warning: null,
+      };
+    }
+
+    // Each turn adds ~800 tokens (user message + assistant response)
+    const perTurnCost = 800;
+    const nextTurnInput = snapshot.totalEstimatedTokens + perTurnCost;
+    const nextPercent = Math.min((nextTurnInput / snapshot.windowCapacity) * 100, 100);
+    const remaining = Math.max(snapshot.windowCapacity - nextTurnInput - this.activeModel.maxOutput, 0);
+
+    let warning: string | null = null;
+    if (nextPercent >= 90) {
+      warning = 'Next turn will push you past 90% — high risk of context overflow';
+    } else if (nextPercent >= 75) {
+      warning = 'Approaching context limit — consider closing tabs or resetting';
+    }
+
+    // Check if next turn crosses the rot threshold
+    if (this.chatTurnCount + 1 >= this.activeModel.rotThreshold) {
+      const rotMsg = `Turn ${this.chatTurnCount + 1} will cross context rot threshold (${this.activeModel.rotThreshold})`;
+      warning = warning ? `${warning}. ${rotMsg}` : rotMsg;
+    }
+
+    return {
+      currentInput: snapshot.totalEstimatedTokens,
+      nextTurnEstimate: nextTurnInput,
+      conversationGrowth: perTurnCost,
+      outputReserved: this.activeModel.maxOutput,
+      remainingCapacity: remaining,
+      percentAfterTurn: nextPercent,
+      windowCapacity: snapshot.windowCapacity,
+      warning,
+    };
+  }
+
+  /**
    * Reset conversation turn counter and clear turn history.
    */
   resetChatTurns(): void {
