@@ -104,7 +104,7 @@ export class TokenBudgetEstimator {
     return {
       used,
       capacity: windowCapacity,
-      percent: windowCapacity > 0 ? Math.min((used / windowCapacity) * 100, 100) : 0,
+      percent: Math.min((used / windowCapacity) * 100, 100),
       breakdown: {
         files: fileTokens,
         systemPrompt: 2000,

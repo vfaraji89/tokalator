@@ -2,14 +2,14 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
-import { ContextSnapshot, TabInfo, OptimizationPlan, OptimizationAction } from '../core/types';
+import { ContextSnapshot, TabInfo } from '../core/types';
 
 /**
  * Chat participant `@tokalator` for Tokalator.
  *
  * Commands:
  *  /count        — Show current token count and budget level
- *  /optimize     — Context optimization report with actionable suggestions
+ *  /optimize     — Close low-relevance tabs
  *  /pin          — Pin a file as always-relevant
  *  /unpin        — Unpin a file
  *  /breakdown    — Show where tokens are going
@@ -38,11 +38,6 @@ export class ContextChatParticipant implements vscode.Disposable {
     token: vscode.CancellationToken,
   ): Promise<vscode.ChatResult> {
 
-    // Auto-sync model from Copilot's active chat model
-    if (request.model) {
-      this.monitor.syncFromChatRequest(request.model);
-    }
-
     // Only count turns for commands that modify state (optimize, pin, unpin)
     // Read-only commands (count, breakdown) don't contribute to context rot
     const isModifyingCommand = request.command === 'optimize' || request.command === 'pin' || request.command === 'unpin';
@@ -55,9 +50,6 @@ export class ContextChatParticipant implements vscode.Disposable {
         return this.handleCount(stream);
 
       case 'optimize':
-        if (request.prompt.trim() === '--apply') {
-          return this.handleOptimizeApply(stream);
-        }
         return this.handleOptimize(stream);
 
       case 'pin':
@@ -83,12 +75,6 @@ export class ContextChatParticipant implements vscode.Disposable {
 
       case 'preview':
         return this.handlePreview(request, stream);
-
-      case 'secrets':
-        return this.handleSecrets(stream);
-
-      case 'cost':
-        return this.handleCost(stream);
 
       case 'exit':
         return this.handleExit(stream);
@@ -141,146 +127,21 @@ export class ContextChatParticipant implements vscode.Disposable {
   }
 
   /**
-   * /optimize — Context optimization report
+   * /optimize — Close low-relevance tabs
    */
   private async handleOptimize(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Analyzing context for optimizations...');
-
-    await this.monitor.refresh();
-    const plan = await this.monitor.getOptimizationPlan();
-
-    if (!plan) {
-      stream.markdown('Unable to generate optimization plan.\n');
-      return {};
-    }
-
-    // ── Header with score ──
-    const scoreEmoji = plan.score >= 90 ? '🟢'
-      : plan.score >= 70 ? '🟡'
-      : plan.score >= 50 ? '🟠' : '🔴';
-
-    stream.markdown(`## 🎯 Context Optimization Report\n\n`);
-    stream.markdown(`${scoreEmoji} **Score: ${plan.score}/100** — ${plan.verdict}\n\n`);
-
-    // ── Summary bar ──
-    if (plan.totalTokenSavings > 0 || plan.totalCostSavingsPerTurn > 0) {
-      const parts: string[] = [];
-      if (plan.totalTokenSavings > 0) {
-        parts.push(`save ~${this.fmtTokens(plan.totalTokenSavings)} tokens`);
-      }
-      if (plan.totalCostSavingsPerTurn > 0) {
-        parts.push(`save $${plan.totalCostSavingsPerTurn.toFixed(4)}/turn`);
-      }
-      stream.markdown(`> **Quick wins:** ${parts.join(' · ')}\n\n`);
-    }
-
-    if (plan.actions.length === 0) {
-      stream.markdown('✅ Your context is well-optimized. Nothing to improve.\n');
-      return {};
-    }
-
-    // ── Group actions by category ──
-    const categoryLabels: Record<string, string> = {
-      security: '🔐 Security',
-      health: '📊 Context Health',
-      tokens: '💰 Token Savings',
-      cost: '📦 Cost Optimization',
-      workflow: '📁 Workflow Suggestions',
-    };
-    const categoryOrder = ['security', 'health', 'tokens', 'cost', 'workflow'];
-
-    for (const cat of categoryOrder) {
-      const catActions = plan.actions.filter(a => a.category === cat);
-      if (catActions.length === 0) continue;
-
-      stream.markdown(`### ${categoryLabels[cat] || cat}\n\n`);
-
-      for (const action of catActions) {
-        const priorityIcon = action.priority === 'critical' ? '🔴'
-          : action.priority === 'high' ? '🟠'
-          : action.priority === 'medium' ? '🟡' : '🔵';
-
-        stream.markdown(`${priorityIcon} **${action.title}**\n\n`);
-
-        // Render description lines
-        const descLines = action.description.split('\n');
-        for (const line of descLines) {
-          stream.markdown(`  ${line}\n`);
-        }
-
-        // Show savings if applicable
-        const savingParts: string[] = [];
-        if (action.tokenSavings > 0) {
-          savingParts.push(`~${this.fmtTokens(action.tokenSavings)} tokens`);
-        }
-        if (action.costSavingsPerTurn > 0) {
-          savingParts.push(`$${action.costSavingsPerTurn.toFixed(4)}/turn`);
-        }
-        if (savingParts.length > 0) {
-          stream.markdown(`\n  → Save ${savingParts.join(' · ')}\n`);
-        }
-
-        stream.markdown(`\n`);
-      }
-    }
-
-    // ── Quick-action summary ──
-    const actionable = plan.actions.filter(a => a.actionable);
-    if (actionable.length > 0) {
-      stream.markdown(`### ⚡ Available Actions\n\n`);
-
-      const closable = plan.actions.find(a => a.actionKey === 'closeTabs');
-      if (closable) {
-        stream.markdown(`- Run \`@tokalator /optimize --apply\` to close low-relevance tabs\n`);
-      }
-
-      const pinnable = plan.actions.find(a => a.actionKey === 'pinFiles');
-      if (pinnable && pinnable.actionData) {
-        stream.markdown(`- Run \`@tokalator /pin\` to pin suggested high-relevance files\n`);
-      }
-
-      const resettable = plan.actions.find(a => a.actionKey === 'reset');
-      if (resettable) {
-        stream.markdown(`- Run \`@tokalator /reset\` to clear context rot\n`);
-      }
-
-      const secretFiles = plan.actions.find(a => a.actionKey === 'closeSecretFiles');
-      if (secretFiles) {
-        stream.markdown(`- Run \`@tokalator /secrets\` for detailed security scan\n`);
-      }
-
-      stream.markdown(`\n`);
-    }
-
-    // ── Category summary ──
-    stream.markdown(`---\n`);
-    const summaryParts: string[] = [];
-    for (const cat of categoryOrder) {
-      if (plan.categoryCounts[cat as keyof typeof plan.categoryCounts] > 0) {
-        summaryParts.push(`${categoryLabels[cat]}: ${plan.categoryCounts[cat as keyof typeof plan.categoryCounts]}`);
-      }
-    }
-    stream.markdown(`*${summaryParts.join(' · ')}*\n`);
-
-    return {};
-  }
-
-  /**
-   * /optimize --apply — Execute the close-tabs action from the optimization plan
-   */
-  private async handleOptimizeApply(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Closing low-relevance tabs...');
+    stream.progress('Finding low-relevance tabs...');
 
     const closed = await this.monitor.optimizeTabs();
 
     if (closed.length === 0) {
       stream.markdown('All tabs look relevant. Nothing to close.\n');
     } else {
-      stream.markdown(`## ✂️ Closed ${closed.length} tab${closed.length > 1 ? 's' : ''}\n\n`);
+      stream.markdown(`## Closed ${closed.length} tabs\n\n`);
       for (const name of closed) {
         stream.markdown(`- ~~${name}~~\n`);
       }
-      stream.markdown(`\nRun \`@tokalator /optimize\` to see updated report.\n`);
+      stream.markdown(`\nYour token budget is now more focused.\n`);
     }
 
     return {};
@@ -394,14 +255,14 @@ export class ContextChatParticipant implements vscode.Disposable {
     const preview = await this.monitor.previewNextTurn();
     const model = this.monitor.getActiveModel();
 
-    stream.markdown(`## \uD83D\uDD2E Next Turn Preview\n\n`);
+    stream.markdown(`## 🔮 Next Turn Preview\n\n`);
 
     // Current state
     const barLen = 20;
     const currentFilled = Math.round(((preview.currentInput / preview.windowCapacity) * 100 / 100) * barLen);
     const nextFilled = Math.round((preview.percentAfterTurn / 100) * barLen);
-    const currentBar = '\u2588'.repeat(currentFilled) + '\u2591'.repeat(barLen - currentFilled);
-    const nextBar = '\u2588'.repeat(nextFilled) + '\u2591'.repeat(barLen - nextFilled);
+    const currentBar = '█'.repeat(currentFilled) + '░'.repeat(barLen - currentFilled);
+    const nextBar = '█'.repeat(nextFilled) + '░'.repeat(barLen - nextFilled);
 
     stream.markdown(`| | Tokens | Window |\n|---|---|---|\n`);
     stream.markdown(`| **Now** | ~${this.fmtTokens(preview.currentInput)} | \`${currentBar}\` |\n`);
@@ -415,78 +276,16 @@ export class ContextChatParticipant implements vscode.Disposable {
     if (userText) {
       const tokenizer = this.monitor.getTokenizer();
       const textTokens = tokenizer.countTokens(userText, model.provider);
-      stream.markdown(`Your message "**${userText.slice(0, 50)}${userText.length > 50 ? '...' : ''}**" \u2248 ${this.fmtTokens(textTokens)} tokens\n\n`);
+      stream.markdown(`Your message "**${userText.slice(0, 50)}${userText.length > 50 ? '...' : ''}**" ≈ ${this.fmtTokens(textTokens)} tokens\n\n`);
     }
 
     if (preview.warning) {
-      stream.markdown(`> \u26A0\uFE0F **${preview.warning}**\n\n`);
+      stream.markdown(`> ⚠️ **${preview.warning}**\n\n`);
     } else {
-      stream.markdown(`> \u2705 You have room for ~**${Math.floor(preview.remainingCapacity / 800)}** more turns at current rate\n\n`);
+      stream.markdown(`> ✅ You have room for ~**${Math.floor(preview.remainingCapacity / 800)}** more turns at current rate\n\n`);
     }
 
-    stream.markdown(`*Model: ${model.label} \u00B7 Window: ${this.fmtTokens(model.contextWindow)}*\n`);
-    return {};
-  }
-
-  /**
-   * /secrets \u2014 Scan open files for secrets, credentials, and sensitive data
-   */
-  private async handleSecrets(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Scanning open files for secrets...');
-
-    await this.monitor.refresh();
-    const secretScan = this.monitor.getLatestSecretScan();
-
-    if (!secretScan || secretScan.totalFindings === 0) {
-      stream.markdown(`## \uD83D\uDD12 Secrets Guard\n\n`);
-      stream.markdown(`\u2705 **No secrets detected** in open files.\n\n`);
-      stream.markdown(`All ${vscode.window.tabGroups.all.flatMap(g => g.tabs).length} open tabs were scanned for:\n\n`);
-      stream.markdown(`| Category | Examples |\n|---|---|\n`);
-      stream.markdown(`| API Keys | OpenAI, Anthropic, AWS, Google, Stripe, GitHub |\n`);
-      stream.markdown(`| Credentials | Passwords, bearer tokens, JWTs |\n`);
-      stream.markdown(`| Connection Strings | Database URLs, Redis, MongoDB |\n`);
-      stream.markdown(`| Sensitive Files | .env, .pem, .key, credentials |\n`);
-      stream.markdown(`| Infrastructure | Private IPs, internal hostnames |\n\n`);
-      stream.markdown(`> Your AI context window is clean \u2014 no credentials at risk.\n`);
-      return {};
-    }
-
-    stream.markdown(`## \uD83D\uDEA8 Secrets Guard \u2014 ${secretScan.totalFindings} Finding(s)\n\n`);
-
-    // Summary badges
-    const parts: string[] = [];
-    if (secretScan.critical > 0) parts.push(`\uD83D\uDD34 **${secretScan.critical} critical**`);
-    if (secretScan.high > 0) parts.push(`\uD83D\uDFE0 **${secretScan.high} high**`);
-    if (secretScan.warning > 0) parts.push(`\uD83D\uDFE1 **${secretScan.warning} warning**`);
-    stream.markdown(parts.join(' \u00B7 ') + '\n\n');
-
-    // Env files warning
-    if (secretScan.envFilesOpen.length > 0) {
-      stream.markdown(`> \u26A0\uFE0F **Sensitive files open in editor:** ${secretScan.envFilesOpen.map(f => `\`${f}\``).join(', ')}\n`);
-      stream.markdown(`> These files should **never** be in AI context. Close them or add to \`.gitignore\`.\n\n`);
-    }
-
-    // Findings table
-    stream.markdown(`| Severity | Finding | File | Line |\n|---|---|---|---|\n`);
-    for (const f of secretScan.findings) {
-      const icon = f.severity === 'critical' ? '\uD83D\uDD34' : f.severity === 'high' ? '\uD83D\uDFE0' : '\uD83D\uDFE1';
-      const line = f.line > 0 ? String(f.line) : '\u2014';
-      stream.markdown(`| ${icon} ${f.severity} | ${f.description} | \`${f.filePath}\` | ${line} |\n`);
-    }
-
-    // Recommendations
-    stream.markdown(`\n### Recommendations\n\n`);
-    if (secretScan.envFilesOpen.length > 0) {
-      stream.markdown(`1. **Close sensitive files** \u2014 \`.env\` files should not be open during AI sessions\n`);
-    }
-    if (secretScan.critical > 0) {
-      stream.markdown(`2. **Move secrets to a vault** \u2014 use \`op run\` (1Password CLI) or macOS Keychain\n`);
-      stream.markdown(`3. **Use environment injection** \u2014 \`op run -- python main.py\` instead of \`.env\` files\n`);
-    }
-    stream.markdown(`4. **Add to .cursorignore / .gitignore** \u2014 prevent AI tools from reading these files\n`);
-    stream.markdown(`5. **Use \`.env.example\`** \u2014 keep structure without real values\n\n`);
-
-    stream.markdown(`> Run \`@tokalator /secrets\` anytime to re-scan after closing files.\n`);
+    stream.markdown(`*Model: ${model.label} · Window: ${this.fmtTokens(model.contextWindow)}*\n`);
     return {};
   }
 
@@ -678,18 +477,13 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| Command | Description |\n|---|---|\n`);
     stream.markdown(`| \`@tokalator /count\` | Current token count and budget level |\n`);
     stream.markdown(`| \`@tokalator /breakdown\` | See where tokens are going |\n`);
-    stream.markdown(`| \`@tokalator /optimize\` | Context optimization report |
-`);
-    stream.markdown(`| \`@tokalator /optimize --apply\` | Close low-relevance tabs |
-`);
+    stream.markdown(`| \`@tokalator /optimize\` | Close low-relevance tabs |\n`);
     stream.markdown(`| \`@tokalator /pin <file>\` | Pin a file as always-relevant |\n`);
     stream.markdown(`| \`@tokalator /unpin <file>\` | Unpin a file |\n`);
     stream.markdown(`| \`@tokalator /instructions\` | List instruction files and their token cost |\n`);
     stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n`);
     stream.markdown(`| \`@tokalator /compaction\` | Per-turn growth and compaction advice |\n`);
     stream.markdown(`| \`@tokalator /preview\` | Preview token cost before sending |\n`);
-    stream.markdown(`| \`@tokalator /secrets\` | Scan open files for exposed secrets |\n`);
-    stream.markdown(`| \`@tokalator /cost\` | Cost estimation and caching savings |\n`);
     stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n`);
     stream.markdown(`| \`@tokalator /exit\` | End session and save summary |\n\n`);
 
@@ -825,89 +619,8 @@ export class ContextChatParticipant implements vscode.Disposable {
     return {};
   }
 
-  /**
-   * /cost — Show cost estimation and caching savings for current context
-   */
-  private async handleCost(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Calculating cost estimate...');
-
-    await this.monitor.refresh();
-    const snapshot = this.monitor.getLatestSnapshot();
-    if (!snapshot || !snapshot.costEstimate) {
-      stream.markdown('Unable to get cost estimate.');
-      return {};
-    }
-
-    const c = snapshot.costEstimate;
-    const model = this.monitor.getActiveModel();
-
-    const fmtUSD = (v: number): string => {
-      if (v < 0.001) return '<$0.001';
-      if (v < 0.01) return '$' + v.toFixed(4);
-      if (v < 1) return '$' + v.toFixed(3);
-      return '$' + v.toFixed(2);
-    };
-
-    stream.markdown(`## \uD83D\uDCB0 Cost Estimate — ${model.label}\n\n`);
-
-    // Per-turn breakdown
-    stream.markdown(`### This Turn\n\n`);
-    stream.markdown(`| | Tokens | Cost |\n|---|---|---|\n`);
-    stream.markdown(`| **Input** | ~${this.fmtTokens(c.inputTokens)} | ${fmtUSD(c.inputCostUSD)} |\n`);
-    stream.markdown(`| **Output** (est.) | ~${this.fmtTokens(c.outputTokensEstimate)} | ${fmtUSD(c.outputCostUSD)} |\n`);
-    stream.markdown(`| **Total** | | **${fmtUSD(c.totalCostUSD)}** |\n\n`);
-
-    // Pricing rates
-    stream.markdown(`*Rates: $${model.inputCostPer1M}/M input · $${model.outputCostPer1M}/M output`);
-    if (model.supportsCaching) {
-      stream.markdown(` · $${model.cachedInputCostPer1M}/M cached input`);
-    }
-    stream.markdown(`*\n\n`);
-
-    // Caching section
-    if (c.cachingSupported) {
-      stream.markdown(`### \uD83D\uDCE6 Caching Analysis\n\n`);
-      stream.markdown(`> ${c.cachingDescription}\n\n`);
-
-      stream.markdown(`| | |\n|---|---|\n`);
-      stream.markdown(`| **Cacheable tokens** | ~${this.fmtTokens(c.cacheableTokens)} (system + instructions + stable files) |\n`);
-      stream.markdown(`| **Volatile tokens** | ~${this.fmtTokens(c.uncacheableTokens)} (conversation + active edits) |\n`);
-      stream.markdown(`| **Est. hit ratio** | ${Math.round(c.estimatedHitRatio * 100)}% |\n`);
-      stream.markdown(`| **Input w/ caching** | ${fmtUSD(c.cachedCostUSD)} vs ${fmtUSD(c.uncachedCostUSD)} |\n`);
-      stream.markdown(`| **Savings/turn** | \uD83D\uDFE2 **${fmtUSD(c.savingsPerTurnUSD)}** (${c.savingsPercent.toFixed(0)}%) |\n\n`);
-    }
-
-    // Session projections
-    stream.markdown(`### Session Projections\n\n`);
-    stream.markdown(`| Turns | Without Cache | With Cache | Savings |\n|---|---|---|---|\n`);
-    stream.markdown(`| 10 | ${fmtUSD(c.cost10Turns)} | ${fmtUSD(c.cachedCost10Turns)} | ${fmtUSD(c.cost10Turns - c.cachedCost10Turns)} |\n`);
-    stream.markdown(`| 25 | ${fmtUSD(c.cost25Turns)} | ${fmtUSD(c.cachedCost25Turns)} | ${fmtUSD(c.cost25Turns - c.cachedCost25Turns)} |\n`);
-    stream.markdown(`| 50 | ${fmtUSD(c.cost50Turns)} | ${fmtUSD(c.cachedCost50Turns)} | ${fmtUSD(c.cost50Turns - c.cachedCost50Turns)} |\n\n`);
-
-    // Monthly projection
-    stream.markdown(`### Monthly Projection (8 sessions/day, ~5 turns/session)\n\n`);
-    stream.markdown(`| | Daily | Monthly (22 days) |\n|---|---|---|\n`);
-    stream.markdown(`| **Uncached** | ${fmtUSD(c.dailyCostUSD)} | ${fmtUSD(c.monthlyCostUSD)} |\n`);
-    stream.markdown(`| **With caching** | ${fmtUSD(c.cachedDailyCostUSD)} | ${fmtUSD(c.cachedMonthlyCostUSD)} |\n`);
-    stream.markdown(`| **Savings** | \uD83D\uDFE2 ${fmtUSD(c.dailyCostUSD - c.cachedDailyCostUSD)} | \uD83D\uDFE2 **${fmtUSD(c.monthlyCostUSD - c.cachedMonthlyCostUSD)}** |\n\n`);
-
-    // Tips
-    stream.markdown(`### \uD83D\uDCA1 Cost Optimization Tips\n\n`);
-    if (c.cachingSupported && c.savingsPercent > 20) {
-      stream.markdown(`1. **Enable prompt caching** — save ~${c.savingsPercent.toFixed(0)}% on input costs\n`);
-    }
-    stream.markdown(`2. **Close unused tabs** — fewer file tokens = lower input cost\n`);
-    stream.markdown(`3. **Pin only essential files** — pinned files always count toward input\n`);
-    stream.markdown(`4. **Reset sessions often** — conversation history grows linearly\n`);
-    stream.markdown(`5. **Choose the right model** — use \`/model\` to compare costs\n`);
-
-    return {};
-  }
-
   private fmtTokens(n: number): string {
-    if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
-    if (n >= 1_000) return (n / 1_000).toFixed(1) + 'K';
-    return n.toString();
+    return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n.toString();
   }
 
   private relevanceLabel(score: number): string {
