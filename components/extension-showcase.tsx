@@ -38,7 +38,7 @@ const extensionFeatures = [
   },
   {
     name: 'Chat Participant',
-    description: '@tokalator chat commands: /count, /optimize, /pin, /breakdown, /instructions, /model for inline budget management.',
+    description: '@tokalator chat commands: /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit for inline budget management.',
     icon: '◎',
     category: 'monitor',
   },

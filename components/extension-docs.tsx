@@ -3,51 +3,71 @@ import Link from 'next/link';
 const features = [
   {
     name: 'Token Budget Dashboard',
-    description: 'Activity bar sidebar panel showing real-time token usage, budget meter, and per-file breakdown. See exactly where your context budget is going.',
+    description: 'Activity bar sidebar panel showing real-time token usage, budget meter, per-file breakdown, and active tokenizer info.',
     command: 'View via sidebar icon',
   },
   {
     name: '@tokalator Chat Participant',
-    description: 'Integrated chat commands for inline budget management directly in Copilot or Claude Chat.',
-    command: '@tokalator /count, /optimize, /breakdown, /pin, /instructions, /model',
+    description: 'Eleven chat commands for inline budget management directly in Copilot Chat.',
+    command: '@tokalator /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit',
   },
   {
     name: 'Tab Relevance Scoring',
-    description: 'Ranks open tabs by relevance to your current file using import analysis, path similarity, edit recency, and diagnostic context.',
+    description: 'Ranks open tabs by relevance using import analysis, path similarity, edit recency, and diagnostics.',
     command: 'tokalator.optimize',
   },
   {
-    name: 'Status Bar Indicator',
-    description: 'Quick-glance budget status (LOW/MEDIUM/HIGH) in the bottom-right corner of your editor.',
-    command: 'Always visible',
+    name: 'Model-Specific Tokenizers',
+    description: 'Real BPE tokenizers per provider — Claude BPE for Anthropic, o200k_base for OpenAI. No more guessing at 4 chars per token.',
+    command: '@tokalator /model',
+  },
+  {
+    name: '14 Model Profiles',
+    description: 'Built-in profiles for Opus 4.6, Sonnet 4.5/4, Haiku 4.5, GPT-5.2, GPT-5.2 Codex, GPT-5.1, GPT-5 Mini, GPT-4.1, o3, o4-mini, Gemini 3 Pro/Flash, Gemini 2.5 Pro.',
+    command: 'Settings: tokalator.model',
   },
   {
     name: 'Context Rot Warnings',
-    description: 'Warns when conversation turns exceed threshold (default: 20), helping you know when to start a fresh context.',
+    description: 'Warns when conversation turns exceed the model\'s threshold. Each model has its own rot limit based on benchmarks.',
     command: 'Automatic',
   },
   {
     name: 'Pinned Files',
-    description: 'Pin important files so they are always treated as high-relevance, even if not actively edited.',
+    description: 'Pin important files so they are always treated as high-relevance in context scoring.',
     command: '@tokalator /pin <file>',
+  },
+  {
+    name: 'Instruction File Scanner',
+    description: 'Finds all instruction files in your workspace (.instructions.md, .prompt.md, AGENTS.md, .cursorrules) and counts their real token cost.',
+    command: '@tokalator /instructions',
+  },
+  {
+    name: 'Next Turn Preview',
+    description: 'See estimated token cost of your next message before sending. Dashboard shows a live preview box with growth projections and overflow warnings.',
+    command: '@tokalator /preview',
+  },
+  {
+    name: 'Session Management',
+    description: 'Track per-turn context growth with compaction analysis. Reset sessions, save summaries, and see last session stats on activation.',
+    command: '@tokalator /compaction, /reset, /exit',
   },
 ];
 
 const settings = [
   {
+    key: 'tokalator.model',
+    default: 'claude-opus-4.6',
+    description: 'AI model to calculate context budget against. Sets tokenizer, context window, and rot threshold automatically.',
+  },
+  {
     key: 'tokalator.relevanceThreshold',
     default: '0.3',
-    description: 'Tabs below this relevance score are marked as distractors (0-1)',
+    description: 'Tabs below this relevance score are marked as distractors (0–1)',
   },
   {
     key: 'tokalator.windowSize',
     default: '1,000,000',
-    description: 'Context window size in tokens (1M for Opus 4.6, 128K for older models)',
-  },
-  {
-    key: 'tokalator.contextRotWarningTurns',
-    default: '20',
-    description: 'Warn about context rot after this many chat turns',
+    description: 'Override context window size in tokens. Leave at default to use the selected model\'s window.',
   },
   {
     key: 'tokalator.autoRefreshInterval',
@@ -69,7 +89,7 @@ export function ExtensionDocs() {
           Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.
         </p>
         <div className="flex gap-3 items-center">
-          <span className="eco-badge eco-badge-red">v0.1.0</span>
+          <span className="eco-badge eco-badge-red">v3.1.0</span>
           <span className="text-xs text-eco-gray-500">VS Code 1.99+</span>
         </div>
       </section>
@@ -87,7 +107,7 @@ export function ExtensionDocs() {
           <div>
             <span className="data-label block mb-2">From Source</span>
             <pre className="bg-eco-gray-900 border border-eco-gray-800 p-4 text-xs text-eco-gray-300 overflow-x-auto">
-{`cd copilot-context-monitor
+{`cd tokalator/tokalator-extension-vs
 npm install
 npm run compile
 # Then press F5 in VS Code to launch Extension Development Host`}
