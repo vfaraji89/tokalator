@@ -50,3 +50,4 @@ next-env.d.ts
 !/user-content/instructions/.gitkeep
 !/user-content/collections/.gitkeep
 !/user-content/claude-code/.gitkeep
+__pycache__/

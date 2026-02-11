@@ -3,6 +3,7 @@ import type { CatalogItem } from '@/lib/types/catalog';
 
 interface CatalogCardProps {
   item: CatalogItem;
+  basePath?: string;
 }
 
 const ecosystemLabels: Record<string, string> = {
@@ -25,8 +26,10 @@ const kindRoutes: Record<string, string> = {
   collection: '/collections',
 };
 
-export function CatalogCard({ item }: CatalogCardProps) {
-  const href = `${kindRoutes[item.kind] || '/agents'}/${item.id}`;
+export function CatalogCard({ item, basePath }: CatalogCardProps) {
+  const href = basePath
+    ? `${basePath}/${item.id}`
+    : `${kindRoutes[item.kind] || '/agents'}/${item.id}`;
 
   return (
     <Link href={href} className="wiki-card">
