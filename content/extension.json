@@ -1,5 +1,5 @@
 {
-  "version": "0.2.9",
+  "version": "3.1.0",
   "icon": "⬡",
   "headline": "Real-time context monitoring.\nInside your editor.",
   "highlightPhrase": "context monitoring",
@@ -155,11 +155,11 @@
       "title": "VSIX",
       "icon": "◇",
       "steps": [
-        "Download tokalator-0.2.9.vsix from releases",
+        "Download tokalator-3.1.0.vsix from releases",
         "Cmd+Shift+P → Extensions: Install from VSIX...",
         "Select the downloaded .vsix file"
       ],
-      "command": "code --install-extension tokalator-0.2.9.vsix"
+      "command": "code --install-extension tokalator-3.1.0.vsix"
     },
     "source": {
       "title": "Build from Source",

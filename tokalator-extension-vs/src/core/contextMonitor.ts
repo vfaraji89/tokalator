@@ -1,12 +1,9 @@
 import * as vscode from 'vscode';
-import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary, SecretScanSummary, CostEstimateSummary, OptimizationPlan } from './types';
+import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
-import { SecretScanner } from './secretScanner';
-import { CostEstimator } from './costEstimator';
-import { ContextOptimizer } from './contextOptimizer';
-import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel, findModel } from './modelProfiles';
+import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './modelProfiles';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
 const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
@@ -32,10 +29,6 @@ export class ContextMonitor implements vscode.Disposable {
   private readonly scorer = new TabRelevanceScorer();
   private readonly tokenizer = new TokenizerService();
   private readonly estimator = new TokenBudgetEstimator(this.tokenizer);
-  private readonly secretScanner = new SecretScanner();
-  private readonly costEstimator = new CostEstimator();
-  private readonly contextOptimizer = new ContextOptimizer();
-  private latestSecretScan: SecretScanSummary | null = null;
 
   private pinnedFiles = new Set<string>();
   private chatTurnCount = 0;
@@ -98,24 +91,17 @@ export class ContextMonitor implements vscode.Disposable {
         debouncedRefresh();
       }),
       vscode.languages.onDidChangeDiagnostics(() => debouncedRefresh()),
-      // Sync model when settings change
+      // Sync model when settings change (skip if already on that model to avoid loop)
       vscode.workspace.onDidChangeConfiguration(e => {
         if (e.affectsConfiguration('tokalator.model')) {
           const cfg = vscode.workspace.getConfiguration('tokalator');
           const modelId = cfg.get<string>('model', DEFAULT_MODEL_ID);
-          this.setModel(modelId);
+          if (modelId !== this.activeModel.id) {
+            this.setModel(modelId);
+          }
         }
       }),
     );
-
-    // Auto-detect model when Copilot's available models change
-    if (vscode.lm?.onDidChangeChatModels) {
-      this.disposables.push(
-        vscode.lm.onDidChangeChatModels(() => this.syncModelFromCopilot()),
-      );
-      // Initial sync attempt
-      this.syncModelFromCopilot();
-    }
 
     // Periodic refresh for time-based scoring (recency decay)
     const config = vscode.workspace.getConfiguration('tokalator');
@@ -407,41 +393,6 @@ export class ContextMonitor implements vscode.Disposable {
       healthReasons.push(`${distractors.length} low-relevance tabs open`);
     }
 
-    // 10. Secret scan — guardrail for sensitive data
-    let secretScan: SecretScanSummary | null = null;
-    const secretGuardEnabled = config.get<boolean>('secretGuard', true);
-    if (secretGuardEnabled) {
-      try {
-      const scanResult = await this.secretScanner.scanOpenTabs();
-      secretScan = {
-        totalFindings: scanResult.totalFindings,
-        critical: scanResult.critical,
-        high: scanResult.high,
-        warning: scanResult.warning,
-        envFilesOpen: scanResult.envFilesOpen,
-        findings: scanResult.findings,
-        scannedAt: scanResult.scannedAt,
-      };
-      this.latestSecretScan = secretScan;
-
-      // Add secret warnings to health
-      if (scanResult.critical > 0) {
-        contextHealth = 'critical';
-        healthReasons.push(`🔐 ${scanResult.critical} critical secret(s) exposed in context`);
-      }
-      if (scanResult.high > 0) {
-        contextHealth = contextHealth === 'critical' ? 'critical' : 'warning';
-        healthReasons.push(`🔑 ${scanResult.high} high-risk credential(s) detected`);
-      }
-      if (scanResult.envFilesOpen.length > 0) {
-        contextHealth = 'critical';
-        healthReasons.push(`⚠️ ${scanResult.envFilesOpen.length} sensitive file(s) open: ${scanResult.envFilesOpen.join(', ')}`);
-      }
-    } catch {
-      // Secret scan is best-effort — don't block snapshot
-    }
-    } // end secretGuardEnabled
-
     if (healthReasons.length === 0) {
       healthReasons.push('Token budget looks good');
     }
@@ -469,8 +420,6 @@ export class ContextMonitor implements vscode.Disposable {
       tokenizerLabel: this.tokenizer.getTokenizerLabel(this.activeModel.provider),
       turnHistory: [...this.turnHistory],
       budgetBreakdown: budget.breakdown,
-      secretScan,
-      costEstimate: this.buildCostEstimate(budget.breakdown, budget.used),
     };
   }
 
@@ -573,55 +522,23 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   /**
-   * Auto-detect the active model from Copilot's available chat models.
-   * Called on startup and when vscode.lm models change.
-   */
-  private async syncModelFromCopilot(): Promise<void> {
-    try {
-      const models = await vscode.lm.selectChatModels({ vendor: 'copilot' });
-      if (models && models.length > 0) {
-        // Use the first (usually the selected) model
-        const copilotModel = models[0];
-        const match = findModel(copilotModel.name || copilotModel.id);
-        if (match && match.id !== this.activeModel.id) {
-          this.setModel(match.id);
-          console.log(`Tokalator: auto-synced model to ${match.label} from Copilot`);
-        }
-      }
-    } catch {
-      // vscode.lm may not be available — ignore
-    }
-  }
-
-  /**
-   * Sync model from a chat request (called from chat participant).
-   * This captures the exact model the user selected in Copilot chat.
-   */
-  syncFromChatRequest(requestModel: vscode.LanguageModelChat): void {
-    try {
-      const modelName = requestModel.name || requestModel.id;
-      const match = findModel(modelName);
-      if (match && match.id !== this.activeModel.id) {
-        this.setModel(match.id);
-        console.log(`Tokalator: synced model to ${match.label} from chat request`);
-      }
-    } catch {
-      // ignore
-    }
-  }
-
-  /**
    * Set the active model and persist it.
    */
-  setModel(modelId: string): void {
+  async setModel(modelId: string): Promise<void> {
     this.activeModel = getModel(modelId);
     this.estimator.setProvider(this.activeModel.provider);
     if (this.workspaceState) {
       this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
     }
-    // Rescan workspace with new tokenizer ratios
-    this.scanWorkspaceFiles();
-    this.refresh();
+    // Sync the VS Code setting so Settings UI / dashboard selector stay in sync
+    const cfg = vscode.workspace.getConfiguration('tokalator');
+    const currentSetting = cfg.get<string>('model');
+    if (currentSetting !== modelId) {
+      await cfg.update('model', modelId, vscode.ConfigurationTarget.Global);
+    }
+    // Rescan workspace with new tokenizer ratios, then refresh dashboard
+    await this.scanWorkspaceFiles();
+    await this.refresh();
   }
 
   /**
@@ -715,81 +632,6 @@ export class ContextMonitor implements vscode.Disposable {
    */
   getLastSession(): SessionSummary | undefined {
     return this.workspaceState?.get<SessionSummary>(SESSION_KEY);
-  }
-
-  /**
-   * Get latest secret scan results.
-   */
-  getLatestSecretScan(): SecretScanSummary | null {
-    return this.latestSecretScan;
-  }
-
-  /**
-   * Get the secret scanner for direct use by chat commands.
-   */
-  getSecretScanner(): SecretScanner {
-    return this.secretScanner;
-  }
-
-  /**
-   * Generate a full optimization plan from the current snapshot.
-   */
-  async getOptimizationPlan(): Promise<OptimizationPlan | null> {
-    const snapshot = this.latestSnapshot;
-    if (!snapshot) return null;
-
-    const config = vscode.workspace.getConfiguration('tokalator');
-    const threshold = config.get<number>('relevanceThreshold', 0.3);
-
-    return this.contextOptimizer.analyze(snapshot, this.activeModel, threshold);
-  }
-
-  /**
-   * Build a cost estimate from the current budget breakdown.
-   */
-  private buildCostEstimate(
-    breakdown: import('./types').BudgetBreakdown,
-    totalInputTokens: number,
-  ): CostEstimateSummary {
-    const est = this.costEstimator.estimate(
-      this.activeModel, breakdown, totalInputTokens, this.chatTurnCount
-    );
-    return {
-      inputTokens: est.inputTokens,
-      inputCostUSD: est.inputCostUSD,
-      outputTokensEstimate: est.outputTokensEstimate,
-      outputCostUSD: est.outputCostUSD,
-      totalCostUSD: est.totalCostUSD,
-      cachingSupported: est.caching.supported,
-      cachingType: est.caching.type,
-      cachingDescription: est.caching.description,
-      cacheableTokens: est.caching.cacheableTokens,
-      uncacheableTokens: est.caching.uncacheableTokens,
-      estimatedHitRatio: est.caching.estimatedHitRatio,
-      cachedCostUSD: est.caching.cachedCostUSD,
-      uncachedCostUSD: est.caching.uncachedCostUSD,
-      savingsPerTurnUSD: est.caching.savingsPerTurnUSD,
-      savingsPercent: est.caching.savingsPercent,
-      turnsCompleted: est.session.turnsCompleted,
-      estimatedSessionCostUSD: est.session.estimatedSessionCostUSD,
-      cost10Turns: est.session.cost10Turns,
-      cost25Turns: est.session.cost25Turns,
-      cost50Turns: est.session.cost50Turns,
-      cachedCost10Turns: est.session.cachedCost10Turns,
-      cachedCost25Turns: est.session.cachedCost25Turns,
-      cachedCost50Turns: est.session.cachedCost50Turns,
-      dailyCostUSD: est.session.dailyCostUSD,
-      monthlyCostUSD: est.session.monthlyCostUSD,
-      cachedDailyCostUSD: est.session.cachedDailyCostUSD,
-      cachedMonthlyCostUSD: est.session.cachedMonthlyCostUSD,
-    };
-  }
-
-  /**
-   * Get the cost estimator for direct use by chat commands.
-   */
-  getCostEstimator(): CostEstimator {
-    return this.costEstimator;
   }
 
   dispose(): void {
