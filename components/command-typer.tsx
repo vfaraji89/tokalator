@@ -8,12 +8,12 @@ const COMMANDS = [
   "/preview",
   "/breakdown",
   "/pin",
+  "/unpin",
   "/model",
   "/compaction",
   "/instructions",
-  "/secrets",
-  "/cost",
   "/reset",
+  "/exit",
 ];
 
 const MENTION = "@tokalator";

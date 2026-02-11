@@ -37,6 +37,7 @@ The Tokalator extension (v3.1.1) runs inside VS Code and provides:
 - `tokalator.model` — AI model to calculate budget against (default: claude-opus-4.6)
 - `tokalator.relevanceThreshold` — Tabs below this score are marked low-relevance (default: 0.3)
 - `tokalator.windowSize` — Context window size override in tokens (default: 1,000,000)
+- `tokalator.contextRotWarningTurns` — Warn about context rot after this many chat turns (default: 20)
 - `tokalator.autoRefreshInterval` — Dashboard refresh interval in ms (default: 2000)
 
 ## Open Catalog
