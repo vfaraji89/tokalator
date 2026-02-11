@@ -1,9 +1,9 @@
-import { UsageTracker } from '@/components/usage-tracker';
+import { UsageTracker } from '@/components/usage-tracker-v2';
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Usage Tracker",
-  description: "Track your AI token usage over time — monitor spending, set budgets, and analyze consumption patterns.",
+  description: "Upload CSV exports from Anthropic, OpenAI, or Google. Track token spending across providers.",
 };
 
 export default function UsagePage() {
@@ -22,7 +22,7 @@ export default function UsagePage() {
           <span className="hero-marker">Usage Tracking</span>
         </h1>
         <p className="hero-description">
-          View and manage your Anthropic API usage records.
+          Upload CSV exports from Anthropic, OpenAI, or Google. Track spending across providers.
         </p>
       </header>
 
