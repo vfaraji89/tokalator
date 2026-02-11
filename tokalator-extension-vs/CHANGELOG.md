@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.1.1 — 2026-02-11
+
+### Fixed
+
+- **CSP event delegation** — replaced all inline `onclick`/`ondblclick`/`onchange` handlers with `data-action` attributes and delegated listeners inside the nonce'd script block; CSP `script-src 'nonce-...'` was silently blocking every button click
+- **Token formatting** — `fmtTokens` now shows `1.0M` for 1,000,000+ instead of `1000.0K`
+- **Model switch sync** — dashboard handler now `await`s `setModel()` so the dropdown doesn't flicker
+- **Dashboard tests** — 14 new tests covering message handling, HTML output (no onclick), CSP nonce, URI round-trip
+
 ## 3.1.0 — 2026-02-11
 
 ### Fixed
