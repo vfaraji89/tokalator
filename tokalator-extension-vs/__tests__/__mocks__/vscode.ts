@@ -1,134 +1,121 @@
 /**
- * Minimal mock of the vscode module for unit testing.
- * Only stubs the interfaces used by the modules under test.
+ * Mock of the vscode module for unit testing.
+ * Stubs the interfaces used by modelProfiles, contextMonitor, and contextDashboardProvider.
  */
+
+// ── Uri ──────────────────────────────────────────────
 export class Uri {
+  static file(path: string): Uri {
+    return new Uri('file', '', path, '', '');
+  }
+  static parse(raw: string): Uri {
+    // Very simple parser for file:// URIs
+    if (raw.startsWith('file://')) {
+      return new Uri('file', '', raw.slice(7), '', '');
+    }
+    return new Uri('file', '', raw, '', '');
+  }
+
   readonly scheme: string;
+  readonly authority: string;
+  readonly path: string;
+  readonly query: string;
+  readonly fragment: string;
   readonly fsPath: string;
 
-  constructor(path: string) {
+  constructor(scheme: string, authority: string, path: string, query: string, fragment: string) {
+    this.scheme = scheme;
+    this.authority = authority;
+    this.path = path;
+    this.query = query;
+    this.fragment = fragment;
     this.fsPath = path;
-    this.scheme = 'file';
-  }
-
-  static file(path: string): Uri {
-    return new Uri(path);
-  }
-
-  static parse(uriStr: string): Uri {
-    if (uriStr.startsWith('file://')) {
-      return new Uri(uriStr.replace('file://', ''));
-    }
-    return new Uri(uriStr);
   }
 
   toString(): string {
     return `file://${this.fsPath}`;
   }
 
-  with(_change: { scheme?: string; authority?: string; path?: string; query?: string; fragment?: string }): Uri {
-    return this;
+  with(change: { scheme?: string; authority?: string; path?: string; query?: string; fragment?: string }): Uri {
+    return new Uri(
+      change.scheme ?? this.scheme,
+      change.authority ?? this.authority,
+      change.path ?? this.path,
+      change.query ?? this.query,
+      change.fragment ?? this.fragment,
+    );
   }
 }
 
+// ── EventEmitter ─────────────────────────────────────
+export class EventEmitter<T = any> {
+  private listeners: Array<(e: T) => void> = [];
+
+  event = (listener: (e: T) => void) => {
+    this.listeners.push(listener);
+    return { dispose: () => { this.listeners = this.listeners.filter(l => l !== listener); } };
+  };
+
+  fire(data: T) {
+    for (const l of this.listeners) { l(data); }
+  }
+
+  dispose() { this.listeners = []; }
+}
+
+// ── ConfigurationTarget ──────────────────────────────
+export enum ConfigurationTarget {
+  Global = 1,
+  Workspace = 2,
+  WorkspaceFolder = 3,
+}
+
+// ── TabInputText ─────────────────────────────────────
+export class TabInputText {
+  constructor(public readonly uri: Uri) {}
+}
+
+// ── workspace ────────────────────────────────────────
+export const workspace = {
+  textDocuments: [] as any[],
+  workspaceFolders: [{ uri: Uri.file('/workspace'), name: 'workspace', index: 0 }],
+  getConfiguration: jest.fn(() => ({
+    get: jest.fn((key: string, defaultVal?: any) => defaultVal),
+    update: jest.fn(async () => {}),
+  })),
+  openTextDocument: jest.fn(async (uri: Uri) => ({ uri, languageId: 'typescript', getText: () => '' })),
+  onDidChangeTextDocument: jest.fn(() => ({ dispose: () => {} })),
+  onDidOpenTextDocument: jest.fn(() => ({ dispose: () => {} })),
+  onDidCloseTextDocument: jest.fn(() => ({ dispose: () => {} })),
+  onDidChangeConfiguration: jest.fn(() => ({ dispose: () => {} })),
+  findFiles: jest.fn(async () => []),
+  fs: { readFile: jest.fn(async () => new Uint8Array()) },
+};
+
+// ── window ───────────────────────────────────────────
+export const window = {
+  activeTextEditor: undefined as any,
+  tabGroups: {
+    all: [] as any[],
+    onDidChangeTabs: jest.fn(() => ({ dispose: () => {} })),
+    close: jest.fn(async () => {}),
+  },
+  onDidChangeActiveTextEditor: jest.fn(() => ({ dispose: () => {} })),
+  onDidChangeTextEditorSelection: jest.fn(() => ({ dispose: () => {} })),
+  showInformationMessage: jest.fn(async () => undefined),
+  showTextDocument: jest.fn(async () => {}),
+};
+
+// ── languages ────────────────────────────────────────
+export const languages = {
+  getDiagnostics: jest.fn(() => []),
+  onDidChangeDiagnostics: jest.fn(() => ({ dispose: () => {} })),
+};
+
+// ── Diagnostic severity ──────────────────────────────
 export enum DiagnosticSeverity {
   Error = 0,
   Warning = 1,
   Information = 2,
   Hint = 3,
 }
-
-export enum FileType {
-  Unknown = 0,
-  File = 1,
-  Directory = 2,
-  SymbolicLink = 64,
-}
-
-export class ThemeIcon {
-  constructor(public readonly id: string) {}
-}
-
-export class TabInputText {
-  constructor(public readonly uri: Uri) {}
-}
-
-export enum StatusBarAlignment {
-  Left = 1,
-  Right = 2,
-}
-
-export const workspace = {
-  textDocuments: [] as any[],
-  workspaceFolders: undefined as any[] | undefined,
-  getConfiguration: (_section?: string) => ({
-    get: (_key: string, defaultValue?: any) => defaultValue,
-  }),
-  findFiles: jest.fn().mockResolvedValue([]),
-  openTextDocument: jest.fn().mockResolvedValue({ getText: () => '', uri: Uri.file('') }),
-  onDidChangeTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-  onDidOpenTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-  onDidCloseTextDocument: jest.fn(() => ({ dispose: jest.fn() })),
-  onDidChangeConfiguration: jest.fn(() => ({ dispose: jest.fn() })),
-  asRelativePath: jest.fn((uri: any) => {
-    const fsPath = typeof uri === 'string' ? uri : uri.fsPath || uri.toString();
-    return fsPath.replace(/^.*\//, '');
-  }),
-  fs: {
-    stat: jest.fn().mockResolvedValue({ size: 1000, type: FileType.File }),
-  },
-};
-
-export const window = {
-  activeTextEditor: undefined as any,
-  tabGroups: {
-    all: [] as any[],
-    onDidChangeTabs: jest.fn(() => ({ dispose: jest.fn() })),
-    close: jest.fn().mockResolvedValue(undefined),
-  },
-  onDidChangeActiveTextEditor: jest.fn(() => ({ dispose: jest.fn() })),
-  onDidChangeTextEditorSelection: jest.fn(() => ({ dispose: jest.fn() })),
-  createStatusBarItem: jest.fn(() => ({
-    text: '',
-    tooltip: '',
-    command: '',
-    show: jest.fn(),
-    hide: jest.fn(),
-    dispose: jest.fn(),
-  })),
-  showInformationMessage: jest.fn().mockResolvedValue(undefined),
-  showWarningMessage: jest.fn().mockResolvedValue(undefined),
-  registerWebviewViewProvider: jest.fn(() => ({ dispose: jest.fn() })),
-};
-
-export const languages = {
-  getDiagnostics: jest.fn().mockReturnValue([]),
-  onDidChangeDiagnostics: jest.fn(() => ({ dispose: jest.fn() })),
-};
-
-export const commands = {
-  registerCommand: jest.fn((_cmd: string, _handler: Function) => ({ dispose: jest.fn() })),
-  executeCommand: jest.fn().mockResolvedValue(undefined),
-};
-
-export const chat = {
-  createChatParticipant: jest.fn((_id: string, _handler: Function) => ({
-    iconPath: undefined,
-    dispose: jest.fn(),
-  })),
-};
-
-export const lm = {
-  selectChatModels: jest.fn().mockResolvedValue([]),
-  onDidChangeChatModels: jest.fn(() => ({ dispose: jest.fn() })),
-};
-
-export const EventEmitter = class {
-  private listeners: Function[] = [];
-  event = (listener: Function) => {
-    this.listeners.push(listener);
-    return { dispose: () => { this.listeners = this.listeners.filter(l => l !== listener); } };
-  };
-  fire(data?: any) { this.listeners.forEach(l => l(data)); }
-  dispose() { this.listeners = []; }
-};

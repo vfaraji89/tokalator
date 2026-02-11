@@ -63,14 +63,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           break;
         }
 
-        case 'requestOptPlan': {
-          const optPlan = await this.monitor.getOptimizationPlan();
-          if (optPlan && this.view) {
-            this.view.webview.postMessage({ type: 'optPlan', data: optPlan });
-          }
-          break;
-        }
-
         case 'pin': {
           this.monitor.pinFile(message.uri);
           break;
@@ -146,8 +138,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       tokenizerLabel: snapshot.tokenizerLabel,
       turnHistory: snapshot.turnHistory,
       budgetBreakdown: snapshot.budgetBreakdown,
-      secretScan: snapshot.secretScan,
-      costEstimate: snapshot.costEstimate,
     };
 
     const lastSession = this.monitor.getLastSession();
@@ -167,53 +157,30 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
   <title>Tokalator</title>
   <style>
     :root {
+      /* GitHub Primer-aligned palette with VS Code theme fallbacks */
       --bg: var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e));
       --fg: var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc));
-      --border: var(--vscode-panel-border, var(--vscode-sideBarSectionHeader-border, rgba(128,128,128,0.35)));
-      --low: var(--vscode-testing-iconPassed, var(--vscode-charts-green, #3fb950));
-      --medium: var(--vscode-editorWarning-foreground, var(--vscode-charts-yellow, #d29922));
-      --high: var(--vscode-editorError-foreground, var(--vscode-charts-red, #f85149));
+      --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border, rgba(128,128,128,0.2)));
+      --low: var(--vscode-charts-green, #3fb950);
+      --medium: var(--vscode-charts-yellow, #d29922);
+      --high: var(--vscode-charts-red, #f85149);
       --btn-bg: var(--vscode-button-background, #0078d4);
       --btn-fg: var(--vscode-button-foreground, #ffffff);
       --btn-hover: var(--vscode-button-hoverBackground, #026ec1);
-      --list-hover: var(--vscode-list-hoverBackground, rgba(255,255,255,0.06));
-      --card-bg: var(--vscode-editorWidget-background, var(--vscode-sideBar-background, #252526));
-      --accent: var(--vscode-focusBorder, #007fd4);
-      --input-bg: var(--vscode-input-background, #3c3c3c);
-      --input-fg: var(--vscode-input-foreground, var(--fg));
-      --input-border: var(--vscode-input-border, var(--border));
+      --list-hover: var(--vscode-list-hoverBackground, rgba(128,128,128,0.1));
+      --card-bg: rgba(255,255,255,0.03);
+      --accent: var(--vscode-focusBorder, #58a6ff);
+      --input-bg: var(--vscode-input-background, var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e)));
+      --input-fg: var(--vscode-input-foreground, var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc)));
+      --input-border: var(--vscode-input-border, transparent);
       --badge-bg: var(--vscode-badge-background, #4d4d4d);
       --badge-fg: var(--vscode-badge-foreground, #ffffff);
-      --desc-fg: var(--vscode-descriptionForeground, #969696);
+      --desc-fg: var(--vscode-descriptionForeground, var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc)));
       --chart-blue: var(--vscode-charts-blue, #58a6ff);
       --chart-purple: var(--vscode-charts-purple, #bc8cff);
       --chart-orange: var(--vscode-charts-orange, #d29922);
-      --chart-green: var(--vscode-charts-green, #3fb950);
+      --chart-grey: var(--vscode-disabledForeground, #8b949e);
       --link-fg: var(--vscode-textLink-foreground, #58a6ff);
-    }
-    /* High Contrast themes — strong borders, no translucent backgrounds */
-    @media (forced-colors: active) {
-      :root {
-        --border: var(--vscode-contrastBorder, CanvasText);
-        --fg: CanvasText;
-        --bg: Canvas;
-        --low: #00ff00;
-        --medium: #ffff00;
-        --high: #ff0000;
-        --btn-bg: ButtonFace;
-        --btn-fg: ButtonText;
-        --btn-hover: Highlight;
-        --list-hover: Highlight;
-        --card-bg: Canvas;
-        --accent: Highlight;
-        --chart-blue: #00bfff;
-        --chart-purple: #da70d6;
-        --chart-orange: #ffa500;
-        --chart-green: #00ff00;
-      }
-      .tab-item:hover, .action-btn:hover { outline: 1px solid Highlight; }
-      .budget-level { border-width: 2px; }
-      .stat { border-width: 1px; }
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
@@ -238,18 +205,13 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       border-radius: 6px;
       margin-bottom: 12px;
       text-align: center;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
     }
-    .budget-level.low { border-left: 3px solid var(--low); }
-    .budget-level.medium { border-left: 3px solid var(--medium); }
-    .budget-level.high { border-left: 3px solid var(--high); }
-    .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: var(--desc-fg); }
-    .budget-value { font-size: 24px; font-weight: 700; margin-top: 4px; color: var(--fg); }
-    .budget-level.low .budget-value { color: var(--low); }
-    .budget-level.medium .budget-value { color: var(--medium); }
-    .budget-level.high .budget-value { color: var(--high); }
-    .budget-tokens { font-size: 12px; margin-top: 4px; color: var(--fg); }
+    .budget-level.low { background: color-mix(in srgb, var(--low) 12%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 25%, transparent); }
+    .budget-level.medium { background: color-mix(in srgb, var(--medium) 12%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 25%, transparent); }
+    .budget-level.high { background: color-mix(in srgb, var(--high) 12%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 25%, transparent); }
+    .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
+    .budget-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
+    .budget-tokens { font-size: 12px; margin-top: 4px; }
 
     .stats {
       display: flex;
@@ -258,14 +220,14 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       flex-wrap: wrap;
     }
     .stat {
-      background: var(--badge-bg);
-      color: var(--badge-fg);
-      padding: 4px 8px;
-      border-radius: 10px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      padding: 5px 8px;
+      border-radius: 6px;
       font-size: 11px;
+      color: var(--fg);
       font-weight: 500;
       font-variant-numeric: tabular-nums;
-      border: none;
     }
 
     .section {
@@ -299,9 +261,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       border-radius: 50%;
       flex-shrink: 0;
     }
-    .tab-dot.high { background: var(--low); }
-    .tab-dot.med { background: var(--medium); }
-    .tab-dot.low { background: var(--high); }
+    .tab-dot.high { background: var(--low); opacity: 0.9; }
+    .tab-dot.med { background: var(--medium); opacity: 0.9; }
+    .tab-dot.low { background: var(--high); opacity: 0.9; }
     .tab-name {
       flex: 1;
       overflow: hidden;
@@ -309,7 +271,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       white-space: nowrap;
     }
     .tab-name.active { font-weight: 600; }
-    .tab-tokens { font-size: 11px; color: var(--desc-fg); }
+    .tab-tokens { font-size: 11px; color: var(--fg); opacity: 0.8; }
     .tab-actions {
       display: flex;
       gap: 2px;
@@ -376,7 +338,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       border: 1px solid var(--input-border);
       border-radius: 4px;
       padding: 4px 6px;
-      font-family: var(--vscode-font-family);
       font-size: 11px;
       cursor: pointer;
       outline: none;
@@ -396,8 +357,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       margin-top: 8px;
       color: var(--fg);
     }
-    .ws-warn { color: var(--medium); font-weight: 600; font-size: 11px; }
-    .ws-ok { color: var(--low); font-weight: 500; font-size: 11px; }
+    .ws-warn { color: var(--medium); font-weight: 600; }
+    .ws-ok { color: var(--low); font-weight: 500; }
     .tokenizer { color: var(--chart-blue); font-weight: 500; }
 
     .breakdown-grid {
@@ -413,10 +374,10 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       grid-column: 1 / -1;
       height: 6px;
       border-radius: 3px;
-      background: var(--vscode-editorGroup-border, var(--border));
+      background: var(--card-bg);
+      border: 1px solid var(--border);
       margin: 4px 0 6px;
       overflow: hidden;
-      border: none;
     }
     .breakdown-bar-fill {
       height: 100%;
@@ -425,7 +386,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     .breakdown-bar-fill.files { background: var(--chart-blue); }
     .breakdown-bar-fill.system { background: var(--chart-purple); }
     .breakdown-bar-fill.conversation { background: var(--chart-orange); }
-    .breakdown-bar-fill.output { background: var(--vscode-descriptionForeground, var(--fg)); opacity: 0.5; }
+    .breakdown-bar-fill.output { background: var(--chart-grey); }
 
     .growth-bars {
       display: flex;
@@ -439,12 +400,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       min-width: 4px;
       border-radius: 2px 2px 0 0;
       background: var(--chart-blue);
+      opacity: 0.6;
       position: relative;
-      transition: filter 0.15s;
-      filter: brightness(0.7);
+      transition: opacity 0.15s;
     }
-    .growth-bar:last-child { filter: brightness(1); }
-    .growth-bar:hover { filter: brightness(1); }
+    .growth-bar:last-child { opacity: 1; }
+    .growth-bar:hover { opacity: 1; }
     .growth-label {
       font-size: 11px;
       color: var(--fg);
@@ -494,8 +455,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
     .preview-box {
       background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-left: 3px solid var(--chart-blue);
+      border: 1px solid color-mix(in srgb, var(--chart-blue) 40%, var(--border));
       border-radius: 6px;
       padding: 8px 10px;
       margin-bottom: 12px;
@@ -518,188 +478,51 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       color: var(--fg);
     }
     .preview-warn {
-      color: var(--medium);
+      color: var(--chart-orange);
       font-weight: 600;
       margin-top: 4px;
     }
 
-    .secret-guardrail {
-      background: var(--card-bg);
-      border: 1px solid var(--high);
-      border-left: 3px solid var(--high);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
+    /* High Contrast theme overrides — VS Code sets data-vscode-theme-kind on <body> */
+    body[data-vscode-theme-kind="vscode-high-contrast"],
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] {
+      --card-bg: transparent;
+      --border: var(--vscode-contrastBorder, #6fc3df);
     }
-    .secret-guardrail.clean {
-      border-color: var(--low);
-      border-left-color: var(--low);
+    body[data-vscode-theme-kind="vscode-high-contrast"] .budget-level,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .budget-level {
+      background: transparent !important;
+      border-color: var(--vscode-contrastBorder, #6fc3df) !important;
     }
-    .secret-guardrail-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
+    body[data-vscode-theme-kind="vscode-high-contrast"] .stat,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .stat,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .last-session,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .last-session,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .preview-box,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .preview-box,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .workspace-info,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .workspace-info,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .breakdown-bar,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .breakdown-bar,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .model-selector select,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .model-selector select {
+      background: transparent !important;
+      border-color: var(--vscode-contrastBorder, #6fc3df) !important;
     }
-    .secret-guardrail-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--high);
+    body[data-vscode-theme-kind="vscode-high-contrast"] .action-btn,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .action-btn,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .tab-actions button,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .tab-actions button {
+      border: 1px solid var(--vscode-contrastBorder, #6fc3df) !important;
     }
-    .secret-guardrail.clean .secret-guardrail-title {
-      color: var(--low);
+    body[data-vscode-theme-kind="vscode-high-contrast"] .tab-item:hover,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .tab-item:hover {
+      outline: 1px solid var(--vscode-contrastBorder, #6fc3df);
     }
-    .secret-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 600;
+    body[data-vscode-theme-kind="vscode-high-contrast"] .action-btn.secondary,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .action-btn.secondary {
+      border-color: var(--vscode-contrastBorder, #6fc3df) !important;
     }
-    .secret-badge.critical { background: var(--high); color: #fff; }
-    .secret-badge.high { background: var(--medium); color: #000; }
-    .secret-badge.warn { background: var(--badge-bg); color: var(--badge-fg); }
-    .secret-finding {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      padding: 3px 0;
-      font-size: 11px;
-      border-bottom: 1px solid var(--border);
-    }
-    .secret-finding:last-child { border-bottom: none; }
-    .secret-finding-icon { flex-shrink: 0; font-size: 12px; }
-    .secret-finding-text { flex: 1; color: var(--fg); }
-    .secret-finding-file { color: var(--desc-fg); font-size: 10px; }
-    .secret-finding-preview { color: var(--high); font-family: monospace; font-size: 10px; }
-
-    .cost-section {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-    }
-    .cost-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .cost-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--desc-fg);
-    }
-    .cost-value {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--fg);
-      font-variant-numeric: tabular-nums;
-    }
-    .cost-grid {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 3px 10px;
-      font-size: 11px;
-      margin-top: 6px;
-    }
-    .cost-label { color: var(--desc-fg); }
-    .cost-amount { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
-    .cost-savings { color: var(--low); font-weight: 600; }
-    .cost-divider {
-      grid-column: 1 / -1;
-      height: 1px;
-      background: var(--border);
-      margin: 4px 0;
-    }
-    .cache-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 500;
-      background: var(--badge-bg);
-      color: var(--badge-fg);
-    }
-    .cache-badge.active { background: var(--low); color: #000; }
-
-    .opt-score {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-    }
-    .opt-score-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .opt-score-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--desc-fg);
-    }
-    .opt-score-value {
-      font-size: 18px;
-      font-weight: 700;
-      font-variant-numeric: tabular-nums;
-    }
-    .opt-score-value.great { color: var(--low); }
-    .opt-score-value.good { color: var(--chart-blue); }
-    .opt-score-value.fair { color: var(--medium); }
-    .opt-score-value.poor { color: var(--high); }
-    .opt-verdict {
-      font-size: 11px;
-      color: var(--desc-fg);
-      margin-bottom: 4px;
-    }
-    .opt-savings {
-      display: flex;
-      gap: 10px;
-      margin-top: 4px;
-      flex-wrap: wrap;
-    }
-    .opt-saving-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 3px;
-      padding: 2px 6px;
-      border-radius: 8px;
-      font-size: 10px;
-      font-weight: 600;
-      background: var(--low);
-      color: #000;
-    }
-    .opt-action {
-      display: flex;
-      align-items: flex-start;
-      gap: 6px;
-      padding: 5px 0;
-      font-size: 11px;
-      border-bottom: 1px solid var(--border);
-    }
-    .opt-action:last-child { border-bottom: none; }
-    .opt-action-icon { flex-shrink: 0; font-size: 12px; }
-    .opt-action-body { flex: 1; }
-    .opt-action-title { font-weight: 600; color: var(--fg); }
-    .opt-action-desc { color: var(--desc-fg); font-size: 10px; margin-top: 2px; }
-    .opt-action-saving { color: var(--low); font-size: 10px; font-weight: 600; }
   </style>
 </head>
 <body>
@@ -710,7 +533,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     const app = document.getElementById('app');
 
     function fmtTokens(n) {
-      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
       if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
       return n.toString();
     }
@@ -735,7 +557,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
               healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
               models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel,
-              turnHistory, budgetBreakdown, secretScan, costEstimate } = s;
+              turnHistory, budgetBreakdown } = s;
 
       const threshold = 0.3;
       const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
@@ -768,7 +590,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
         <div class="model-selector">
           <label>Model</label>
-          <select id="model-select">
+          <select onchange="setModel(this.value)">
             \${modelOptions}
           </select>
         </div>
@@ -797,39 +619,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
             '</div>';
         })()}
 
-        \${(function() {
-          if (!secretScan || secretScan.totalFindings === 0) {
-            return '<div class="secret-guardrail clean">' +
-              '<div class="secret-guardrail-header">' +
-              '<span class="secret-guardrail-title">\ud83d\udd12 Secrets Guard</span>' +
-              '</div>' +
-              '<span style="color:var(--low);font-size:11px;">No secrets detected in open files</span>' +
-              '</div>';
-          }
-          var badges = '';
-          if (secretScan.critical > 0) badges += '<span class="secret-badge critical">' + secretScan.critical + ' critical</span> ';
-          if (secretScan.high > 0) badges += '<span class="secret-badge high">' + secretScan.high + ' high</span> ';
-          if (secretScan.warning > 0) badges += '<span class="secret-badge warn">' + secretScan.warning + ' warning</span>';
-          var findings = (secretScan.findings || []).slice(0, 8).map(function(f) {
-            var icon = f.severity === 'critical' ? '\ud83d\udd34' : f.severity === 'high' ? '\ud83d\udfe0' : '\ud83d\udfe1';
-            return '<div class="secret-finding">' +
-              '<span class="secret-finding-icon">' + icon + '</span>' +
-              '<div>' +
-              '<div class="secret-finding-text">' + f.description + '</div>' +
-              '<div class="secret-finding-file">' + f.filePath + (f.line > 0 ? ':' + f.line : '') + '</div>' +
-              '<div class="secret-finding-preview">' + f.preview + '</div>' +
-              '</div></div>';
-          }).join('');
-          var more = secretScan.totalFindings > 8 ? '<div style="font-size:11px;color:var(--desc-fg);margin-top:4px;">+' + (secretScan.totalFindings - 8) + ' more \u2014 use @tokalator /secrets for full report</div>' : '';
-          return '<div class="secret-guardrail">' +
-            '<div class="secret-guardrail-header">' +
-            '<span class="secret-guardrail-title">\ud83d\udea8 Secrets Guard</span>' +
-            '<div>' + badges + '</div>' +
-            '</div>' +
-            findings + more +
-            '</div>';
-        })()}
-
         <div class="stats">
           <div class="stat">\${tabs.length} open</div>
           <div class="stat">\${pinnedFiles.length} pinned</div>
@@ -849,71 +638,36 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           </div>
         \` : ''}
 
-        \${budgetBreakdown ? \`
-          <div class="section">
-            <div class="section-title">Budget Breakdown</div>
-            <div class="breakdown-grid">
-              <span class="breakdown-label">Files</span>
-              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.files)}</span>
-              <span class="breakdown-label">System</span>
-              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.systemPrompt)}</span>
-              <span class="breakdown-label">Instructions</span>
-              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.instructions)}</span>
-              <span class="breakdown-label">Conversation</span>
-              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.conversation)}</span>
-              <span class="breakdown-label">Output reserve</span>
-              <span class="breakdown-value">~\${fmtTokens(budgetBreakdown.outputReservation)}</span>
-            </div>
-            <div class="breakdown-bar">
-              <div style="display:flex;height:100%">
-                <div class="breakdown-bar-fill files" style="width:\${totalEstimatedTokens > 0 ? Math.round((budgetBreakdown.files/totalEstimatedTokens)*100) : 0}%"></div>
-                <div class="breakdown-bar-fill system" style="width:\${totalEstimatedTokens > 0 ? Math.round(((budgetBreakdown.systemPrompt+budgetBreakdown.instructions)/totalEstimatedTokens)*100) : 0}%"></div>
-                <div class="breakdown-bar-fill conversation" style="width:\${totalEstimatedTokens > 0 ? Math.round((budgetBreakdown.conversation/totalEstimatedTokens)*100) : 0}%"></div>
-                <div class="breakdown-bar-fill output" style="width:\${totalEstimatedTokens > 0 ? Math.round((budgetBreakdown.outputReservation/totalEstimatedTokens)*100) : 0}%"></div>
-              </div>
-            </div>
-          </div>
-        \` : ''}
-
         \${(function() {
-          if (!costEstimate) return '';
-          var c = costEstimate;
-          var fmtUSD = function(v) {
-            if (v < 0.001) return '<$0.001';
-            if (v < 0.01) return '$' + v.toFixed(4);
-            if (v < 1) return '$' + v.toFixed(3);
-            return '$' + v.toFixed(2);
-          };
-          var html = '<div class="cost-section">';
-          html += '<div class="cost-header">';
-          html += '<span class="cost-title">\ud83d\udcb0 Cost Estimate</span>';
-          html += '<span class="cost-value">' + fmtUSD(c.totalCostUSD) + '/turn</span>';
-          html += '</div>';
-          html += '<div class="cost-grid">';
-          html += '<span class="cost-label">Input (~' + fmtTokens(c.inputTokens) + ')</span>';
-          html += '<span class="cost-amount">' + fmtUSD(c.inputCostUSD) + '</span>';
-          html += '<span class="cost-label">Output (~' + fmtTokens(c.outputTokensEstimate) + ' est)</span>';
-          html += '<span class="cost-amount">' + fmtUSD(c.outputCostUSD) + '</span>';
-          if (c.cachingSupported) {
-            html += '<div class="cost-divider"></div>';
-            html += '<span class="cost-label">Caching <span class="cache-badge' + (c.estimatedHitRatio > 0 ? ' active' : '') + '">' + c.cachingType + '</span></span>';
-            html += '<span class="cost-amount cost-savings">-' + c.savingsPercent.toFixed(0) + '%</span>';
-            html += '<span class="cost-label">Cacheable tokens</span>';
-            html += '<span class="cost-amount">~' + fmtTokens(c.cacheableTokens) + '</span>';
-            html += '<span class="cost-label">With caching</span>';
-            html += '<span class="cost-amount cost-savings">' + fmtUSD(c.cachedCostUSD + c.outputCostUSD) + '/turn</span>';
-            html += '<span class="cost-label">Savings/turn</span>';
-            html += '<span class="cost-amount cost-savings">' + fmtUSD(c.savingsPerTurnUSD) + '</span>';
-          }
-          html += '<div class="cost-divider"></div>';
-          html += '<span class="cost-label">10 turns</span>';
-          html += '<span class="cost-amount">' + fmtUSD(c.cost10Turns) + (c.cachingSupported ? ' \u2192 ' + fmtUSD(c.cachedCost10Turns) : '') + '</span>';
-          html += '<span class="cost-label">25 turns</span>';
-          html += '<span class="cost-amount">' + fmtUSD(c.cost25Turns) + (c.cachingSupported ? ' \u2192 ' + fmtUSD(c.cachedCost25Turns) : '') + '</span>';
-          html += '<span class="cost-label">Monthly (est)</span>';
-          html += '<span class="cost-amount">' + fmtUSD(c.monthlyCostUSD) + (c.cachingSupported ? ' \u2192 ' + fmtUSD(c.cachedMonthlyCostUSD) : '') + '</span>';
-          html += '</div></div>';
-          return html;
+          if (!budgetBreakdown) return '';
+          var total = totalEstimatedTokens || 1;
+          var filesPct = Math.round((budgetBreakdown.files / total) * 100);
+          var sysPct = Math.round(((budgetBreakdown.systemPrompt + budgetBreakdown.instructions) / total) * 100);
+          var convPct = Math.round((budgetBreakdown.conversation / total) * 100);
+          var outPct = Math.round((budgetBreakdown.outputReservation / total) * 100);
+          return '<div class="section">' +
+            '<div class="section-title">Budget Breakdown</div>' +
+            '<div class="breakdown-grid">' +
+            '<span class="breakdown-label">Files</span>' +
+            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.files) + '</span>' +
+            '<span class="breakdown-label">System</span>' +
+            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.systemPrompt) + '</span>' +
+            '<span class="breakdown-label">Instructions</span>' +
+            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.instructions) + '</span>' +
+            '<span class="breakdown-label">Conversation</span>' +
+            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.conversation) + '</span>' +
+            '<span class="breakdown-label">Output reserve</span>' +
+            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.outputReservation) + '</span>' +
+            '</div>' +
+            '<div class="breakdown-bar">' +
+            '<div style="display:flex;height:100%">' +
+            '<div class="breakdown-bar-fill files" style="width:' + filesPct + '%"></div>' +
+            '<div class="breakdown-bar-fill system" style="width:' + sysPct + '%"></div>' +
+            '<div class="breakdown-bar-fill conversation" style="width:' + convPct + '%"></div>' +
+            '<div class="breakdown-bar-fill output" style="width:' + outPct + '%"></div>' +
+            '</div>' +
+            '</div>' +
+            '</div>';
         })()}
 
         \${turnHistory && turnHistory.length > 0 ? \`
@@ -947,159 +701,51 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
             <ul class="tab-list">
               \${distractors.map(t => renderTab(t)).join('')}
             </ul>
-            <button class="action-btn" data-action="optimize">
+            <button class="action-btn" onclick="optimize()">
               Close \${distractors.length} Low-Relevance Tabs
             </button>
           </div>
         \` : ''}
 
-        <div id="opt-report"></div>
-
         <ul class="notes">
           \${healthReasons.map(r => '<li>' + r + '</li>').join('')}
         </ul>
 
-        \${chatTurnCount > 0 ? '<button class="action-btn secondary" data-action="resetTurns">Reset Turn Counter</button>' : ''}
+        \${chatTurnCount > 0 ? '<button class="action-btn secondary" onclick="resetTurns()">Reset Turn Counter</button>' : ''}
       \`;
     }
 
     function renderTab(t) {
-      const safeUri = encodeURIComponent(t.uri);
-      const pinAction = t.isPinned ? 'unpin' : 'pin';
-      const pinIcon = t.isPinned ? '\u{1F4CC}' : '\u{1F4CD}';
-      const pinTitle = t.isPinned ? 'Unpin' : 'Pin';
+      var safeUri = encodeURIComponent(t.uri);
+      var q = "&apos;";
+      var pinBtn = t.isPinned
+        ? '<button title="Unpin" onclick="event.stopPropagation(); unpin(' + q + safeUri + q + ')">\u{1F4CC}</button>'
+        : '<button title="Pin" onclick="event.stopPropagation(); pin(' + q + safeUri + q + ')">\u{1F4CD}</button>';
+      var closeBtn = !t.isActive
+        ? '<button title="Close" onclick="event.stopPropagation(); closeTab(' + q + safeUri + q + ')">✕</button>'
+        : '';
 
-      return \`
-        <li class="tab-item" data-action="openFile" data-uri="\${safeUri}">
-          <div class="tab-dot \${relClass(t.relevanceScore)}"></div>
-          <span class="tab-name \${t.isActive ? 'active' : ''}">\${t.label}\${t.isDirty ? ' •' : ''}</span>
-          <span class="tab-tokens">~\${fmtTokens(t.estimatedTokens)}</span>
-          <div class="tab-actions">
-            <button title="\${pinTitle}" data-action="\${pinAction}" data-uri="\${safeUri}">\${pinIcon}</button>
-            \${!t.isActive ? '<button title="Close" data-action="closeTab" data-uri="' + safeUri + '">✕</button>' : ''}
-          </div>
-        </li>
-      \`;
+      return '<li class="tab-item" ondblclick="openFile(' + q + safeUri + q + ')">' +
+        '<div class="tab-dot ' + relClass(t.relevanceScore) + '"></div>' +
+        '<span class="tab-name ' + (t.isActive ? 'active' : '') + '">' + t.label + (t.isDirty ? ' •' : '') + '</span>' +
+        '<span class="tab-tokens">~' + fmtTokens(t.estimatedTokens) + '</span>' +
+        '<div class="tab-actions">' + pinBtn + closeBtn + '</div>' +
+        '</li>';
     }
 
-    // Event delegation — handles all clicks via data-action attributes
-    // This works with CSP nonce-based script-src (inline onclick is blocked)
-    document.addEventListener('click', function(e) {
-      var target = e.target;
-      // Walk up to find the element with data-action
-      while (target && target !== document && !target.dataset.action) {
-        target = target.parentElement;
-      }
-      if (!target || !target.dataset.action) return;
-
-      var action = target.dataset.action;
-      var uri = target.dataset.uri ? decodeURIComponent(target.dataset.uri) : undefined;
-
-      switch (action) {
-        case 'pin':
-          e.stopPropagation();
-          vscode.postMessage({ command: 'pin', uri: uri });
-          break;
-        case 'unpin':
-          e.stopPropagation();
-          vscode.postMessage({ command: 'unpin', uri: uri });
-          break;
-        case 'closeTab':
-          e.stopPropagation();
-          vscode.postMessage({ command: 'closeTab', uri: uri });
-          break;
-        case 'optimize':
-          vscode.postMessage({ command: 'optimize' });
-          break;
-        case 'requestOptPlan':
-          vscode.postMessage({ command: 'requestOptPlan' });
-          break;
-        case 'resetTurns':
-          vscode.postMessage({ command: 'resetTurns' });
-          break;
-      }
-    });
-
-    // Double-click on tab items to open file
-    document.addEventListener('dblclick', function(e) {
-      var target = e.target;
-      while (target && target !== document && !target.dataset.action) {
-        target = target.parentElement;
-      }
-      if (target && target.dataset.action === 'openFile' && target.dataset.uri) {
-        vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(target.dataset.uri) });
-      }
-    });
-
-    // Model selector change
-    document.addEventListener('change', function(e) {
-      if (e.target && e.target.id === 'model-select') {
-        vscode.postMessage({ command: 'setModel', modelId: e.target.value });
-      }
-    });
-
-    function renderOptPlan(plan) {
-      var el = document.getElementById('opt-report');
-      if (!el) return;
-      if (!plan || plan.actions.length === 0) {
-        el.innerHTML = '<div class="opt-score clean"><div class="opt-score-header"><span class="opt-score-title">\uD83C\uDFAF Optimization</span><span class="opt-score-value great">100</span></div><div class="opt-verdict">\u2705 Context is well-optimized</div></div>';
-        return;
-      }
-
-      var scoreClass = plan.score >= 90 ? 'great' : plan.score >= 70 ? 'good' : plan.score >= 50 ? 'fair' : 'poor';
-      var html = '<div class="opt-score">';
-      html += '<div class="opt-score-header">';
-      html += '<span class="opt-score-title">\uD83C\uDFAF Optimization</span>';
-      html += '<span class="opt-score-value ' + scoreClass + '">' + plan.score + '</span>';
-      html += '</div>';
-      html += '<div class="opt-verdict">' + plan.verdict + '</div>';
-
-      if (plan.totalTokenSavings > 0 || plan.totalCostSavingsPerTurn > 0) {
-        html += '<div class="opt-savings">';
-        if (plan.totalTokenSavings > 0) {
-          html += '<span class="opt-saving-chip">\u2193 ' + fmtTokens(plan.totalTokenSavings) + ' tokens</span>';
-        }
-        if (plan.totalCostSavingsPerTurn > 0.0001) {
-          html += '<span class="opt-saving-chip">\u2193 $' + plan.totalCostSavingsPerTurn.toFixed(4) + '/turn</span>';
-        }
-        html += '</div>';
-      }
-
-      // Show top 5 actions
-      var top = plan.actions.slice(0, 5);
-      for (var i = 0; i < top.length; i++) {
-        var a = top[i];
-        var icon = a.priority === 'critical' ? '\uD83D\uDD34' : a.priority === 'high' ? '\uD83D\uDFE0' : a.priority === 'medium' ? '\uD83D\uDFE1' : '\uD83D\uDD35';
-        html += '<div class="opt-action">';
-        html += '<span class="opt-action-icon">' + icon + '</span>';
-        html += '<div class="opt-action-body">';
-        html += '<div class="opt-action-title">' + a.title + '</div>';
-        var descFirst = a.description.split('\n')[0];
-        if (descFirst.length > 80) descFirst = descFirst.slice(0, 77) + '...';
-        html += '<div class="opt-action-desc">' + descFirst + '</div>';
-        var savings = [];
-        if (a.tokenSavings > 0) savings.push('\u2193 ' + fmtTokens(a.tokenSavings));
-        if (a.costSavingsPerTurn > 0.0001) savings.push('\u2193 $' + a.costSavingsPerTurn.toFixed(4) + '/turn');
-        if (savings.length > 0) html += '<div class="opt-action-saving">' + savings.join(' \u00B7 ') + '</div>';
-        html += '</div></div>';
-      }
-      if (plan.actions.length > 5) {
-        html += '<div class="opt-action-desc" style="padding:4px 0">+ ' + (plan.actions.length - 5) + ' more \u2014 run @tokalator /optimize in chat</div>';
-      }
-      html += '</div>';
-      el.innerHTML = html;
-    }
+    function optimize() { vscode.postMessage({ command: 'optimize' }); }
+    function pin(uri) { vscode.postMessage({ command: 'pin', uri: decodeURIComponent(uri) }); }
+    function unpin(uri) { vscode.postMessage({ command: 'unpin', uri: decodeURIComponent(uri) }); }
+    function closeTab(uri) { vscode.postMessage({ command: 'closeTab', uri: decodeURIComponent(uri) }); }
+    function openFile(uri) { vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(uri) }); }
+    function resetTurns() { vscode.postMessage({ command: 'resetTurns' }); }
+    function setModel(modelId) { vscode.postMessage({ command: 'setModel', modelId }); }
 
     let lastSessionData = null;
     window.addEventListener('message', e => {
       if (e.data.type === 'snapshot') {
         if (e.data.lastSession) lastSessionData = e.data.lastSession;
         render(e.data.data, lastSessionData);
-        // Auto-request optimization plan after each snapshot
-        vscode.postMessage({ command: 'requestOptPlan' });
-      }
-      if (e.data.type === 'optPlan') {
-        renderOptPlan(e.data.data);
       }
     });
   </script>
