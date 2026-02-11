@@ -6,7 +6,7 @@ Tokalator helps developers understand and optimize their AI context window usage
 
 ## VS Code Extension
 
-The Tokalator extension (v3.1.0) runs inside VS Code and provides:
+The Tokalator extension (v3.1.1) runs inside VS Code and provides:
 
 - A sidebar dashboard showing token budget level (LOW/MEDIUM/HIGH), per-file breakdown, and relevance scores
 - A `@tokalator` chat participant with 11 commands for inline context management
