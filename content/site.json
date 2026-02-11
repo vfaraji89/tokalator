@@ -32,6 +32,54 @@
       ]
     },
     {
+      "section": "Tools",
+      "items": [
+        {
+          "href": "/tools",
+          "label": "Overview"
+        },
+        {
+          "href": "/tools/calculator",
+          "label": "Calculator"
+        },
+        {
+          "href": "/tools/economics",
+          "label": "Economics"
+        },
+        {
+          "href": "/tools/usage",
+          "label": "Usage",
+          "badge": "CSV"
+        }
+      ]
+    },
+    {
+      "section": "Catalog",
+      "collapsible": true,
+      "items": [
+        {
+          "href": "/catalog",
+          "label": "Browse All"
+        },
+        {
+          "href": "/agents",
+          "label": "Agents"
+        },
+        {
+          "href": "/prompts",
+          "label": "Prompts"
+        },
+        {
+          "href": "/instructions",
+          "label": "Instructions"
+        },
+        {
+          "href": "/collections",
+          "label": "Collections"
+        }
+      ]
+    },
+    {
       "section": "Extension",
       "items": [
         {
