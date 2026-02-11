@@ -70,6 +70,11 @@ const settings = [
     description: 'Override context window size in tokens. Leave at default to use the selected model\'s window.',
   },
   {
+    key: 'tokalator.contextRotWarningTurns',
+    default: '20',
+    description: 'Warn about context rot after this many chat turns',
+  },
+  {
     key: 'tokalator.autoRefreshInterval',
     default: '2000',
     description: 'Dashboard refresh interval in milliseconds',
