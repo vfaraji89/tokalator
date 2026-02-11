@@ -105,7 +105,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
         }
 
         case 'setModel': {
-          this.monitor.setModel(message.modelId);
+          await this.monitor.setModel(message.modelId);
           break;
         }
       }
@@ -533,6 +533,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     const app = document.getElementById('app');
 
     function fmtTokens(n) {
+      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
       if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
       return n.toString();
     }
@@ -590,7 +591,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
 
         <div class="model-selector">
           <label>Model</label>
-          <select onchange="setModel(this.value)">
+          <select data-action="setModel">
             \${modelOptions}
           </select>
         </div>
@@ -701,7 +702,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
             <ul class="tab-list">
               \${distractors.map(t => renderTab(t)).join('')}
             </ul>
-            <button class="action-btn" onclick="optimize()">
+            <button class="action-btn" data-action="optimize">
               Close \${distractors.length} Low-Relevance Tabs
             </button>
           </div>
@@ -711,21 +712,20 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           \${healthReasons.map(r => '<li>' + r + '</li>').join('')}
         </ul>
 
-        \${chatTurnCount > 0 ? '<button class="action-btn secondary" onclick="resetTurns()">Reset Turn Counter</button>' : ''}
+        \${chatTurnCount > 0 ? '<button class="action-btn secondary" data-action="resetTurns">Reset Turn Counter</button>' : ''}
       \`;
     }
 
     function renderTab(t) {
       var safeUri = encodeURIComponent(t.uri);
-      var q = "&apos;";
       var pinBtn = t.isPinned
-        ? '<button title="Unpin" onclick="event.stopPropagation(); unpin(' + q + safeUri + q + ')">\u{1F4CC}</button>'
-        : '<button title="Pin" onclick="event.stopPropagation(); pin(' + q + safeUri + q + ')">\u{1F4CD}</button>';
+        ? '<button title="Unpin" data-action="unpin" data-uri="' + safeUri + '">\u{1F4CC}</button>'
+        : '<button title="Pin" data-action="pin" data-uri="' + safeUri + '">\u{1F4CD}</button>';
       var closeBtn = !t.isActive
-        ? '<button title="Close" onclick="event.stopPropagation(); closeTab(' + q + safeUri + q + ')">✕</button>'
+        ? '<button title="Close" data-action="closeTab" data-uri="' + safeUri + '">✕</button>'
         : '';
 
-      return '<li class="tab-item" ondblclick="openFile(' + q + safeUri + q + ')">' +
+      return '<li class="tab-item" data-action="openFile" data-uri="' + safeUri + '">' +
         '<div class="tab-dot ' + relClass(t.relevanceScore) + '"></div>' +
         '<span class="tab-name ' + (t.isActive ? 'active' : '') + '">' + t.label + (t.isDirty ? ' •' : '') + '</span>' +
         '<span class="tab-tokens">~' + fmtTokens(t.estimatedTokens) + '</span>' +
@@ -733,13 +733,34 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
         '</li>';
     }
 
-    function optimize() { vscode.postMessage({ command: 'optimize' }); }
-    function pin(uri) { vscode.postMessage({ command: 'pin', uri: decodeURIComponent(uri) }); }
-    function unpin(uri) { vscode.postMessage({ command: 'unpin', uri: decodeURIComponent(uri) }); }
-    function closeTab(uri) { vscode.postMessage({ command: 'closeTab', uri: decodeURIComponent(uri) }); }
-    function openFile(uri) { vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(uri) }); }
-    function resetTurns() { vscode.postMessage({ command: 'resetTurns' }); }
-    function setModel(modelId) { vscode.postMessage({ command: 'setModel', modelId }); }
+    // ── Event delegation (CSP blocks inline onclick) ──
+    document.addEventListener('click', function(e) {
+      var el = e.target.closest('[data-action]');
+      if (!el) return;
+      var action = el.dataset.action;
+      var uri = el.dataset.uri ? decodeURIComponent(el.dataset.uri) : undefined;
+      switch (action) {
+        case 'pin':      vscode.postMessage({ command: 'pin', uri: uri }); break;
+        case 'unpin':    vscode.postMessage({ command: 'unpin', uri: uri }); break;
+        case 'closeTab': e.stopPropagation(); vscode.postMessage({ command: 'closeTab', uri: uri }); break;
+        case 'optimize': vscode.postMessage({ command: 'optimize' }); break;
+        case 'resetTurns': vscode.postMessage({ command: 'resetTurns' }); break;
+      }
+    });
+
+    document.addEventListener('dblclick', function(e) {
+      var el = e.target.closest('[data-action="openFile"]');
+      if (el && el.dataset.uri) {
+        vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(el.dataset.uri) });
+      }
+    });
+
+    document.addEventListener('change', function(e) {
+      var el = e.target.closest('[data-action="setModel"]');
+      if (el) {
+        vscode.postMessage({ command: 'setModel', modelId: el.value });
+      }
+    });
 
     let lastSessionData = null;
     window.addEventListener('message', e => {

@@ -89,7 +89,7 @@ export function ExtensionDocs() {
           Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.
         </p>
         <div className="flex gap-3 items-center">
-          <span className="eco-badge eco-badge-red">v3.1.0</span>
+          <span className="eco-badge eco-badge-red">v3.1.1</span>
           <span className="text-xs text-eco-gray-500">VS Code 1.99+</span>
         </div>
       </section>
