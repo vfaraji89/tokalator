@@ -28,6 +28,11 @@
           "href": "/learn",
           "label": "Learn",
           "badge": "New"
+        },
+        {
+          "href": "/events",
+          "label": "Events & Talks",
+          "badge": "New"
         }
       ]
     },
