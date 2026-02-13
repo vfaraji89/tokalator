@@ -1,0 +1,38 @@
+{
+  "events": [
+    {
+      "slug": "only-builders-club-ai-native-software-dev",
+      "title": "The Critical Balance: Prompt vs. Context Window",
+      "subtitle": "AI-Native Software Development — Only Builders Club",
+      "speaker": "Vahid Faraji",
+      "speakerRole": "Senior Applied AI Specialist @ Kariyer.net",
+      "date": "2026-02-13",
+      "location": "Istanbul",
+      "type": "talk",
+      "status": "upcoming",
+      "description": "Vahid breaks down the critical factors that determine the efficiency of AI assistants — context window vs. prompt distinction, token economics, cost management, and IDE planning with GitHub Copilot.",
+      "topics": [
+        "Context Window vs. Prompt — the difference and token economics",
+        "Limits, cost management, and IDE planning (GitHub Copilot example)",
+        "Spec preparation, refactoring workflows with Numpy/Pandas code examples"
+      ],
+      "takeaways": [
+        "Understand the distinction between prompt and context window",
+        "Learn token economy fundamentals for cost-efficient AI usage",
+        "Practical spec preparation techniques for AI-assisted development",
+        "Refactoring strategies using real Numpy/Pandas code"
+      ],
+      "slidesUrl": "https://docs.google.com/presentation/d/1vgO6EBuHKx5B5rLOw2eR42XnOFFmshSoXr4rFIwtpG4/edit?slide=id.p#slide=id.p",
+      "slidesPdfUrl": "https://docs.google.com/presentation/d/1vgO6EBuHKx5B5rLOw2eR42XnOFFmshSoXr4rFIwtpG4/export/pdf",
+      "tags": ["context-engineering", "token-economics", "github-copilot", "prompt-engineering", "refactoring"],
+      "series": "Only Builders Club — AI-Native Software Dev",
+      "part": 2,
+      "image": "/events/only-builders-club.png"
+    }
+  ],
+  "stats": {
+    "total": 1,
+    "upcoming": 1,
+    "past": 0
+  }
+}
