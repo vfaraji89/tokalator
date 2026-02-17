@@ -1,6 +1,6 @@
 # Tokalator
 
-A context engineering toolkit for AI coding. Website + VS Code extension + reusable prompts.
+A context engineering toolkit for AI coding. Website + VS Code extension + reusable prompts
 
 **Site**: [tokalator.wiki](https://tokalator.wiki)
 **Extension**: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator)
