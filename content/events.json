@@ -40,7 +40,7 @@
       "type": "talk",
       "status": "past",
       "description": "Live demos of VS Code 1.109's evolution into a unified agent UX. Covers multi-agent sessions across local, background, and cloud environments, Claude Agent compatibility, agent hooks, message steering and queueing, agent skills as slash commands, terminal sandboxing, and Copilot Memory.",
-      "eventUrl": "https://luma.com/f0gwuf3v",
+      "eventUrl": "https://luma.com/vscodecommunity",
       "topics": [
         "Unified agent UX — local, background, and cloud sessions",
         "Agent hooks and lifecycle customization",
