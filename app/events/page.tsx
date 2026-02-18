@@ -247,13 +247,23 @@ function EventCard({ event }: { event: EventItem }) {
 
       {/* Slides Links */}
       <div className="event-card-actions">
+        {event.eventUrl && (
+          <a
+            href={event.eventUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="event-action-btn"
+          >
+            <CalendarIcon />
+            Event Page
+          </a>
+        )}
         {event.slidesUrl && (
           <a
             href={event.slidesUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="event-action-btn"
-          >
+            className="event-action-btn">
             <SlidesIcon />
             View Slides
           </a>

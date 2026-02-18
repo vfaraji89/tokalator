@@ -9,7 +9,7 @@
       "date": "2026-02-13",
       "location": "Istanbul",
       "type": "talk",
-      "status": "upcoming",
+      "status": "past",
       "description": "Vahid breaks down the critical factors that determine the efficiency of AI assistants — context window vs. prompt distinction, token economics, cost management, and IDE planning with GitHub Copilot.",
       "topics": [
         "Context Window vs. Prompt — the difference and token economics",
@@ -38,8 +38,9 @@
       "date": "2026-02-19",
       "location": "Online",
       "type": "talk",
-      "status": "upcoming",
+      "status": "past",
       "description": "Live demos of VS Code 1.109's evolution into a unified agent UX. Covers multi-agent sessions across local, background, and cloud environments, Claude Agent compatibility, agent hooks, message steering and queueing, agent skills as slash commands, terminal sandboxing, and Copilot Memory.",
+      "eventUrl": "https://luma.com/f0gwuf3v",
       "topics": [
         "Unified agent UX — local, background, and cloud sessions",
         "Agent hooks and lifecycle customization",
@@ -67,7 +68,7 @@
   ],
   "stats": {
     "total": 2,
-    "upcoming": 2,
-    "past": 0
+    "upcoming": 0,
+    "past": 2
   }
 }
