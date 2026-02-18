@@ -31,6 +31,13 @@ const KIND_PATTERNS: [RegExp, ContentKind][] = [
   [/\.collection\.(yml|yaml)$/i, 'collection'],
 ];
 
+// Skills directories to scan (VS Code 1.109+ / Claude compatible)
+const SKILLS_DIRECTORIES = [
+  '.github/skills',
+  '.claude/skills',
+  '.copilot/skills',
+];
+
 let cachedCatalog: Catalog | null = null;
 
 function loadConfig(): CatalogConfig {
@@ -50,6 +57,8 @@ function detectKind(filename: string): ContentKind | null {
   }
   // CLAUDE.md files are instructions for Claude Code
   if (/^CLAUDE\.md$/i.test(filename)) return 'instruction';
+  // SKILL.md files are agent skills (VS Code 1.109+ / Claude compatible)
+  if (/^SKILL\.md$/i.test(filename)) return 'skill';
   return null;
 }
 
@@ -91,6 +100,8 @@ function walkDirectory(dir: string, extensions: string[]): string[] {
     } else if (extensions.some(ext => entry.name.endsWith(ext))) {
       results.push(fullPath);
     } else if (/^CLAUDE\.md$/i.test(entry.name)) {
+      results.push(fullPath);
+    } else if (/^SKILL\.md$/i.test(entry.name)) {
       results.push(fullPath);
     }
   }
@@ -175,7 +186,7 @@ function extractFirstParagraph(body: string): string {
 function computeStats(items: CatalogItem[]): CatalogStats {
   const stats: CatalogStats = {
     totalItems: items.length,
-    byKind: { agent: 0, prompt: 0, instruction: 0, collection: 0, tool: 0, repo: 0 },
+    byKind: { agent: 0, prompt: 0, instruction: 0, collection: 0, skill: 0, tool: 0, repo: 0 },
     byEcosystem: { copilot: 0, 'claude-code': 0, universal: 0 },
     bySource: { builtin: 0, 'awesome-copilot': 0, community: 0, user: 0 },
   };
@@ -242,6 +253,21 @@ export function scanCatalog(forceRefresh = false): Catalog {
     if (!seenIds.has(item.id)) {
       seenIds.add(item.id);
       items.push(item);
+    }
+  }
+
+  // Scan skills directories (VS Code 1.109+ / Claude compatible)
+  for (const skillsDir of SKILLS_DIRECTORIES) {
+    const fullSkillsDir = path.join(PROJECT_ROOT, skillsDir);
+    if (!fs.existsSync(fullSkillsDir)) continue;
+    const skillFiles = walkDirectory(fullSkillsDir, ['.md']);
+    for (const file of skillFiles) {
+      if (!/SKILL\.md$/i.test(path.basename(file))) continue;
+      const item = parseFile(file, 'user', undefined, config.featuredIds);
+      if (item && !seenIds.has(item.id)) {
+        seenIds.add(item.id);
+        items.push(item);
+      }
     }
   }
 

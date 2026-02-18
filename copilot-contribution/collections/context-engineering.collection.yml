@@ -31,6 +31,25 @@ items:
       - Let the agent search before you provide files
       - Review the context map before approving changes
 
+  - path: skills/context-engineering/SKILL.md
+    kind: skill
+    usage: |
+      recommended
+
+      The Context Engineering skill provides domain expertise for token budgeting,
+      context window management, caching optimization, and agent orchestration patterns.
+
+      Use this skill when:
+      - Planning multi-file changes that need context budgeting
+      - Optimizing prompts or instructions for token efficiency
+      - Designing agent workflows with subagents
+      - Diagnosing context rot in long sessions
+
+      Invoke via slash command:
+      ```
+      /context-engineering How should I structure my agent orchestration?
+      ```
+
   - path: prompts/context-map.prompt.md
     kind: prompt
     usage: |

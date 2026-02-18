@@ -28,11 +28,46 @@
       "series": "Only Builders Club — AI-Native Software Dev",
       "part": 2,
       "image": "/events/only-builders-club.png"
+    },
+    {
+      "slug": "vscode-agent-sessions-day-2026",
+      "title": "Agent Sessions Day",
+      "subtitle": "VS Code 1.109 — Multi-Agent Development in VS Code",
+      "speaker": "VS Code Team",
+      "speakerRole": "Microsoft",
+      "date": "2026-02-19",
+      "location": "Online",
+      "type": "talk",
+      "status": "upcoming",
+      "description": "Live demos of VS Code 1.109's evolution into a unified agent UX. Covers multi-agent sessions across local, background, and cloud environments, Claude Agent compatibility, agent hooks, message steering and queueing, agent skills as slash commands, terminal sandboxing, and Copilot Memory.",
+      "topics": [
+        "Unified agent UX — local, background, and cloud sessions",
+        "Agent hooks and lifecycle customization",
+        "Message steering and request queueing",
+        "Claude Agent SDK integration and Claude file compatibility",
+        "Agent Skills (GA) — reusable domain expertise as slash commands",
+        "Terminal sandboxing for agent security",
+        "Copilot Memory for cross-session context persistence",
+        "Agent orchestration with subagents and parallel execution"
+      ],
+      "takeaways": [
+        "Understand VS Code's multi-agent session management model",
+        "Learn how agent hooks enforce deterministic workflows",
+        "Explore context efficiency through subagent isolation",
+        "Discover how agent skills package domain expertise",
+        "See how terminal sandboxing improves agent security"
+      ],
+      "slidesUrl": null,
+      "slidesPdfUrl": null,
+      "tags": ["vscode", "agents", "context-engineering", "copilot", "multi-agent", "agent-skills", "claude-agent"],
+      "series": null,
+      "part": null,
+      "image": null
     }
   ],
   "stats": {
-    "total": 1,
-    "upcoming": 1,
+    "total": 2,
+    "upcoming": 2,
     "past": 0
   }
 }

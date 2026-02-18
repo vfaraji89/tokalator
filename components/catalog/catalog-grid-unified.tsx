@@ -39,7 +39,7 @@ export function CatalogGridUnified({ items, stats }: Props) {
     });
   }, [items, search, kindFilter, ecosystemFilter, sourceFilter]);
 
-  const kinds: KindFilter[] = ['all', 'agent', 'prompt', 'instruction', 'collection'];
+  const kinds: KindFilter[] = ['all', 'agent', 'prompt', 'instruction', 'skill', 'collection'];
 
   return (
     <article className="article">
