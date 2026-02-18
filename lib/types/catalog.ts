@@ -1,6 +1,6 @@
 // Core types for the Tokalator context engineering catalog
 
-export type ContentKind = 'agent' | 'prompt' | 'instruction' | 'collection' | 'tool' | 'repo';
+export type ContentKind = 'agent' | 'prompt' | 'instruction' | 'collection' | 'skill' | 'tool' | 'repo';
 
 export type Ecosystem = 'copilot' | 'claude-code' | 'universal';
 
