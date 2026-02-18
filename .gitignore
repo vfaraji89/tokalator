@@ -51,3 +51,6 @@ next-env.d.ts
 !/user-content/collections/.gitkeep
 !/user-content/claude-code/.gitkeep
 __pycache__/
+
+# spec-kit (agent credentials/tokens)
+.github/
