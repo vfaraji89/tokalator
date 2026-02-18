@@ -185,6 +185,42 @@
       "definition": "Research suggests that models often perform better on shuffled or unstructured context than on logically structured haystacks, impacting how they process long files.",
       "category": "context-management",
       "tags": ["context", "structure", "research"]
+    },
+    {
+      "term": "Agent Skills",
+      "definition": "Reusable packages of domain expertise defined in SKILL.md files that provide specialized AI agent capabilities. Introduced as GA in VS Code 1.109, skills can be invoked as slash commands or loaded automatically by the model. Skills are stored in .github/skills, .claude/skills, or ~/.copilot/skills directories.",
+      "category": "architecture",
+      "tags": ["skills", "agents", "vscode", "customization"]
+    },
+    {
+      "term": "Agent Hooks",
+      "definition": "Deterministic shell commands that execute at key lifecycle points during agent sessions. Unlike instructions, hooks run code with guaranteed outcomes for security policies, quality checks, or audit trails. Supports PreToolUse, PostToolUse, SessionStart, SessionStop, SubagentStart, and SubagentStop events.",
+      "category": "architecture",
+      "tags": ["hooks", "agents", "lifecycle", "deterministic"]
+    },
+    {
+      "term": "Agent Orchestration",
+      "definition": "A multi-agent pattern where specialized subagents collaborate on complex tasks, each operating in its own dedicated context window. Provides context efficiency, specialization with different models, and parallel execution of independent subtasks.",
+      "category": "architecture",
+      "tags": ["orchestration", "multi-agent", "subagent", "parallel"]
+    },
+    {
+      "term": "Message Steering",
+      "definition": "An agent interaction pattern where follow-up messages redirect a running agent request. The agent yields after the active tool execution and processes the new message. Alternatives include request queueing (wait and send after completion) and stop-and-send (cancel and send immediately).",
+      "category": "context-management",
+      "tags": ["agents", "steering", "queueing", "interaction"]
+    },
+    {
+      "term": "Terminal Sandboxing",
+      "definition": "A security mechanism restricting file system and network access for agent-executed terminal commands. Sandboxed commands have read/write access only to the workspace directory, and network access can be limited to trusted domains only.",
+      "category": "architecture",
+      "tags": ["security", "sandbox", "terminal", "agents"]
+    },
+    {
+      "term": "Thinking Tokens",
+      "definition": "Tokens generated during a model's internal reasoning process before producing a visible response. Thinking tokens consume context budget but improve quality on complex tasks. Anthropic models support interleaved thinking between tool calls with configurable budgets.",
+      "category": "token-economics",
+      "tags": ["thinking", "reasoning", "tokens", "budget"]
     }
   ]
 }

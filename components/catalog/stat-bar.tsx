@@ -10,11 +10,12 @@ export function StatBar({ stats }: StatBarProps) {
     { label: 'Agents', value: stats.byKind.agent },
     { label: 'Prompts', value: stats.byKind.prompt },
     { label: 'Instructions', value: stats.byKind.instruction },
+    { label: 'Skills', value: stats.byKind.skill },
     { label: 'Collections', value: stats.byKind.collection },
   ];
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
       {statItems.map((item) => (
         <div key={item.label} className="stat-card">
           <span className="stat-label">{item.label}</span>
