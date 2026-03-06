@@ -28,11 +28,80 @@
       "series": "Only Builders Club — AI-Native Software Dev",
       "part": 2,
       "image": "/events/only-builders-club.png"
+    },
+    {
+      "slug": "saas-bridge-ai-native-software-dev",
+      "title": "AI-Native Software Development with Context Engineering",
+      "subtitle": "Context Budget Visibility & Token Economics — SaaS Bridge",
+      "speaker": "Vahid Faraji",
+      "speakerRole": "Senior Applied AI Specialist @ Kariyer.net",
+      "date": "2026-03-04",
+      "location": "Istanbul",
+      "type": "talk",
+      "status": "past",
+      "description": "Introduced Tokalator to SaaS developers — covering real-time token budget monitoring, tab relevance scoring, caching break-even economics, and the MCP server for Claude Code. Feedback session revealed demand for a standalone CLI and improved turn-count visibility.",
+      "topics": [
+        "Real-time context budget monitoring inside VS Code",
+        "Tab relevance scoring — closing distractors automatically",
+        "Caching break-even analysis and conversation cost strategies",
+        "MCP server and CLI for Claude Code integration"
+      ],
+      "takeaways": [
+        "Understand which files silently consume your token budget",
+        "Use /optimize to remove distractor tabs and reclaim context",
+        "Calculate when prompt caching pays off (break-even at n*=2 turns)",
+        "Integrate Tokalator token counts into any MCP-capable agent"
+      ],
+      "feedback": [
+        "Requests for a standalone CLI for non-VS Code workflows (addressed by tokalator-mcp)",
+        "Improved turn-count visibility to show remaining turns within current budget",
+        "Minor UI bugs: tab count refresh delay on first load, edge case in relevance display"
+      ],
+      "attendees": 90,
+      "tags": ["context-engineering", "token-economics", "mcp", "cli", "saas"],
+      "series": "SaaS Bridge — AI-Native Software Dev",
+      "part": 1,
+      "image": "/events/saas-bridge.png"
+    },
+    {
+      "slug": "techcareer-ai-native-software-dev",
+      "title": "Context Engineering for AI-Native Development",
+      "subtitle": "Token Budgets, Relevance Scoring & Developer Feedback — TechCareer Community",
+      "speaker": "Vahid Faraji",
+      "speakerRole": "Senior Applied AI Specialist @ Kariyer.net",
+      "date": "2026-03-05",
+      "location": "Istanbul",
+      "type": "community-talk",
+      "status": "past",
+      "description": "Community session at TechCareer introducing Tokalator's context engineering approach to a broad developer audience. Covered token budget decomposition, the five-signal relevance scorer, and live demos of the VS Code extension and web calculators. Rich Q&A produced actionable feedback on CLI needs, turn tracking, and minor bugs.",
+      "topics": [
+        "Context window vs. prompt — sources of invisible token consumption",
+        "Five-signal tab relevance scorer — how it ranks open files",
+        "Live demo: VS Code extension, /breakdown, /optimize commands",
+        "Web platform calculators — caching ROI, conversation cost, Cobb-Douglas optimizer"
+      ],
+      "takeaways": [
+        "Instruction files and config tabs are the largest hidden budget consumers",
+        "Context rot is measurable and addressable with the right tooling",
+        "Turn-based cost grows quadratically — conversation strategy selection matters",
+        "Open-source toolkit available at tokalator.wiki"
+      ],
+      "feedback": [
+        "Strong interest in a standalone CLI for terminal-first workflows",
+        "Request for per-turn remaining-budget indicator inside the IDE",
+        "Several minor bugs reported: occasional stale token count in dashboard, edge case in multi-root workspace detection"
+      ],
+      "attendees": 80,
+      "tags": ["context-engineering", "community", "token-budget", "cli", "turn-tracking", "techcareer"],
+      "series": "TechCareer Community — AI-Native Dev",
+      "part": 1,
+      "community": true,
+      "image": "/events/techcareer.png"
     }
   ],
   "stats": {
-    "total": 1,
+    "total": 3,
     "upcoming": 0,
-    "past": 1
+    "past": 3
   }
 }

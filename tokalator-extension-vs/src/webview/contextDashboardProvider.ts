@@ -606,7 +606,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
           var perTurn = 800;
           var nextInput = totalEstimatedTokens + perTurn;
           var nextPct = Math.min((nextInput / windowCapacity) * 100, 100).toFixed(1);
-          var remaining = Math.max(windowCapacity - nextInput, 0);
+          var outputReserve = (budgetBreakdown && budgetBreakdown.outputReservation) ? budgetBreakdown.outputReservation : 4000;
+          var remaining = Math.max(windowCapacity - nextInput - outputReserve, 0);
           var turnsLeft = Math.floor(remaining / perTurn);
           var warn = nextPct >= 90 ? 'High risk of overflow on next turn' : nextPct >= 75 ? 'Approaching context limit' : '';
           return '<div class="preview-box">' +

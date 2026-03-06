@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
 import { ContextSnapshot, TabInfo } from '../core/types';
+import { findModel } from '../core/modelProfiles';
 
 /**
  * Chat participant `@tokalator` for Tokalator.
@@ -601,7 +602,6 @@ export class ContextChatParticipant implements vscode.Disposable {
     }
 
     // Try to find matching model
-    const { findModel } = require('../core/modelProfiles');
     const match = findModel(query);
 
     if (!match) {

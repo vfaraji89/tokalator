@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "tokalator": {
+      "command": "node",
+      "args": ["tokalator-mcp/build/index.js"]
+    }
+  }
+}
