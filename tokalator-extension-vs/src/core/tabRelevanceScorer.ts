@@ -169,8 +169,10 @@ export class TabRelevanceScorer {
    * Files in the same directory score highest, nearby directories score lower.
    */
   private computePathSimilarity(pathA: string, pathB: string): number {
-    const dirA = pathA.split('/').slice(0, -1); // Remove filename
-    const dirB = pathB.split('/').slice(0, -1);
+    const normA = pathA.replace(/\\/g, '/');
+    const normB = pathB.replace(/\\/g, '/');
+    const dirA = normA.split('/').slice(0, -1); // Remove filename
+    const dirB = normB.split('/').slice(0, -1);
 
     if (dirA.length === 0 || dirB.length === 0) { return 0; }
 
