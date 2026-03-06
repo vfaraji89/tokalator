@@ -2,7 +2,7 @@ import Link from "next/link";
 import eventsData from "../../../content/events.json";
 import type { Metadata } from "next";
 
-type EventItem = (typeof eventsData.events)[number];
+type EventItem = (typeof eventsData.events)[number] & { eventUrl?: string };
 
 export function generateStaticParams() {
   return eventsData.events.map((e) => ({ slug: e.slug }));

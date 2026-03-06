@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import eventsData from "../../content/events.json";
 
-type EventItem = (typeof eventsData.events)[number];
+type EventItem = (typeof eventsData.events)[number] & { eventUrl?: string };
 
 const STATUS_FILTERS = [
   { id: "all", label: "All" },
