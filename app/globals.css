@@ -1691,6 +1691,16 @@ html, body {
   color: var(--accent);
 }
 
+.feature-badge--mcp {
+  background: rgba(99, 102, 241, 0.10);
+  color: #6366f1;
+}
+
+.feature-badge--cli {
+  background: rgba(20, 184, 166, 0.10);
+  color: #14b8a6;
+}
+
 .feature-badge--web {
   background: var(--accent-bg);
   color: var(--accent);

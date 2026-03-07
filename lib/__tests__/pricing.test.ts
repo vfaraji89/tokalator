@@ -8,9 +8,7 @@ import {
   calculateServiceCost,
   calculateCost,
   calculateQuality,
-  calculateQualityMetrics,
   calculateMinCostForQuality,
-  calculateCachingThreshold,
   projectCosts,
   formatCost,
   formatTokens,
@@ -220,7 +218,7 @@ describe('calculateQuality', () => {
   });
 
   it('α + β + γ < 1 for all models (diminishing returns)', () => {
-    for (const [name, p] of Object.entries(MODEL_PARAMS)) {
+    for (const [, p] of Object.entries(MODEL_PARAMS)) {
       expect(p.alphaParam + p.betaParam + p.gammaParam).toBeLessThan(1);
     }
   });
@@ -315,14 +313,14 @@ describe('formatTokens', () => {
 
 describe('MODEL_LIMITS', () => {
   it('all models have context window > 0', () => {
-    for (const [name, limits] of Object.entries(MODEL_LIMITS)) {
+    for (const [, limits] of Object.entries(MODEL_LIMITS)) {
       expect(limits.contextWindow).toBeGreaterThan(0);
       expect(limits.maxOutput).toBeGreaterThan(0);
     }
   });
 
   it('maxOutput < contextWindow for all models', () => {
-    for (const [name, limits] of Object.entries(MODEL_LIMITS)) {
+    for (const [, limits] of Object.entries(MODEL_LIMITS)) {
       expect(limits.maxOutput).toBeLessThan(limits.contextWindow);
     }
   });
@@ -330,7 +328,7 @@ describe('MODEL_LIMITS', () => {
 
 describe('ANTHROPIC_PRICING', () => {
   it('cache read cost < input cost for all models', () => {
-    for (const [name, pricing] of Object.entries(ANTHROPIC_PRICING)) {
+    for (const [, pricing] of Object.entries(ANTHROPIC_PRICING)) {
       expect(pricing.standard.cacheReadCostPerMTok).toBeLessThan(
         pricing.standard.inputCostPerMTok
       );
@@ -338,7 +336,7 @@ describe('ANTHROPIC_PRICING', () => {
   });
 
   it('cache write cost > input cost for all models (write premium)', () => {
-    for (const [name, pricing] of Object.entries(ANTHROPIC_PRICING)) {
+    for (const [, pricing] of Object.entries(ANTHROPIC_PRICING)) {
       expect(pricing.standard.cacheWriteCostPerMTok).toBeGreaterThan(
         pricing.standard.inputCostPerMTok
       );
