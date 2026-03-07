@@ -39,11 +39,14 @@ export class ContextChatParticipant implements vscode.Disposable {
     _token: vscode.CancellationToken,
   ): Promise<vscode.ChatResult> {
 
+    // Auto-sync Tokalator's model to match the active Copilot model
+    await this.syncModelFromRequest(request);
+
     // Only count turns for commands that modify state (optimize, pin, unpin)
     // Read-only commands (count, breakdown) don't contribute to context rot
     const isModifyingCommand = request.command === 'optimize' || request.command === 'pin' || request.command === 'unpin';
     if (isModifyingCommand) {
-      this.monitor.incrementChatTurns();
+      await this.monitor.incrementChatTurns();
     }
 
     switch (request.command) {
@@ -715,6 +718,24 @@ export class ContextChatParticipant implements vscode.Disposable {
       }
     }
     return unique;
+  }
+
+  /**
+   * Auto-detect the model from the Copilot chat request and sync Tokalator to it.
+   * Tries to match by family → id → name so switching models in the Copilot UI
+   * automatically updates context window and tokenizer without any manual step.
+   */
+  private async syncModelFromRequest(request: vscode.ChatRequest): Promise<void> {
+    const lm = request.model;
+    if (!lm) { return; }
+
+    const current = this.monitor.getActiveModel();
+    // Try family first (most stable identifier), then full id, then display name
+    const match = findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name);
+
+    if (match && match.id !== current.id) {
+      await this.monitor.setModel(match.id);
+    }
   }
 
   dispose(): void {
