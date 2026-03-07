@@ -3472,6 +3472,191 @@ kbd {
   }
 }
 
+/* ── CLI Terminal Showcase ──────────────────── */
+.cli-terminal {
+  background: #0a0a0a;
+  border-radius: 10px;
+  overflow: hidden;
+  font-family: var(--font-mono);
+  /* subtle red glow — brand colour bleeds into the shadow */
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.5),
+    0 0 0 1px #2a0808,
+    0 0 40px rgba(227, 18, 11, 0.07);
+  max-width: 640px;
+}
+
+.cli-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  background: #161616;
+  border-bottom: 1px solid #1f1f1f;
+}
+
+.cli-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+}
+
+.cli-bar-title {
+  margin-left: 8px;
+  font-size: 0.6875rem;
+  color: #555;
+  flex: 1;
+  text-align: center;
+}
+
+.cli-body {
+  padding: 14px 18px 16px;
+}
+
+.cli-shell-line {
+  font-size: 0.75rem;
+  color: #555;
+  margin-bottom: 14px;
+}
+
+.cli-shell-user { color: #888; }
+.cli-shell-sep  { color: #666; }
+.cli-shell-cmd  { color: #aaa; }
+
+.cli-welcome {
+  color: #888;
+  font-size: 0.6875rem;
+  margin: 0 0 10px;
+}
+
+.cli-logo-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 18px;
+}
+
+.cli-logo-col {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.cli-logo {
+  color: #e3120b;
+  font-size: 8px;
+  line-height: 1.3;
+  margin: 0;
+  padding: 0;
+  background: none;
+  border-radius: 0;
+  white-space: pre;
+  overflow: hidden;
+}
+
+.cli-version-tag {
+  color: #e3120b;
+  opacity: 0.55;
+  font-size: 0.5625rem;
+  text-align: center;
+  margin-top: 8px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.cli-status-bar {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.625rem;
+  color: #444;
+  margin-top: 14px;
+  padding-top: 8px;
+  border-top: 1px solid #1a1a1a;
+}
+
+.cli-status-model         { color: #777; }
+.cli-status-model--red    { color: #e3120b; }
+
+.cli-prompt-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.6875rem;
+  margin-top: 8px;
+}
+
+.cli-prompt-caret { color: #555; }
+
+.cli-cursor {
+  color: #e3120b;
+  animation: cli-blink 1.2s step-end infinite;
+  font-size: 0.625rem;
+}
+
+.cli-prompt-hint { color: #555; }
+
+.cli-hint-row {
+  font-size: 0.5625rem;
+  color: #3a3a3a;
+  margin-top: 5px;
+}
+
+.cli-hint-row kbd {
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  color: #666;
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+@keyframes cli-blink {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+}
+
+/* ── Abacus bead slide animations ────────────
+   Top beads travel ±19px along the rod (active y=28 ↔ inactive y=9).
+   Bottom beads travel ±12px (active y=50 ↔ inactive y=62).
+   Each bead has a staggered delay so they don't all move at once.
+────────────────────────────────────────────── */
+@keyframes abacus-up {
+  /* Active bead slides up to inactive position then returns */
+  0%, 8%    { transform: translateY(0); }
+  18%, 48%  { transform: translateY(-19px); }
+  58%, 100% { transform: translateY(0); }
+}
+
+@keyframes abacus-down {
+  /* Inactive bead slides down to active position then returns */
+  0%, 8%    { transform: translateY(0); }
+  18%, 48%  { transform: translateY(19px); }
+  58%, 100% { transform: translateY(0); }
+}
+
+@keyframes abacus-down-sm {
+  /* Bottom active bead slides down to inactive position */
+  0%, 8%    { transform: translateY(0); }
+  18%, 48%  { transform: translateY(12px); }
+  58%, 100% { transform: translateY(0); }
+}
+
+@keyframes abacus-up-sm {
+  /* Bottom inactive bead slides up to active position */
+  0%, 8%    { transform: translateY(0); }
+  18%, 48%  { transform: translateY(-12px); }
+  58%, 100% { transform: translateY(0); }
+}
+
+/* Staggered delays create a cascading click-click-click feel */
+.abacus-bead-t1 { animation: abacus-up      5s ease-in-out infinite 0s;    }
+.abacus-bead-t2 { animation: abacus-down    5s ease-in-out infinite 0.12s; }
+.abacus-bead-t3 { animation: abacus-up      5s ease-in-out infinite 2.1s;  }
+.abacus-bead-b1 { animation: abacus-down-sm 5s ease-in-out infinite 1.2s;  }
+.abacus-bead-b2 { animation: abacus-up-sm   5s ease-in-out infinite 1.32s; }
+.abacus-bead-b3 { animation: abacus-down-sm 5s ease-in-out infinite 3.4s;  }
+
 /* Tablet responsive */
 @media (max-width: 768px) {
   .hero-headline {

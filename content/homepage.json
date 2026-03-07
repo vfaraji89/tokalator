@@ -4,7 +4,7 @@
     "headline": "Count your tokens.\nLike beads on an abacus.",
     "markerLine": "Count your tokens.",
     "highlightPhrase": "Every token counts",
-    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. A VS Code extension that makes the invisible visible.",
+    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. A VS Code extension, MCP server, and CLI that makes the invisible visible.",
     "installCmd": "ext install tokalator",
     "primaryCta": {
       "label": "Install Extension",
@@ -42,6 +42,10 @@
         {
           "label": "Scoring",
           "value": "Relevance from 0 to 1 based on imports, language, path similarity, recency, and diagnostics"
+        },
+        {
+          "label": "MCP & CLI",
+          "value": "count_tokens, estimate_budget, preview_turn, list_models — works in Claude Code via stdio MCP or as a standalone terminal CLI"
         }
       ]
     }
@@ -96,6 +100,24 @@
       }
     ]
   },
+  "shipped": {
+    "title": "Recently Shipped",
+    "subtitle": "What landed in v3.1.1.",
+    "items": [
+      {
+        "name": "MCP Server for Claude Code",
+        "description": "Real Claude BPE token counting inside Claude Code — count_tokens, estimate_budget, preview_turn, list_models via stdio MCP transport. Zero API calls.",
+        "badge": "New",
+        "number": 1
+      },
+      {
+        "name": "CLI — tokalator count / budget / preview / models",
+        "description": "Standalone terminal tool for SSH sessions, containers, and non-VS Code workflows. Install globally with npm.",
+        "badge": "New",
+        "number": 2
+      }
+    ]
+  },
   "comingSoon": {
     "title": "Coming Soon",
     "subtitle": "Next on the roadmap.",
@@ -111,6 +133,18 @@
         "description": "Full Tokalator experience inside Cursor. Same dashboard, scoring, and chat commands — native to your workflow.",
         "badge": "Extension",
         "number": 2
+      },
+      {
+        "name": "Per-Turn Budget Indicator",
+        "description": "Live IDE status-bar widget showing estimated turns remaining before the conversation exhausts the context budget — the top community-requested feature.",
+        "badge": "Feedback",
+        "number": 3
+      },
+      {
+        "name": "Secret Scanner (/secrets)",
+        "description": "Detect and warn when API keys, tokens, or credentials appear in open tabs before they silently enter your AI context.",
+        "badge": "Security",
+        "number": 4
       }
     ]
   }

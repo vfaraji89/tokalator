@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import ext from "../../content/extension.json";
+import { CliTerminal } from "../../components/cli-terminal";
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -109,6 +110,33 @@ export default function ExtensionPage() {
         </div>
       </section>
 
+      {/* Marketplace Stats */}
+      <section className="why-section" style={{ marginTop: "1rem" }}>
+        <div className="why-stats why-stats--4col">
+          <div className="why-stat-card">
+            <span className="why-stat-number" style={{ color: "var(--accent)" }}>
+              {ext.stats.marketplaceAcquisitions}
+            </span>
+            <span className="why-stat-label">Total acquisitions</span>
+          </div>
+          <div className="why-stat-card">
+            <span className="why-stat-number">{ext.stats.marketplaceInstalls}</span>
+            <span className="why-stat-label">Public installs</span>
+          </div>
+          <div className="why-stat-card">
+            <span className="why-stat-number">{ext.stats.communityDevelopers}</span>
+            <span className="why-stat-label">Community devs</span>
+          </div>
+          <div className="why-stat-card">
+            <span className="why-stat-number">{ext.stats.communitySessions}</span>
+            <span className="why-stat-label">Live sessions</span>
+          </div>
+        </div>
+        <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
+          {ext.stats.period} · Acquisitions from publisher dashboard, public installs from Marketplace listing
+        </p>
+      </section>
+
       {/* Features */}
       <section>
         <div className="section-divider" />
@@ -159,11 +187,22 @@ export default function ExtensionPage() {
         </table>
       </section>
 
+      {/* MCP & CLI */}
+      <section id="mcp">
+        <div className="section-divider" />
+        <h2 className="section-header">MCP Server &amp; CLI</h2>
+        <p style={{ marginBottom: "1.5rem" }}>
+          Real Claude BPE token counting inside Claude Code via stdio MCP transport,
+          plus a standalone terminal CLI for SSH sessions, containers, and non-VS Code workflows.
+        </p>
+        <CliTerminal />
+      </section>
+
       {/* Architecture */}
       <section>
         <div className="section-divider" />
         <h2 className="section-header">Architecture</h2>
-        <p>Four layers inside the extension:</p>
+        <p>{ext.architecture.length} layers inside the extension:</p>
         <div className="arch-grid">
           {ext.architecture.map((a) => (
             <div key={a.layer} className="arch-card">
@@ -252,6 +291,50 @@ export default function ExtensionPage() {
             <pre style={{ marginTop: "0.75rem" }}>
               {ext.installMethods.source.command}
             </pre>
+          </div>
+
+          {/* CLI */}
+          <div className="install-method-card">
+            <h3>
+              {ext.installMethods.cli.icon}{" "}
+              {ext.installMethods.cli.title}
+            </h3>
+            <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
+              {ext.installMethods.cli.note}
+            </p>
+            <ol style={{ margin: "0.75rem 0 0", paddingLeft: "1.25rem" }}>
+              {ext.installMethods.cli.steps.map((step, i) => (
+                <li key={i} style={{ fontSize: "0.8125rem", margin: "0.25rem 0", color: "var(--text-secondary)" }}>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
+              <code>{ext.installMethods.cli.command.split("\n")[0]}</code>
+              <CopyButton text={ext.installMethods.cli.command.split("\n")[0]} />
+            </div>
+          </div>
+
+          {/* MCP */}
+          <div className="install-method-card">
+            <h3>
+              {ext.installMethods.mcp.icon}{" "}
+              {ext.installMethods.mcp.title}
+            </h3>
+            <p style={{ marginTop: "0.5rem", fontSize: "0.75rem" }}>
+              {ext.installMethods.mcp.note}
+            </p>
+            <ol style={{ margin: "0.75rem 0 0", paddingLeft: "1.25rem" }}>
+              {ext.installMethods.mcp.steps.map((step, i) => (
+                <li key={i} style={{ fontSize: "0.8125rem", margin: "0.25rem 0", color: "var(--text-secondary)" }}>
+                  {step}
+                </li>
+              ))}
+            </ol>
+            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
+              <code>{ext.installMethods.mcp.command}</code>
+              <CopyButton text={ext.installMethods.mcp.command} />
+            </div>
           </div>
         </div>
       </section>

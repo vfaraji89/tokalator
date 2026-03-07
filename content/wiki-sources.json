@@ -221,6 +221,18 @@
       "definition": "Tokens generated during a model's internal reasoning process before producing a visible response. Thinking tokens consume context budget but improve quality on complex tasks. Anthropic models support interleaved thinking between tool calls with configurable budgets.",
       "category": "token-economics",
       "tags": ["thinking", "reasoning", "tokens", "budget"]
+    },
+    {
+      "term": "MCP Server (Model Context Protocol)",
+      "definition": "A local stdio process that exposes tools to Claude Code and other MCP-capable agents. Tokalator's MCP server (tokalator-mcp) provides four tools: count_tokens, estimate_budget, preview_turn, and list_models — enabling real Claude BPE token counting with zero API calls.",
+      "category": "architecture",
+      "tags": ["mcp", "claude-code", "tools", "stdio", "agents"]
+    },
+    {
+      "term": "CLI Token Counter",
+      "definition": "A standalone command-line tool for counting tokens and checking context budgets outside of VS Code. Tokalator ships a CLI binary (tokalator count, budget, preview, models) for SSH sessions, CI pipelines, containers, and terminal-first workflows — the most frequently requested feature from community sessions.",
+      "category": "token-optimization",
+      "tags": ["cli", "terminal", "tokens", "budget", "offline"]
     }
   ]
 }
