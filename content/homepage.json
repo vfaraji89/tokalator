@@ -102,7 +102,7 @@
   },
   "shipped": {
     "title": "Recently Shipped",
-    "subtitle": "What landed in v3.1.1.",
+    "subtitle": "What landed in v3.1.2.",
     "items": [
       {
         "name": "MCP Server for Claude Code",
