@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import siteContent from "../content/site.json";
 
 type NavItem = { href: string; label: string; badge?: string };
@@ -91,9 +91,10 @@ export function SideNav() {
   }, [pathname]);
 
   // Close mobile menu on route change
+  const closeMobileMenu = useCallback(() => setMenuOpen(false), []);
   useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
+    closeMobileMenu();
+  }, [pathname, closeMobileMenu]);
 
   const toggleSection = (section: string) => {
     setCollapsed((prev) => ({ ...prev, [section]: !prev[section] }));

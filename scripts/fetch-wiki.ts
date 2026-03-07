@@ -58,6 +58,7 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max).replace(/\s\S*$/, "") + "...";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function extractText(html: string, tag: string): string {
   const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "gi");
   const matches: string[] = [];

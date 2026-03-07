@@ -61,7 +61,7 @@
     {
       "icon": "◈",
       "name": "Instruction File Scanner",
-      "description": "Finds all instruction files in your workspace (.instructions.md, .prompt.md, AGENTS.md, .cursorrules) and counts their real token cost.",
+      "description": "Detects and tokenizes instruction files silently injected into every prompt: .github/copilot-instructions.md, CLAUDE.md, AGENTS.md, .cursorrules, and .instructions.md. Reveals hidden per-file token cost.",
       "command": "@tokalator /instructions",
       "number": 8
     },
@@ -102,7 +102,16 @@
     "period": "First 30 days (Feb 4 – Mar 6, 2026)",
     "communityDevelopers": 220,
     "communitySessions": 3,
-    "communitySessionNames": ["iLab / Kariyer.net", "SaaS Bridge", "TechCareer"]
+    "communitySessionNames": ["iLab / Kariyer.net", "SaaS Bridge", "TechCareer"],
+    "communitySessionDetails": [
+      { "name": "iLab / Kariyer.net", "attendees": 50, "note": "Internal deployment — engineers used the extension for one week" },
+      { "name": "SaaS Bridge", "attendees": 90, "note": "Istanbul, March 4 2026" },
+      { "name": "TechCareer", "attendees": 80, "note": "Istanbul, March 5 2026" }
+    ],
+    "unitTests": 124,
+    "testFiles": 6,
+    "contextReductionMin": 20,
+    "contextReductionMax": 30
   },
   "settings": [
     {
@@ -134,28 +143,33 @@
   "architecture": [
     {
       "layer": "Core Engine",
-      "purpose": "Subscribes to editor events, builds context snapshots, manages pinned files and model selection",
+      "purpose": "Subscribes to VS Code editor events (active editor, tab open/close, document edits, diagnostics). Builds ContextSnapshot records, manages pinned files and model selection via workspaceState. All handlers debounced 300 ms.",
       "number": 1
     },
     {
       "layer": "Tokenizer Service",
-      "purpose": "Real BPE tokenizers — Claude BPE for Anthropic, o200k_base for OpenAI, heuristic fallback for Gemini",
+      "purpose": "Provider-specific BPE tokenizers — claude-tokenizer for Anthropic, o200k_base (js-tiktoken) for OpenAI, heuristic (~4 chars/token) for Gemini. Lazy-loaded and cached per document URI + version.",
       "number": 2
     },
     {
       "layer": "Relevance Scorer",
-      "purpose": "Scores tabs 0–1 based on language, imports, path, recency, diagnostics",
+      "purpose": "Scores each open tab R ∈ [0, 1]: language match (0.25), import analysis (0.30), path similarity (0.20), edit recency (0.15), diagnostics (0.10). Pinned and active tabs override to R = 1.0.",
       "number": 3
     },
     {
-      "layer": "Chat Participant",
-      "purpose": "@tokalator chat commands — /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit",
+      "layer": "Context Optimizer",
+      "purpose": "Identifies distractor tabs (R < 0.3) and closes them via /optimize or the Optimize Tabs button. Reduces attention dilution by removing files unlikely to contribute to the current task.",
       "number": 4
     },
     {
-      "layer": "MCP Server & CLI (tokalator-mcp)",
-      "purpose": "Exposes count_tokens, estimate_budget, preview_turn, list_models to Claude Code via stdio MCP transport. Also ships a standalone CLI binary: tokalator count, budget, preview, models.",
+      "layer": "Chat Participant",
+      "purpose": "@tokalator with 11 slash commands — /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit.",
       "number": 5
+    },
+    {
+      "layer": "MCP Server & CLI (tokalator-mcp)",
+      "purpose": "Separate component: exposes count_tokens, estimate_budget, preview_turn, list_models to Claude Code via stdio MCP transport. Also ships a standalone CLI binary for terminal workflows.",
+      "number": 6
     }
   ],
   "tokenizers": [

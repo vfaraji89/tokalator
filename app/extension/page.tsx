@@ -120,21 +120,31 @@ export default function ExtensionPage() {
             <span className="why-stat-label">Total acquisitions</span>
           </div>
           <div className="why-stat-card">
-            <span className="why-stat-number">{ext.stats.marketplaceInstalls}</span>
-            <span className="why-stat-label">Public installs</span>
+            <span className="why-stat-number">{ext.stats.conversionRate}</span>
+            <span className="why-stat-label">Conversion rate</span>
           </div>
           <div className="why-stat-card">
-            <span className="why-stat-number">{ext.stats.communityDevelopers}</span>
+            <span className="why-stat-number">{ext.stats.communityDevelopers}+</span>
             <span className="why-stat-label">Community devs</span>
           </div>
           <div className="why-stat-card">
-            <span className="why-stat-number">{ext.stats.communitySessions}</span>
-            <span className="why-stat-label">Live sessions</span>
+            <span className="why-stat-number">{(ext.stats as any).unitTests}</span>
+            <span className="why-stat-label">Unit tests</span>
           </div>
         </div>
         <p style={{ fontSize: "0.6875rem", color: "var(--text-muted)", marginTop: "0.5rem" }}>
-          {ext.stats.period} · Acquisitions from publisher dashboard, public installs from Marketplace listing
+          {ext.stats.period} &middot; {ext.stats.conversionRate} page-to-acquisition conversion &middot; {(ext.stats as any).unitTests} tests across {(ext.stats as any).testFiles} files &middot; {(ext.stats as any).contextReductionMin}–{(ext.stats as any).contextReductionMax}% context reduction observed
         </p>
+        {/* Community session breakdown */}
+        <div style={{ marginTop: "0.75rem", display: "flex", flexDirection: "column", gap: "0.25rem" }}>
+          {(ext.stats as any).communitySessionDetails.map((s: { name: string; attendees: number; note: string }) => (
+            <div key={s.name} style={{ display: "flex", gap: "0.5rem", fontSize: "0.6875rem", color: "var(--text-secondary)" }}>
+              <span style={{ color: "var(--accent)", fontWeight: 600, minWidth: "2.5rem" }}>~{s.attendees}</span>
+              <span style={{ fontWeight: 500, color: "var(--text-primary)" }}>{s.name}</span>
+              <span style={{ color: "var(--text-muted)" }}>— {s.note}</span>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* Features */}
@@ -142,22 +152,30 @@ export default function ExtensionPage() {
         <div className="section-divider" />
         <h2 className="section-header">Features</h2>
         <div className="feature-grid feature-grid--3col">
-          {ext.features.map((f) => (
-            <div
-              key={f.name}
-              className="feature-item feature-item--extension"
-            >
-              <span className="feature-number">{f.number}</span>
-              <h3>
-                {f.icon} {f.name}
-              </h3>
-              <p>{f.description}</p>
-              <code>{f.command}</code>
-              <span className="feature-badge feature-badge--extension">
-                VS Code
-              </span>
-            </div>
-          ))}
+          {ext.features.map((f) => {
+            const badge =
+              f.number === 11 ? "MCP"
+              : f.number === 12 ? "CLI"
+              : "VS Code";
+            const badgeCls =
+              f.number === 11 ? "feature-badge feature-badge--mcp"
+              : f.number === 12 ? "feature-badge feature-badge--cli"
+              : "feature-badge feature-badge--extension";
+            return (
+              <div
+                key={f.name}
+                className="feature-item feature-item--extension"
+              >
+                <span className="feature-number">{f.number}</span>
+                <h3>
+                  {f.icon} {f.name}
+                </h3>
+                <p>{f.description}</p>
+                <code>{f.command}</code>
+                <span className={badgeCls}>{badge}</span>
+              </div>
+            );
+          })}
         </div>
       </section>
 
@@ -309,10 +327,9 @@ export default function ExtensionPage() {
                 </li>
               ))}
             </ol>
-            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
-              <code>{ext.installMethods.cli.command.split("\n")[0]}</code>
-              <CopyButton text={ext.installMethods.cli.command.split("\n")[0]} />
-            </div>
+            <pre style={{ marginTop: "0.75rem" }}>
+              {ext.installMethods.cli.command}
+            </pre>
           </div>
 
           {/* MCP */}

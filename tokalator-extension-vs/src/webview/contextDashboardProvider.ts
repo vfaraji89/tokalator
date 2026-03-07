@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { ContextMonitor } from '../core/contextMonitor';
-import { ContextSnapshot, TabInfo } from '../core/types';
+import type { ContextSnapshot } from '../core/types';
 
 /**
  * WebviewViewProvider for the Tokalator sidebar panel.
@@ -144,7 +144,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
     this.view.webview.postMessage({ type: 'snapshot', data: serialized, lastSession });
   }
 
-  private getHtml(webview: vscode.Webview): string {
+  private getHtml(_webview: vscode.Webview): string {
     const nonce = getNonce();
 
     return /* html */`<!DOCTYPE html>

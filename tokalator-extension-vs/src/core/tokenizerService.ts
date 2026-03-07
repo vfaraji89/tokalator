@@ -73,6 +73,7 @@ export class TokenizerService {
   private countClaude(text: string): number {
     if (!this.claudeTokenizer) {
       // Lazy-load Claude BPE ranks (696 KB JSON) on first use
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const ranks = require('@anthropic-ai/tokenizer/claude.json');
       this.claudeTokenizer = new Tiktoken(ranks);
     }
@@ -84,6 +85,7 @@ export class TokenizerService {
   private countOpenAI(text: string): number {
     if (!this.openaiTokenizer) {
       // Lazy-load o200k_base ranks on first use
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const ranks = require('js-tiktoken/ranks/o200k_base');
       this.openaiTokenizer = new Tiktoken(ranks);
     }
