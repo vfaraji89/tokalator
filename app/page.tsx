@@ -3,7 +3,6 @@
 import Link from "next/link";
 import { useState, useEffect, useRef } from "react";
 import content from "../content/homepage.json";
-import { DemoMockup } from "../components/demo-mockup";
 import { CommandTyper } from "../components/command-typer";
 
 function LiveClock() {
@@ -149,18 +148,13 @@ export default function HomePage() {
         {/* Command typing animation */}
         <CommandTyper />
 
-        {/* Interactive Demo Mockup */}
-        <DemoMockup />
-        <div className="demo-legend">
-          <span className="demo-legend-item">
-            <span className="demo-legend-num">1</span> File Explorer
-          </span>
-          <span className="demo-legend-item">
-            <span className="demo-legend-num">2</span> Code Editor
-          </span>
-          <span className="demo-legend-item">
-            <span className="demo-legend-num">3</span> Claude Code Panel
-          </span>
+        {/* Dashboard screenshot */}
+        <div style={{ marginTop: "2rem", maxWidth: 420, width: "100%" }}>
+          <img
+            src="/screenshots/tokalator-ui.png"
+            alt="Tokalator token budget dashboard in VS Code — LOW budget, next turn preview, budget breakdown"
+            style={{ width: "100%", borderRadius: "8px", border: "1px solid var(--border)", display: "block" }}
+          />
         </div>
       </header>
 
