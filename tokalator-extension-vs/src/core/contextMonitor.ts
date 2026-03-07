@@ -40,6 +40,7 @@ export class ContextMonitor implements vscode.Disposable {
   private latestSnapshot: ContextSnapshot | null = null;
   private debounceTimer: ReturnType<typeof setTimeout> | undefined;
   private isRefreshing = false;
+  private pendingRefresh = false;
 
   private activeModel: ModelProfile;
   private workspaceFileTokens = 0;
@@ -116,14 +117,24 @@ export class ContextMonitor implements vscode.Disposable {
    * Build a fresh snapshot and emit it.
    */
   async refresh(): Promise<void> {
-    if (this.isRefreshing) { return; }
+    if (this.isRefreshing) {
+      // Queue one pending refresh so the final state after rapid switching is captured
+      this.pendingRefresh = true;
+      return;
+    }
     this.isRefreshing = true;
+    this.pendingRefresh = false;
     try {
       const snapshot = await this.buildSnapshot();
       this.latestSnapshot = snapshot;
       this._onDidUpdateSnapshot.fire(snapshot);
     } finally {
       this.isRefreshing = false;
+      // If events arrived while we were refreshing, run one more pass
+      if (this.pendingRefresh) {
+        this.pendingRefresh = false;
+        void this.refresh();
+      }
     }
   }
 
@@ -430,16 +441,26 @@ export class ContextMonitor implements vscode.Disposable {
    */
   private gatherTabs(): TabInfo[] {
     const tabs: TabInfo[] = [];
-    const workspaceRoot = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || '';
+    const seenUris = new Set<string>();
+    const workspaceFolders = vscode.workspace.workspaceFolders || [];
 
     for (const group of vscode.window.tabGroups.all) {
       for (const tab of group.tabs) {
         if (!(tab.input instanceof vscode.TabInputText)) { continue; }
 
         const uri = tab.input.uri;
+        const uriKey = uri.toString();
+
+        // Skip duplicate URIs (same file open in split panes)
+        if (seenUris.has(uriKey)) { continue; }
+        seenUris.add(uriKey);
+
         const fsPath = uri.fsPath;
-        const relativePath = workspaceRoot
-          ? fsPath.replace(workspaceRoot, '').replace(/^\//, '')
+
+        // Find the matching workspace folder for correct relative path in multi-root workspaces
+        const matchingFolder = workspaceFolders.find(f => fsPath.startsWith(f.uri.fsPath));
+        const relativePath = matchingFolder
+          ? fsPath.replace(matchingFolder.uri.fsPath, '').replace(/^[/\\]/, '')
           : fsPath;
 
         // Get language ID from open documents
@@ -500,10 +521,15 @@ export class ContextMonitor implements vscode.Disposable {
    */
   private async countInstructionFiles(): Promise<number> {
     try {
-      const files = await vscode.workspace.findFiles('**/*.instructions.md', '**/node_modules/**', 20);
-      // Also count .github/copilot-instructions.md
-      const copilotInstr = await vscode.workspace.findFiles('.github/copilot-instructions.md', undefined, 1);
-      return files.length + copilotInstr.length;
+      const exclude = '**/node_modules/**';
+      const [instrFiles, copilotInstr, claudeMd, agentsMd, cursorRules] = await Promise.all([
+        vscode.workspace.findFiles('**/*.instructions.md', exclude, 20),
+        vscode.workspace.findFiles('.github/copilot-instructions.md', undefined, 1),
+        vscode.workspace.findFiles('**/CLAUDE.md', exclude, 5),
+        vscode.workspace.findFiles('**/AGENTS.md', exclude, 5),
+        vscode.workspace.findFiles('**/.cursorrules', exclude, 5),
+      ]);
+      return instrFiles.length + copilotInstr.length + claudeMd.length + agentsMd.length + cursorRules.length;
     } catch {
       return 0;
     }
