@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import eventsData from "../../content/events.json";
 
-type EventItem = (typeof eventsData.events)[number] & { eventUrl?: string };
+type EventItem = (typeof eventsData.events)[number];
 
 const STATUS_FILTERS = [
   { id: "all", label: "All" },
@@ -211,10 +211,12 @@ function EventCard({ event }: { event: EventItem }) {
         <span className="event-meta-item">
           <CalendarIcon />
           {new Date(event.date).toLocaleDateString("en-US", {
+            weekday: "long",
             year: "numeric",
             month: "long",
             day: "numeric",
           })}
+          {event.time && ` · ${event.time}`}
         </span>
         <span className="event-meta-item">
           <LocationIcon />
@@ -247,15 +249,15 @@ function EventCard({ event }: { event: EventItem }) {
 
       {/* Slides Links */}
       <div className="event-card-actions">
-        {event.eventUrl && (
+        {event.lumaUrl && (
           <a
-            href={event.eventUrl}
+            href={event.lumaUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="event-action-btn"
           >
             <CalendarIcon />
-            Event Page
+            Event Page (Luma)
           </a>
         )}
         {event.slidesUrl && (
