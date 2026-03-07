@@ -2,7 +2,7 @@ import Link from "next/link";
 import eventsData from "../../../content/events.json";
 import type { Metadata } from "next";
 
-type EventItem = (typeof eventsData.events)[number] & { eventUrl?: string };
+type EventItem = (typeof eventsData.events)[number];
 
 export function generateStaticParams() {
   return eventsData.events.map((e) => ({ slug: e.slug }));
@@ -213,10 +213,12 @@ export default async function EventDetailPage({
               <line x1="3" y1="10" x2="21" y2="10" />
             </svg>
             {new Date(event.date).toLocaleDateString("en-US", {
+              weekday: "long",
               year: "numeric",
               month: "long",
               day: "numeric",
             })}
+            {event.time && ` · ${event.time}`}
           </span>
           <span className="event-meta-item">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -229,9 +231,9 @@ export default async function EventDetailPage({
 
         {/* CTA buttons */}
         <div className="event-card-actions" style={{ marginTop: "1.25rem" }}>
-          {event.eventUrl && (
+          {event.lumaUrl && (
             <a
-              href={event.eventUrl}
+              href={event.lumaUrl}
               target="_blank"
               rel="noopener noreferrer"
               className="event-action-btn"
@@ -242,7 +244,7 @@ export default async function EventDetailPage({
                 <line x1="8" y1="2" x2="8" y2="6" />
                 <line x1="3" y1="10" x2="21" y2="10" />
               </svg>
-              Event Page
+              Event Page (Luma)
             </a>
           )}
           {event.slidesUrl && (
@@ -362,14 +364,14 @@ export default async function EventDetailPage({
             Explore the full slide deck, try the Tokalator extension, or browse the context engineering wiki.
           </p>
           <div className="event-card-actions">
-            {event.eventUrl && (
+            {event.lumaUrl && (
               <a
-                href={event.eventUrl}
+                href={event.lumaUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="event-action-btn"
               >
-                Event Page →
+                Event Page (Luma) →
               </a>
             )}
             {event.slidesUrl && (
