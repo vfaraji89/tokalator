@@ -147,6 +147,44 @@ export default function ExtensionPage() {
         </div>
       </section>
 
+      {/* Screenshots */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">Screenshots</h2>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem", marginTop: "1rem" }}>
+          <figure style={{ margin: 0 }}>
+            <img
+              src="/screenshots/tokalator-ui.png"
+              alt="Tokalator sidebar dashboard showing token budget, next turn preview, and budget breakdown"
+              style={{ width: "100%", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
+            />
+            <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              Sidebar dashboard — live token budget, next turn preview, and budget breakdown
+            </figcaption>
+          </figure>
+          <figure style={{ margin: 0 }}>
+            <img
+              src="/screenshots/tokalator-breakdown.png"
+              alt="Tokalator /breakdown command in chat showing file token counts and relevance scores"
+              style={{ width: "100%", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
+            />
+            <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              @tokalator /breakdown — per-file token counts and relevance scores in chat
+            </figcaption>
+          </figure>
+          <figure style={{ margin: 0 }}>
+            <img
+              src="/screenshots/tokalator-commands.png"
+              alt="Tokalator chat command autocomplete showing all @tokalator slash commands"
+              style={{ width: "100%", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
+            />
+            <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
+              11 chat commands via @tokalator — full context management workflow
+            </figcaption>
+          </figure>
+        </div>
+      </section>
+
       {/* Features */}
       <section>
         <div className="section-divider" />
