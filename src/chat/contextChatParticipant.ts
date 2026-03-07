@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
-import { ContextSnapshot, TabInfo } from '../core/types';
+import type { ContextSnapshot } from '../core/types';
 import { findModel } from '../core/modelProfiles';
 
 /**
@@ -36,7 +36,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     request: vscode.ChatRequest,
     context: vscode.ChatContext,
     stream: vscode.ChatResponseStream,
-    token: vscode.CancellationToken,
+    _token: vscode.CancellationToken,
   ): Promise<vscode.ChatResult> {
 
     // Only count turns for commands that modify state (optimize, pin, unpin)
@@ -511,6 +511,7 @@ export class ContextChatParticipant implements vscode.Disposable {
       '**/*.prompt.md',
       '**/.cursorrules',
       '**/.claude/**/*.md',
+      '**/CLAUDE.md',
       '**/AGENTS.md',
       '**/*.agent.md',
     ];
