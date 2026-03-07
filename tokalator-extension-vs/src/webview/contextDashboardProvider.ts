@@ -741,8 +741,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider {
       var action = el.dataset.action;
       var uri = el.dataset.uri ? decodeURIComponent(el.dataset.uri) : undefined;
       switch (action) {
-        case 'pin':      vscode.postMessage({ command: 'pin', uri: uri }); break;
-        case 'unpin':    vscode.postMessage({ command: 'unpin', uri: uri }); break;
+        case 'pin':      e.stopPropagation(); vscode.postMessage({ command: 'pin', uri: uri }); break;
+        case 'unpin':    e.stopPropagation(); vscode.postMessage({ command: 'unpin', uri: uri }); break;
         case 'closeTab': e.stopPropagation(); vscode.postMessage({ command: 'closeTab', uri: uri }); break;
         case 'optimize': vscode.postMessage({ command: 'optimize' }); break;
         case 'resetTurns': vscode.postMessage({ command: 'resetTurns' }); break;
