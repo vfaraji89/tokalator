@@ -60,8 +60,7 @@ function FooterHeart() {
 }
 
 export default function HomePage() {
-  const { hero, quickStart, commands, comingSoon } =
-    content;
+  const { hero, quickStart, commands } = content;
 
   // Split headline on newlines
   const headlineParts = hero.headline.split("\n");
@@ -208,25 +207,36 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Coming Soon */}
+      {/* Beyond VS Code */}
       <section className="extension-section">
         <div className="section-divider" />
-        <h2 className="section-header">{comingSoon.title}</h2>
-        <p>{comingSoon.subtitle}</p>
-        <div className="feature-grid">
-          {comingSoon.items.map((item: { name: string; description: string; badge: string; number: number }) => (
-            <div
-              key={item.name}
-              className="feature-item feature-item--extension feature-item--coming-soon"
-            >
-              <span className="feature-number">{item.number}</span>
-              <h3>{item.name}</h3>
-              <p>{item.description}</p>
-              <span className="feature-badge feature-badge--soon">
-                {item.badge} · Coming Soon
-              </span>
+        <h2 className="section-header">Beyond VS Code</h2>
+        <p>Token budget awareness wherever you work — not just in the editor.</p>
+        <div className="feature-grid feature-grid--2col" style={{ marginTop: "1.25rem" }}>
+          <div className="feature-item feature-item--extension">
+            <span className="feature-number">1</span>
+            <h3>MCP Server for Claude Code</h3>
+            <p>
+              Real Claude BPE token counting inside Claude Code via stdio MCP transport.
+              Count tokens, estimate file budgets, preview turn cost — zero API calls.
+            </p>
+            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
+              <code>claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js</code>
             </div>
-          ))}
+            <span className="feature-badge feature-badge--mcp">MCP</span>
+          </div>
+          <div className="feature-item feature-item--extension">
+            <span className="feature-number">2</span>
+            <h3>Standalone CLI</h3>
+            <p>
+              Terminal-first token budgeting for SSH sessions, containers, and non-VS Code workflows.
+              Run <code>tokalator count</code>, <code>budget</code>, <code>preview</code>, or <code>models</code> anywhere.
+            </p>
+            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
+              <code>npm install -g tokalator</code>
+            </div>
+            <span className="feature-badge feature-badge--cli">CLI</span>
+          </div>
         </div>
       </section>
 
