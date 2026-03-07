@@ -3,7 +3,7 @@
   "icon": "⬡",
   "headline": "Real-time context monitoring.\nInside your editor.",
   "highlightPhrase": "context monitoring",
-  "tagline": "Track token budgets with real tokenizers, score tab relevance, and manage context — a VS Code sidebar that pays for itself.",
+  "tagline": "Track token budgets with real tokenizers, score tab relevance, and manage context — a VS Code sidebar, MCP server, and CLI that pays for itself.",
   "installCmd": "ext install vfaraji89.tokalator",
   "vsCodeMinVersion": "1.99",
   "githubUrl": "https://github.com/vfaraji89/tokalator",
@@ -78,8 +78,32 @@
       "description": "Track per-turn context growth with compaction analysis. Reset sessions, save summaries, and see last session stats on activation.",
       "command": "@tokalator /compaction, /reset, /exit",
       "number": 10
+    },
+    {
+      "icon": "⬡",
+      "name": "MCP Server for Claude Code",
+      "description": "Brings real Claude BPE token counting into Claude Code and any MCP-capable agent via stdio transport. Four tools: count_tokens, estimate_budget, preview_turn, list_models. Zero API calls — fully offline.",
+      "command": "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js",
+      "number": 11
+    },
+    {
+      "icon": "◆",
+      "name": "CLI — tokalator count, budget, preview, models",
+      "description": "Standalone terminal tool for non-VS Code workflows. Count tokens in files, get full budget breakdowns, preview next-turn cost, and list Claude model profiles — all from the command line.",
+      "command": "npm install -g . (from tokalator-mcp/) · tokalator count src/main.ts · tokalator budget src/**/*.ts",
+      "number": 12
     }
   ],
+  "stats": {
+    "marketplaceAcquisitions": 156,
+    "marketplaceInstalls": 19,
+    "marketplacePageViews": 188,
+    "conversionRate": "82.98%",
+    "period": "First 30 days (Feb 4 – Mar 6, 2026)",
+    "communityDevelopers": 220,
+    "communitySessions": 3,
+    "communitySessionNames": ["iLab / Kariyer.net", "SaaS Bridge", "TechCareer"]
+  },
   "settings": [
     {
       "key": "tokalator.model",
@@ -127,6 +151,11 @@
       "layer": "Chat Participant",
       "purpose": "@tokalator chat commands — /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit",
       "number": 4
+    },
+    {
+      "layer": "MCP Server & CLI (tokalator-mcp)",
+      "purpose": "Exposes count_tokens, estimate_budget, preview_turn, list_models to Claude Code via stdio MCP transport. Also ships a standalone CLI binary: tokalator count, budget, preview, models.",
+      "number": 5
     }
   ],
   "tokenizers": [
@@ -170,6 +199,28 @@
       "title": "Build from Source",
       "icon": "◆",
       "command": "git clone https://github.com/vfaraji89/tokalator.git\ncd tokalator/tokalator-extension-vs\nnpm install\nnpm run compile"
+    },
+    "cli": {
+      "title": "CLI (npm)",
+      "icon": "◆",
+      "note": "Requires Node.js 18+",
+      "steps": [
+        "git clone https://github.com/vfaraji89/tokalator.git",
+        "cd tokalator/tokalator-mcp && npm install && npm run build",
+        "npm install -g ."
+      ],
+      "command": "tokalator count src/main.ts\ntokalator budget src/**/*.ts\ntokalator preview 42000\ntokalator models"
+    },
+    "mcp": {
+      "title": "MCP Server (Claude Code)",
+      "icon": "⬡",
+      "note": "Requires Node.js 18+ and Claude Code",
+      "steps": [
+        "Build the CLI first (see above)",
+        "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js",
+        "In Claude Code: /mcp → verify tokalator is listed"
+      ],
+      "command": "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js"
     }
   }
 }

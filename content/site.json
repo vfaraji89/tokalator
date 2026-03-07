@@ -89,8 +89,13 @@
       "items": [
         {
           "href": "/extension",
-          "label": "Install",
+          "label": "VS Code Extension",
           "badge": "Live"
+        },
+        {
+          "href": "/extension#mcp",
+          "label": "MCP & CLI",
+          "badge": "New"
         }
       ]
     },
