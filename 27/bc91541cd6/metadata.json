@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "27bc91541cd6",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "app/extension/page.tsx",
+    "app/globals.css",
+    "content/extension.json",
+    "skills/context-management/SKILL.md",
+    "tokalator-extension-vs/src/chat/contextChatParticipant.ts",
+    "tokalator-extension-vs/src/core/contextMonitor.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/27/bc91541cd6/0/metadata.json",
+      "transcript": "/27/bc91541cd6/0/full.jsonl",
+      "context": "/27/bc91541cd6/0/context.md",
+      "content_hash": "/27/bc91541cd6/0/content_hash.txt",
+      "prompt": "/27/bc91541cd6/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 5114,
+    "cache_creation_tokens": 196049,
+    "cache_read_tokens": 5892039,
+    "output_tokens": 25313,
+    "api_call_count": 65
+  }
+}
