@@ -1,0 +1,31 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "fb4285c1be6d",
+  "session_id": "e7eaedd0-1fe8-4b61-9e2f-3511730c015e",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-09T08:33:41.234061Z",
+  "branch": "main",
+  "checkpoints_count": 10,
+  "files_touched": [
+    "paper/paper.txt",
+    "paper/references.bib"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "36587450-0c9a-4653-82e9-81b1006b816e",
+  "token_usage": {
+    "input_tokens": 4439,
+    "cache_creation_tokens": 154712,
+    "cache_read_tokens": 6834241,
+    "output_tokens": 230,
+    "api_call_count": 95
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-09T08:33:40.989783Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 1638,
+    "human_removed": 391,
+    "total_committed": 1638,
+    "agent_percentage": 0
+  }
+}

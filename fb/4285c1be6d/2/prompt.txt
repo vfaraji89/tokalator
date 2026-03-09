@@ -1,0 +1,264 @@
+check only reference errors
+
+---
+
+drop the not cited references
+
+---
+
+check size problem in paper, tables and graphs
+
+---
+
+Continue from where you left off.
+
+---
+
+Too many }'s.
+‪./main.tex, 686‬
+l.686 ...s peak was ``surprisingly informative.''}
+                                                  
+You've closed more groups than you opened.
+Such booboos are generally harmless, so keep going.
+Package soul Error: Reconstruction failed.
+‪./main.tex, 690‬
+Runaway argument?
+‪./output.bbl, 1761‬
+LaTeX Error: \begin{thebibliography} on input line 1 ended by \end{document}.
+‪./output.bbl, 1763‬
+Package hyperref Warning: Ignoring empty anchor on input line 100.
+‪./main.tex, 100‬
+Package natbib Warning: Citation `aubakirova2025state' on page 1 undefined on input line 105.
+‪./main.tex, 105‬
+Package natbib Warning: Citation `robbes2026agentic' on page 1 undefined on input line 107.
+‪./main.tex, 107‬
+Package natbib Warning: Citation `han2024talebudget' on page 1 undefined on input line 107.
+‪./main.tex, 107‬
+Package natbib Warning: Citation `vscode2026v110' on page 1 undefined on input line 110.
+‪./main.tex, 110‬
+Package natbib Warning: Citation `sennrich2016bpe' on page 1 undefined on input line 112.
+‪./main.tex, 112‬
+Package natbib Warning: Citation `bergemann2025economics' on page 1 undefined on input line 112.
+‪./main.tex, 112‬
+Package natbib Warning: Citation `bergemann2025economics' on page 1 undefined on input line 115.
+‪./main.tex, 115‬
+Package natbib Warning: Citation `hong2025contextrot' on page 1 undefined on input line 115.
+‪./main.tex, 115‬
+Package natbib Warning: Citation `hong2025contextrot' on page 1 undefined on input line 117.
+‪./main.tex, 117‬
+Package natbib Warning: Citation `vscode2026api' on page 2 undefined on input line 167.
+‪./main.tex, 167‬
+Package natbib Warning: Citation `mei2025survey' on page 2 undefined on input line 177.
+‪./main.tex, 177‬
+Package natbib Warning: Citation `vscode2026v110' on page 2 undefined on input line 177.
+‪./main.tex, 177‬
+Package natbib Warning: Citation `sennrich2016bpe' on page 2 undefined on input line 203.
+‪./main.tex, 203‬
+Package natbib Warning: Citation `openai2025cookbook' on page 2 undefined on input line 203.
+‪./main.tex, 203‬
+Package natbib Warning: Citation `bergemann2025economics' on page 2 undefined on input line 205.
+‪./main.tex, 205‬
+Package natbib Warning: Citation `erdil2025pareto' on page 2 undefined on input line 205.
+‪./main.tex, 205‬
+Package natbib Warning: Citation `cottier2025price' on page 2 undefined on input line 205.
+‪./main.tex, 205‬
+Package natbib Warning: Citation `yotta2026econ' on page 2 undefined on input line 205.
+‪./main.tex, 205‬
+Package natbib Warning: Citation `lucchese2025energy' on page 2 undefined on input line 208.
+‪./main.tex, 208‬
+Package natbib Warning: Citation `bannour2025profiling' on page 2 undefined on input line 208.
+‪./main.tex, 208‬
+Package natbib Warning: Citation `sridhara2024sprout' on page 2 undefined on input line 208.
+‪./main.tex, 208‬
+Package natbib Warning: Citation `khowaja2025energy' on page 2 undefined on input line 208.
+‪./main.tex, 208‬
+Package natbib Warning: Citation `johnsnowlabs2026tpj' on page 2 undefined on input line 208.
+‪./main.tex, 208‬
+Package natbib Warning: Citation `aubakirova2025state' on page 3 undefined on input line 211.
+‪./main.tex, 211‬
+Package natbib Warning: Citation `emberson2025length' on page 3 undefined on input line 211.
+‪./main.tex, 211‬
+Package natbib Warning: Citation `fu2024scaling' on page 3 undefined on input line 211.
+‪./main.tex, 211‬
+Package natbib Warning: Citation `wei2025tokenweighting' on page 3 undefined on input line 211.
+‪./main.tex, 211‬
+Package natbib Warning: Citation `burnham2025context' on page 3 undefined on input line 211.
+‪./main.tex, 211‬
+Package natbib Warning: Citation `liu2024lost' on page 3 undefined on input line 214.
+‪./main.tex, 214‬
+Package natbib Warning: Citation `hong2025contextrot' on page 3 undefined on input line 216.
+‪./main.tex, 216‬
+Package natbib Warning: Citation `navid2025compaction' on page 4 undefined on input line 219.
+‪./main.tex, 219‬
+Package natbib Warning: Citation `vscode2026v110' on page 4 undefined on input line 219.
+‪./main.tex, 219‬
+Package natbib Warning: Citation `zhang2025adaptive' on page 4 undefined on input line 222.
+‪./main.tex, 222‬
+Package natbib Warning: Citation `shi2024evor' on page 4 undefined on input line 222.
+‪./main.tex, 222‬
+Package natbib Warning: Citation `zhang2025ace' on page 4 undefined on input line 222.
+‪./main.tex, 222‬
+Package natbib Warning: Citation `nanjundappa2025branch' on page 4 undefined on input line 222.
+‪./main.tex, 222‬
+Package natbib Warning: Citation `vasilopoulos2026codified' on page 4 undefined on input line 224.
+‪./main.tex, 224‬
+Package natbib Warning: Citation `zhu2025onecontext' on page 4 undefined on input line 224.
+‪./main.tex, 224‬
+Package natbib Warning: Citation `hong2025contextrot' on page 4 undefined on input line 227.
+‪./main.tex, 227‬
+Package natbib Warning: Citation `burnham2025context' on page 4 undefined on input line 227.
+‪./main.tex, 227‬
+Package natbib Warning: Citation `bergemann2025economics' on page 7 undefined on input line 564.
+‪./main.tex, 564‬
+Reference `sec:future' on page 11 undefined on input line 793.
+‪./main.tex, 793‬
+Package natbib Warning: Citation `burnham2025context' on page 11 undefined on input line 799.
+‪./main.tex, 799‬
+Package natbib Warning: Citation `cottier2025price' on page 12 undefined on input line 845.
+‪./main.tex, 845‬
+Package natbib Warning: Citation `perera2025acm' on page 12 undefined on input line 880.
+‪./main.tex, 880‬
+Package natbib Warning: Citation `fu2024scaling' on page 13 undefined on input line 882.
+‪./main.tex, 882‬
+Package natbib Warning: Citation `shi2024evor' on page 13 undefined on input line 884.
+‪./main.tex, 884‬
+Package natbib Warning: Citation `helm2025tokenweighting' on page 13 undefined on input line 884.
+‪./main.tex, 884‬
+Package natbib Warning: Citation `perera2025acm' on page 13 undefined on input line 886.
+‪./main.tex, 886‬
+Package natbib Warning: Citation `gupta2025crosslingual' on page 13 undefined on input line 888.
+‪./main.tex, 888‬
+Package natbib Warning: Citation `bergemann2025economics' on page 13 undefined on input line 904.
+‪./main.tex, 904‬
+Package natbib Warning: Citation `sennrich2016bpe' on page 13 undefined on input line 905.
+‪./main.tex, 905‬
+Package natbib Warning: Citation `navid2025compaction' on page 13 undefined on input line 906.
+‪./main.tex, 906‬
+Package natbib Warning: Citation `hong2025contextrot' on page 13 undefined on input line 907.
+‪./main.tex, 907‬
+Font shape `T1/zi4/m/it' undefined
+‪./main.tex‬
+Package natbib Warning: Citation `strauss1990basics' on page 16 undefined on input line 1695.
+‪./main.tex, 1695‬
+Package natbib Warning: There were undefined citations.
+‪./output.bbl‬
+Some font shapes were not available, defaults substituted.
+‪./output.bbl‬
+There were undefined references.
+‪./output.bbl‬
+BibTeX: empty pages in sridhara2024sprout
+Overfull \hbox (123.62721pt too wide) detected at line 100
+‪./main.tex, 100‬
+Overfull \hbox (7.55464pt too wide) in paragraph at lines 130--135
+‪./main.tex, 130‬
+Overfull \hbox (3.08713pt too wide) in paragraph at lines 138--139
+‪./main.tex, 138‬
+Underfull \hbox (badness 10000) in paragraph at lines 169--170
+‪./main.tex, 169‬
+Underfull \hbox (badness 1708) in paragraph at lines 177--178
+‪./main.tex, 177‬
+Underfull \hbox (badness 2269) in paragraph at lines 177--178
+‪./main.tex, 177‬
+Overfull \hbox (8.35826pt too wide) in paragraph at lines 203--204
+‪./main.tex, 203‬
+Underfull \hbox (badness 1092) in paragraph at lines 203--204
+‪./main.tex, 203‬
+Underfull \hbox (badness 1924) in paragraph at lines 205--206
+‪./main.tex, 205‬
+Overfull \hbox (2.97632pt too wide) in paragraph at lines 224--225
+‪./main.tex, 224‬
+Overfull \hbox (1.20549pt too wide) in paragraph at lines 236--237
+‪./main.tex, 236‬
+Underfull \hbox (badness 1184) in paragraph at lines 251--253
+‪./main.tex, 251‬
+Overfull \hbox (34.31702pt too wide) in paragraph at lines 251--253
+‪./main.tex, 251‬
+Overfull \hbox (43.7396pt too wide) in paragraph at lines 251--253
+‪./main.tex, 251‬
+Overfull \hbox (4.46803pt too wide) in paragraph at lines 254--256
+‪./main.tex, 254‬
+Overfull \hbox (8.01703pt too wide) in paragraph at lines 262--263
+‪./main.tex, 262‬
+Underfull \hbox (badness 1803) in paragraph at lines 262--263
+‪./main.tex, 262‬
+Underfull \hbox (badness 1831) in paragraph at lines 262--263
+‪./main.tex, 262‬
+Underfull \hbox (badness 1337) in paragraph at lines 262--263
+‪./main.tex, 262‬
+Overfull \hbox (2.85858pt too wide) in paragraph at lines 265--266
+‪./main.tex, 265‬
+Overfull \hbox (11.28722pt too wide) in paragraph at lines 265--266
+‪./main.tex, 265‬
+Underfull \hbox (badness 1043) in paragraph at lines 265--266
+‪./main.tex, 265‬
+Overfull \hbox (23.4473pt too wide) in paragraph at lines 267--268
+‪./main.tex, 267‬
+Overfull \hbox (5.94931pt too wide) in paragraph at lines 497--499
+‪./main.tex, 497‬
+Overfull \hbox (10.81776pt too wide) in paragraph at lines 497--499
+‪./main.tex, 497‬
+Overfull \hbox (36.00993pt too wide) in paragraph at lines 507--509
+‪./main.tex, 507‬
+Underfull \hbox (badness 1087) in paragraph at lines 524--525
+‪./main.tex, 524‬
+Underfull \hbox (badness 1178) in paragraph at lines 552--554
+‪./main.tex, 552‬
+Overfull \hbox (1.09554pt too wide) in paragraph at lines 558--561
+‪./main.tex, 558‬
+Overfull \hbox (4.969pt too wide) in paragraph at lines 558--561
+‪./main.tex, 558‬
+Overfull \hbox (2.4664pt too wide) in paragraph at lines 580--581
+‪./main.tex, 580‬
+Overfull \hbox (46.32603pt too wide) in paragraph at lines 580--581
+‪./main.tex, 580‬
+Overfull \hbox (8.44826pt too wide) in paragraph at lines 584--586
+‪./main.tex, 584‬
+Overfull \hbox (1.23796pt too wide) in paragraph at lines 592--594
+‪./main.tex, 592‬
+Underfull \hbox (badness 1789) in paragraph at lines 682--683
+
+---
+
+check references if there is no reference or duplicates
+
+---
+
+figure 5 has size problem and reference not compile full
+
+---
+
+Table 12
+Complete GitHub Copilot and GitHub Actions billing records for the Tokalator development sprint (February 6 – March 7, 2026).
+All Actions rows have net cost $0 (within free-tier allocation). Copilot discount patterns reflect GitHub account-level billing
+credits. Total net: $28.36 (copilot) + $0.00 (actions) = $28.36.-- short this table to main insights not need to full insight
+
+---
+
+in paper we say collection of prompts, agents etc-- but folders are empty, why?, if so we highlit the part
+
+---
+
+skill.sh is under review, find my repo and check this with paper
+
+---
+
+Package soul Error: Reconstruction failed.
+‪./main.tex, 690‬
+Runaway argument?
+‪./output.bbl, 1734‬
+LaTeX Error: \begin{thebibliography} on input line 1 ended by \end{document}.
+‪./output.bbl, 1736‬
+BibTeX: You're missing a field name : : %% UNVERIFIED: arXiv ID placeholder (2409.XXXXX). Verify the correct arXiv ID and (Error may have been on previous line)
+--fix errors
+
+---
+
+table 11 and 12 are in between references, why?
+
+---
+
+\hl{Give italic title here as well as you did below works}-- in section meta data and related work I have this comment
+
+---
+
+survey details should be in appendix, and highlights in results with referencing-- can we do that and shorten the verbosity
