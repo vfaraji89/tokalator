@@ -4,6 +4,7 @@ import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
 import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './modelProfiles';
+import { SessionLogger } from './sessionLogger';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
 const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
@@ -50,6 +51,9 @@ export class ContextMonitor implements vscode.Disposable {
   private peakTokens = 0;
   private peakPercent = 0;
   private fileEditCounts = new Map<string, number>();
+
+  // Opt-in session logger for research studies
+  private sessionLogger: SessionLogger | null = null;
 
   constructor(private readonly workspaceState?: vscode.Memento) {
     // Load persisted pinned files (normalize URIs for consistent matching)
@@ -109,6 +113,12 @@ export class ContextMonitor implements vscode.Disposable {
     const interval = config.get<number>('autoRefreshInterval', 2000);
     this.refreshTimer = setInterval(() => this.refresh(), interval);
 
+    // Opt-in session logging for research studies
+    if (config.get<boolean>('enableSessionLogging', false)) {
+      this.sessionLogger = new SessionLogger();
+      this.sessionLogger.startSession(this.activeModel.id);
+    }
+
     // Initial snapshot
     this.refresh();
   }
@@ -128,6 +138,18 @@ export class ContextMonitor implements vscode.Disposable {
       const snapshot = await this.buildSnapshot();
       this.latestSnapshot = snapshot;
       this._onDidUpdateSnapshot.fire(snapshot);
+
+      // Log snapshot to session logger if enabled
+      if (this.sessionLogger) {
+        this.sessionLogger.logSnapshot({
+          tabCount: snapshot.tabs.length,
+          totalTokens: snapshot.totalEstimatedTokens,
+          budgetPercent: snapshot.percentUsed,
+          budgetLevel: snapshot.budgetLevel,
+          distractorCount: snapshot.tabs.filter(t => t.relevanceScore < 0.3).length,
+          relevanceScores: snapshot.tabs.map(t => ({ languageId: t.languageId, score: t.relevanceScore })),
+        });
+      }
     } finally {
       this.isRefreshing = false;
       // If events arrived while we were refreshing, run one more pass
@@ -323,6 +345,11 @@ export class ContextMonitor implements vscode.Disposable {
         await vscode.window.tabGroups.close(vsTab);
         closed.push(tab.label);
       }
+    }
+
+    // Log optimize action to session logger if enabled
+    if (this.sessionLogger && closed.length > 0) {
+      this.sessionLogger.logOptimize(closed.length, threshold);
     }
 
     return closed;
@@ -664,6 +691,7 @@ export class ContextMonitor implements vscode.Disposable {
 
   dispose(): void {
     this.saveSessionSummary();
+    if (this.sessionLogger) { this.sessionLogger.endSession(); }
     if (this.refreshTimer) { clearInterval(this.refreshTimer); }
     if (this.debounceTimer) { clearTimeout(this.debounceTimer); }
     this._onDidUpdateSnapshot.dispose();
