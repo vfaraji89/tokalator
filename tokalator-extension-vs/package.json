@@ -199,6 +199,11 @@
           "type": "number",
           "default": 2000,
           "description": "Dashboard refresh interval in milliseconds"
+        },
+        "tokalator.enableSessionLogging": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores — no file names or contents."
         }
       }
     }

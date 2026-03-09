@@ -43,7 +43,7 @@ export default function AboutPage() {
               <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="github-link">
                 <GitHubIcon /> GitHub
               </a>
-              <a href="https://linkedin.com/in/vfaraji89" target="_blank" rel="noopener noreferrer" className="github-link">
+              <a href="https://www.linkedin.com/in/vahid-faraji-jobehdar/" target="_blank" rel="noopener noreferrer" className="github-link">
                 <LinkedInIcon /> LinkedIn
               </a>
               <a href="https://vfaraji89.github.io" target="_blank" rel="noopener noreferrer" className="github-link">
