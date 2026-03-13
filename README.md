@@ -46,14 +46,6 @@ cd tokalator-extension-vs && npm install && npm run compile
 # then F5 in VS Code
 ```
 
-## Structure
-
-The repo has three main parts:
-
-- `app/` and `components/` -- the Next.js website
-- `tokalator-extension-vs/` -- the VS Code extension
-- `copilot-contribution/` -- prompts, agents, and instructions you can drop into your own projects
-
 ## Contributing
 
 Open an issue, submit a PR, or just drop prompt files into `user-content/`.
