@@ -13,12 +13,12 @@
   },
   "dependencies": {
     "@anthropic-ai/tokenizer": "^0.0.4",
-    "@modelcontextprotocol/sdk": "^1.15.0",
+    "@modelcontextprotocol/sdk": "^1.27.1",
     "js-tiktoken": "^1.0.21",
     "zod": "^3.25.0"
   },
   "devDependencies": {
-    "@types/node": "^20.11.0",
+    "@types/node": "^24.12.0",
     "typescript": "^5.5.0"
   }
 }
