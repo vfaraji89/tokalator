@@ -1,0 +1,93 @@
+{
+  "defaultModelId": "claude-opus-4-5",
+  "models": [
+    {
+      "id": "claude-opus-4-5",
+      "label": "Claude Opus 4.5",
+      "provider": "anthropic",
+      "contextWindow": 200000,
+      "maxOutput": 32000,
+      "rotThreshold": 40
+    },
+    {
+      "id": "claude-sonnet-4-5",
+      "label": "Claude Sonnet 4.5",
+      "provider": "anthropic",
+      "contextWindow": 200000,
+      "maxOutput": 16000,
+      "rotThreshold": 20
+    },
+    {
+      "id": "claude-haiku-4-5",
+      "label": "Claude Haiku 4.5",
+      "provider": "anthropic",
+      "contextWindow": 200000,
+      "maxOutput": 16000,
+      "rotThreshold": 15
+    },
+    {
+      "id": "gpt-4.1",
+      "label": "GPT-4.1",
+      "provider": "openai",
+      "contextWindow": 1047576,
+      "maxOutput": 32768,
+      "rotThreshold": 20
+    },
+    {
+      "id": "gpt-4.1-mini",
+      "label": "GPT-4.1 Mini",
+      "provider": "openai",
+      "contextWindow": 1047576,
+      "maxOutput": 32768,
+      "rotThreshold": 15
+    },
+    {
+      "id": "gpt-4.1-nano",
+      "label": "GPT-4.1 Nano",
+      "provider": "openai",
+      "contextWindow": 1047576,
+      "maxOutput": 32768,
+      "rotThreshold": 12
+    },
+    {
+      "id": "o3",
+      "label": "o3",
+      "provider": "openai",
+      "contextWindow": 200000,
+      "maxOutput": 100000,
+      "rotThreshold": 20
+    },
+    {
+      "id": "o4-mini",
+      "label": "o4-mini",
+      "provider": "openai",
+      "contextWindow": 200000,
+      "maxOutput": 100000,
+      "rotThreshold": 15
+    },
+    {
+      "id": "gemini-2.5-pro",
+      "label": "Gemini 2.5 Pro",
+      "provider": "google",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "rotThreshold": 30
+    },
+    {
+      "id": "gemini-2.5-flash",
+      "label": "Gemini 2.5 Flash",
+      "provider": "google",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "rotThreshold": 25
+    },
+    {
+      "id": "gemini-2.5-flash-lite",
+      "label": "Gemini 2.5 Flash Lite",
+      "provider": "google",
+      "contextWindow": 1048576,
+      "maxOutput": 65536,
+      "rotThreshold": 20
+    }
+  ]
+}
