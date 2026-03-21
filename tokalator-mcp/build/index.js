@@ -12,6 +12,7 @@
  */
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
+// z is re-exported by tool schemas; keep dependency but remove unused direct import
 import { TokenizerService } from './core/tokenizerService.js';
 import { countTokens, countTokensSchema } from './tools/countTokens.js';
 import { estimateBudget, estimateBudgetSchema } from './tools/estimateBudget.js';
