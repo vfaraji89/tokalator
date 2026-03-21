@@ -1,0 +1,30 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "0edd97106c64",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".github/workflows/fetch-wiki.yml",
+    ".gitignore",
+    "CLAUDE.md",
+    "eslint.config.mjs",
+    "vercel.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/0e/dd97106c64/0/metadata.json",
+      "transcript": "/0e/dd97106c64/0/full.jsonl",
+      "context": "/0e/dd97106c64/0/context.md",
+      "content_hash": "/0e/dd97106c64/0/content_hash.txt",
+      "prompt": "/0e/dd97106c64/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 285,
+    "cache_creation_tokens": 38416,
+    "cache_read_tokens": 967093,
+    "output_tokens": 11670,
+    "api_call_count": 30
+  }
+}
