@@ -22,6 +22,8 @@ import { findModel } from '../core/modelProfiles';
 export class ContextChatParticipant implements vscode.Disposable {
 
   private participant: vscode.ChatParticipant;
+  // Track unknown model IDs we've already warned about to avoid repeated toasts
+  private readonly _warnedUnknownModels = new Set<string>();
 
   constructor(private readonly monitor: ContextMonitor) {
     this.participant = vscode.chat.createChatParticipant(
@@ -733,8 +735,20 @@ export class ContextChatParticipant implements vscode.Disposable {
     // Try family first (most stable identifier), then full id, then display name
     const match = findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name);
 
-    if (match && match.id !== current.id) {
-      await this.monitor.setModel(match.id);
+    if (match) {
+      if (match.id !== current.id) {
+        await this.monitor.setModel(match.id);
+      }
+      return;
+    }
+
+    // Unknown model — warn once per session so the user knows counts may be off
+    const unknownKey = lm.family || lm.id || lm.name;
+    if (!this._warnedUnknownModels.has(unknownKey)) {
+      this._warnedUnknownModels.add(unknownKey);
+      vscode.window.showWarningMessage(
+        `Tokalator: unrecognized model "${lm.name}" (family: "${lm.family}") — token counts may be inaccurate. Add it to models.json and run npm run generate-models.`
+      );
     }
   }
 

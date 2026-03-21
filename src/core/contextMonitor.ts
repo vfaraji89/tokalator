@@ -3,7 +3,7 @@ import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary } from './types'
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
-import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel } from './modelProfiles';
+import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel, findModel } from './modelProfiles';
 import { SessionLogger } from './sessionLogger';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
@@ -105,6 +105,11 @@ export class ContextMonitor implements vscode.Disposable {
             this.setModel(modelId);
           }
         }
+      }),
+      // Sync when VS Code's available chat model set changes (e.g. provider rollout,
+      // deprecation, or user installs a new Copilot extension)
+      vscode.lm.onDidChangeChatModels(() => {
+        void this.syncModelFromAvailableLMs();
       }),
     );
 
@@ -567,6 +572,36 @@ export class ContextMonitor implements vscode.Disposable {
       css: 'css', html: 'html', sh: 'shellscript', sql: 'sql',
     };
     return map[ext] || ext;
+  }
+
+  /**
+   * Called when vscode.lm.onDidChangeChatModels fires.
+   * If the current model is no longer available, switches to the best known
+   * alternative and notifies the user.
+   */
+  async syncModelFromAvailableLMs(): Promise<void> {
+    const available = await vscode.lm.selectChatModels();
+    if (!available.length) { return; }
+
+    const current = this.activeModel;
+
+    // Check if any available model maps to our current profile — still good
+    const stillPresent = available.some(lm =>
+      (findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name))?.id === current.id
+    );
+    if (stillPresent) { return; }
+
+    // Current model gone — find the best available substitute
+    for (const lm of available) {
+      const match = findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name);
+      if (match) {
+        await this.setModel(match.id);
+        vscode.window.showInformationMessage(
+          `Tokalator: "${current.label}" is no longer available. Switched to "${match.label}".`
+        );
+        return;
+      }
+    }
   }
 
   /**
