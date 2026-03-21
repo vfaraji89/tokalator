@@ -16,6 +16,14 @@ const eslintConfig = defineConfig([
     "tokalator-extension-vs/dist/**",
   ]),
   {
+    // Hydration-safe setState in effects (e.g. setNow, route-change handlers).
+    // eslint-config-next 16.2 upgraded this to error; downgrade to warn because
+    // the pattern is intentional for SSR hydration compatibility.
+    rules: {
+      "react-hooks/set-state-in-effect": "warn",
+    },
+  },
+  {
     // Extension test mocks and VS Code API interop legitimately require `any`
     files: [
       "tokalator-extension-vs/__tests__/**",
