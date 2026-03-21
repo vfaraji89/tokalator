@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import content from "../content/homepage.json";
 import { CommandTyper } from "../components/command-typer";
@@ -125,16 +126,16 @@ export default function HomePage() {
             rel="noopener noreferrer"
             className="ide-install-btn ide-install-btn--primary"
           >
-            <img src="/icons/vscode.svg" alt="VS Code" width={18} height={18} />
+            <Image src="/icons/vscode.svg" alt="VS Code" width={18} height={18} />
             VS Code
           </a>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <img src="/icons/cursor.svg" alt="Cursor" width={18} height={18} />
+            <Image src="/icons/cursor.svg" alt="Cursor" width={18} height={18} />
             Cursor
             <span className="ide-soon-tag">Soon</span>
           </span>
           <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <img src="/icons/claude.svg" alt="Claude" width={18} height={18} />
+            <Image src="/icons/claude.svg" alt="Claude" width={18} height={18} />
             Claude Code
             <span className="ide-soon-tag">Soon</span>
           </span>
@@ -149,10 +150,12 @@ export default function HomePage() {
 
         {/* Dashboard screenshot */}
         <div style={{ marginTop: "2rem", maxWidth: 420, width: "100%" }}>
-          <img
+          <Image
             src="/screenshots/tokalator-ui.png"
             alt="Tokalator token budget dashboard in VS Code — LOW budget, next turn preview, budget breakdown"
-            style={{ width: "100%", borderRadius: "8px", border: "1px solid var(--border)", display: "block" }}
+            width={840}
+            height={560}
+            style={{ width: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--border)", display: "block" }}
           />
         </div>
       </header>

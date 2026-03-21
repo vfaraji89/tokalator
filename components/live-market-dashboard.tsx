@@ -10,11 +10,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
-  BarChart,
-  Bar,
   AreaChart,
   Area,
-  Cell,
 } from 'recharts';
 import {
   Provider,
