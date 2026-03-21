@@ -17,6 +17,17 @@ const fmtTok = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` 
 
 const PROVIDER_COLORS: Record<string, string> = { anthropic: P.black, openai: '#10a37f', google: '#4285f4' };
 
+type ModelType = typeof PROVIDER_MODELS[number];
+
+// Pure function — no component state dependency
+const calcCost = (m: ModelType, inp: number, out: number, cw = 0, cr = 0) => {
+  const ic = (inp / 1_000_000) * m.inputCostPerMTok;
+  const oc = (out / 1_000_000) * m.outputCostPerMTok;
+  const cwc = (cw / 1_000_000) * m.inputCostPerMTok * 1.25;
+  const crc = (cr / 1_000_000) * m.inputCostPerMTok * 0.1;
+  return { input: ic, output: oc, cacheWrite: cwc, cacheRead: crc, total: ic + oc + cwc + crc };
+};
+
 type Tab = 'calculator' | 'compare' | 'pricing';
 
 export default function CalculatorPage() {
@@ -28,16 +39,6 @@ export default function CalculatorPage() {
   const [cacheReadTokens, setCacheReadTokens] = useState(0);
 
   const model = PROVIDER_MODELS.find(m => m.id === selectedModel) || PROVIDER_MODELS[0];
-
-  // Calculate cost for any model
-  const calcCost = (m: typeof model, inp: number, out: number, cw = 0, cr = 0) => {
-    const ic = (inp / 1_000_000) * m.inputCostPerMTok;
-    const oc = (out / 1_000_000) * m.outputCostPerMTok;
-    // Estimate cache pricing: write ~1.25x input, read ~0.1x input
-    const cwc = (cw / 1_000_000) * m.inputCostPerMTok * 1.25;
-    const crc = (cr / 1_000_000) * m.inputCostPerMTok * 0.1;
-    return { input: ic, output: oc, cacheWrite: cwc, cacheRead: crc, total: ic + oc + cwc + crc };
-  };
 
   const cost = useMemo(() => calcCost(model, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens), [model, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens]);
 

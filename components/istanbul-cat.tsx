@@ -31,8 +31,6 @@ export function IstanbulCat() {
 
   const onLeave = useCallback(() => setEye({ x: 0, y: 0 }), []);
 
-  const ry = blink ? 0.2 : 1;
-
   return (
     <span
       ref={ref}

@@ -7,7 +7,7 @@ import {
 } from "recharts";
 import {
   calculateCost, calculateQuality, formatCost, formatTokens,
-  getModelInfo, ANTHROPIC_PRICING, MODEL_PARAMS, type CostBreakdown,
+  getModelInfo, MODEL_PARAMS, type CostBreakdown,
 } from "@/lib/pricing";
 
 const models = ["claude-opus-4.6", "claude-sonnet-4.5", "claude-haiku-4.5"] as const;
