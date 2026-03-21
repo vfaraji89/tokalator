@@ -75,13 +75,13 @@ Brings Tokalator into Claude Code and terminal workflows. See the [MCP & CLI sec
 
 | Provider | Models | Tokenizer |
 | --- | --- | --- |
-| Anthropic | Opus 4.5, Sonnet 4.5, Haiku 4.5 | Claude BPE (`@anthropic-ai/tokenizer`) |
-| OpenAI | GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano, o3, o4-mini | o200k_base (`js-tiktoken`) |
-| Google | Gemini 2.5 Pro, 2.5 Flash, 2.5 Flash Lite | Heuristic (~4 chars/token) |
+| Anthropic | Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Sonnet 4, Haiku 4.5 | Claude BPE (`@anthropic-ai/tokenizer`) |
+| OpenAI | GPT-5.4, GPT-5.4 Mini, GPT-5.2 Codex, GPT-5.1 Codex, GPT-4.1, o3, o4-mini | o200k_base (`js-tiktoken`) |
+| Google | Gemini 3.1 Pro, Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro | Heuristic (~4 chars/token) |
 
-## Supported Models (11 profiles)
+## Supported Models (17 profiles)
 
-Claude Opus 4.5 · Claude Sonnet 4.5 · Claude Haiku 4.5 · GPT-4.1 · GPT-4.1 Mini · GPT-4.1 Nano · o3 · o4-mini · Gemini 2.5 Pro · Gemini 2.5 Flash · Gemini 2.5 Flash Lite
+Claude Opus 4.6 · Claude Opus 4.5 · Claude Sonnet 4.6 · Claude Sonnet 4.5 · Claude Sonnet 4 · Claude Haiku 4.5 · GPT-5.4 · GPT-5.4 Mini · GPT-5.2 Codex · GPT-5.1 Codex · GPT-4.1 · o3 · o4-mini · Gemini 3.1 Pro · Gemini 3 Pro · Gemini 3 Flash · Gemini 2.5 Pro
 
 ## Usage
 
@@ -93,7 +93,7 @@ Claude Opus 4.5 · Claude Sonnet 4.5 · Claude Haiku 4.5 · GPT-4.1 · GPT-4.1 M
 
 | Setting | Default | Description |
 | --- | --- | --- |
-| `tokalator.model` | `claude-opus-4-5` | Active model (sets window, tokenizer, rot threshold) |
+| `tokalator.model` | `claude-opus-4.6` | Active model (sets window, tokenizer, rot threshold) |
 | `tokalator.relevanceThreshold` | `0.3` | Score below which tabs are flagged as distractors |
 | `tokalator.windowSize` | `1000000` | Context window override (leave at default to use model's) |
 | `tokalator.contextRotWarningTurns` | `20` | Warn after this many chat turns |
