@@ -39,6 +39,7 @@
     "user-content",
     "examples",
     "prisma",
-    "lib/db.ts"
+    "lib/db.ts",
+    "scripts"
   ]
 }
