@@ -102,18 +102,18 @@
   },
   "shipped": {
     "title": "Recently Shipped",
-    "subtitle": "What landed in v3.1.2.",
+    "subtitle": "What landed in v3.1.3.",
     "items": [
       {
-        "name": "MCP Server for Claude Code",
-        "description": "Real Claude BPE token counting inside Claude Code — count_tokens, estimate_budget, preview_turn, list_models via stdio MCP transport. Zero API calls.",
-        "badge": "New",
+        "name": "17 Model Profiles",
+        "description": "Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, Gemini 3.x — auto-detected from Copilot chat window.",
+        "badge": "Updated",
         "number": 1
       },
       {
-        "name": "CLI — tokalator count / budget / preview / models",
-        "description": "Standalone terminal tool for SSH sessions, containers, and non-VS Code workflows. Install globally with npm.",
-        "badge": "New",
+        "name": "Session Logger & Bug Fixes",
+        "description": "Fixed session logger object shape, logOptimize arguments, missing await on model switch, and dashboard listener memory leak.",
+        "badge": "Fix",
         "number": 2
       }
     ]
