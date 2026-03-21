@@ -155,32 +155,44 @@
         },
         "tokalator.model": {
           "type": "string",
-          "default": "claude-opus-4-5",
+          "default": "claude-opus-4.6",
           "enum": [
-            "claude-opus-4-5",
-            "claude-sonnet-4-5",
-            "claude-haiku-4-5",
+            "claude-opus-4.6",
+            "claude-opus-4.5",
+            "claude-sonnet-4.6",
+            "claude-sonnet-4.5",
+            "claude-sonnet-4",
+            "claude-haiku-4.5",
+            "gpt-5.4",
+            "gpt-5.4-mini",
+            "gpt-5.2-codex",
+            "gpt-5.1-codex",
             "gpt-4.1",
-            "gpt-4.1-mini",
-            "gpt-4.1-nano",
             "o3",
             "o4-mini",
-            "gemini-2.5-pro",
-            "gemini-2.5-flash",
-            "gemini-2.5-flash-lite"
+            "gemini-3.1-pro",
+            "gemini-3-pro",
+            "gemini-3-flash",
+            "gemini-2.5-pro"
           ],
           "enumDescriptions": [
-            "Claude Opus 4.5 \u2014 200K tokens",
-            "Claude Sonnet 4.5 \u2014 200K tokens",
-            "Claude Haiku 4.5 \u2014 200K tokens",
-            "GPT-4.1 \u2014 1M tokens",
-            "GPT-4.1 Mini \u2014 1M tokens",
-            "GPT-4.1 Nano \u2014 1M tokens",
-            "o3 \u2014 200K tokens",
-            "o4-mini \u2014 200K tokens",
-            "Gemini 2.5 Pro \u2014 1M tokens",
-            "Gemini 2.5 Flash \u2014 1M tokens",
-            "Gemini 2.5 Flash Lite \u2014 1M tokens"
+            "Claude Opus 4.6 — 200K tokens",
+            "Claude Opus 4.5 — 200K tokens",
+            "Claude Sonnet 4.6 — 200K tokens",
+            "Claude Sonnet 4.5 — 200K tokens",
+            "Claude Sonnet 4 — 200K tokens",
+            "Claude Haiku 4.5 — 200K tokens",
+            "GPT-5.4 — 1M tokens",
+            "GPT-5.4 Mini — 400K tokens",
+            "GPT-5.2 Codex — 400K tokens",
+            "GPT-5.1 Codex — 400K tokens",
+            "GPT-4.1 — 1M tokens",
+            "o3 — 200K tokens",
+            "o4-mini — 200K tokens",
+            "Gemini 3.1 Pro — 1M tokens",
+            "Gemini 3 Pro — 1M tokens",
+            "Gemini 3 Flash — 1M tokens",
+            "Gemini 2.5 Pro — 1M tokens"
           ],
           "description": "AI model to calculate context budget against"
         },
@@ -197,7 +209,7 @@
         "tokalator.enableSessionLogging": {
           "type": "boolean",
           "default": false,
-          "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores \u2014 no file names or contents."
+          "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores — no file names or contents."
         }
       }
     }

@@ -39,8 +39,8 @@
     },
     {
       "icon": "◇",
-      "name": "11 Model Profiles",
-      "description": "Built-in profiles for Opus 4.5, Sonnet 4.5, Haiku 4.5, GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano, o3, o4-mini, Gemini 2.5 Pro, Flash, Flash Lite. Context windows and rot thresholds auto-configured.",
+      "name": "17 Model Profiles",
+      "description": "Built-in profiles for Claude Opus/Sonnet/Haiku 4.x, GPT-5.4, GPT-5.4 Mini, GPT-5.2/5.1 Codex, GPT-4.1, o3, o4-mini, Gemini 3.x Pro/Flash, Gemini 2.5 Pro. Context windows and rot thresholds auto-configured.",
       "command": "Settings: tokalator.model",
       "number": 5
     },
@@ -114,7 +114,7 @@
   "settings": [
     {
       "key": "tokalator.model",
-      "default": "claude-opus-4-5",
+      "default": "claude-opus-4.6",
       "description": "AI model to calculate context budget against. Sets tokenizer, context window, and rot threshold automatically."
     },
     {
@@ -173,19 +173,19 @@
   "tokenizers": [
     {
       "provider": "Anthropic",
-      "models": "Opus 4.5, Sonnet 4.5, Haiku 4.5",
+      "models": "Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Sonnet 4, Haiku 4.5",
       "tokenizer": "Claude BPE",
       "source": "@anthropic-ai/tokenizer"
     },
     {
       "provider": "OpenAI",
-      "models": "GPT-4.1, GPT-4.1 Mini, GPT-4.1 Nano, o3, o4-mini",
+      "models": "GPT-5.4, GPT-5.4 Mini, GPT-5.2 Codex, GPT-5.1 Codex, GPT-4.1, o3, o4-mini",
       "tokenizer": "o200k_base",
       "source": "js-tiktoken"
     },
     {
       "provider": "Google",
-      "models": "Gemini 2.5 Pro, 2.5 Flash, 2.5 Flash Lite",
+      "models": "Gemini 3.1 Pro, Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro",
       "tokenizer": "Heuristic",
       "source": "~4 chars/token (no official JS tokenizer)"
     }

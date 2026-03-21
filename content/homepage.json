@@ -33,7 +33,7 @@
         },
         {
           "label": "Models",
-          "value": "11 profiles — Opus 4.5, Sonnet 4.5, Haiku 4.5, GPT-4.1 family, o3, o4-mini, Gemini 2.5 Pro/Flash"
+          "value": "17 profiles — Claude 4.x, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, GPT-4.1, o3, o4-mini, Gemini 3.x, Gemini 2.5"
         },
         {
           "label": "Caching",
