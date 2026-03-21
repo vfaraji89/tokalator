@@ -141,14 +141,7 @@ export class ContextMonitor implements vscode.Disposable {
 
       // Log snapshot to session logger if enabled
       if (this.sessionLogger) {
-        this.sessionLogger.logSnapshot({
-          tabCount: snapshot.tabs.length,
-          totalTokens: snapshot.totalEstimatedTokens,
-          budgetPercent: snapshot.percentUsed,
-          budgetLevel: snapshot.budgetLevel,
-          distractorCount: snapshot.tabs.filter(t => t.relevanceScore < 0.3).length,
-          relevanceScores: snapshot.tabs.map(t => ({ languageId: t.languageId, score: t.relevanceScore })),
-        });
+        this.sessionLogger.logSnapshot(snapshot);
       }
     } finally {
       this.isRefreshing = false;
@@ -349,7 +342,7 @@ export class ContextMonitor implements vscode.Disposable {
 
     // Log optimize action to session logger if enabled
     if (this.sessionLogger && closed.length > 0) {
-      this.sessionLogger.logOptimize(closed.length, threshold);
+      this.sessionLogger.logOptimize(snapshot.tabs.length, snapshot.totalEstimatedTokens, closed.length);
     }
 
     return closed;

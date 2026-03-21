@@ -613,7 +613,7 @@ export class ContextChatParticipant implements vscode.Disposable {
       return {};
     }
 
-    this.monitor.setModel(match.id);
+    await this.monitor.setModel(match.id);
     stream.markdown(`Switched to **${match.label}**\n\n`);
     stream.markdown(`| | |\n|---|---|\n`);
     stream.markdown(`| **Context window** | ${this.fmtTokens(match.contextWindow)} |\n`);
