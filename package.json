@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "3.1.2",
+  "version": "3.1.3",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
@@ -170,17 +170,17 @@
             "gemini-2.5-flash-lite"
           ],
           "enumDescriptions": [
-            "Claude Opus 4.5 — 200K tokens",
-            "Claude Sonnet 4.5 — 200K tokens",
-            "Claude Haiku 4.5 — 200K tokens",
-            "GPT-4.1 — 1M tokens",
-            "GPT-4.1 Mini — 1M tokens",
-            "GPT-4.1 Nano — 1M tokens",
-            "o3 — 200K tokens",
-            "o4-mini — 200K tokens",
-            "Gemini 2.5 Pro — 1M tokens",
-            "Gemini 2.5 Flash — 1M tokens",
-            "Gemini 2.5 Flash Lite — 1M tokens"
+            "Claude Opus 4.5 \u2014 200K tokens",
+            "Claude Sonnet 4.5 \u2014 200K tokens",
+            "Claude Haiku 4.5 \u2014 200K tokens",
+            "GPT-4.1 \u2014 1M tokens",
+            "GPT-4.1 Mini \u2014 1M tokens",
+            "GPT-4.1 Nano \u2014 1M tokens",
+            "o3 \u2014 200K tokens",
+            "o4-mini \u2014 200K tokens",
+            "Gemini 2.5 Pro \u2014 1M tokens",
+            "Gemini 2.5 Flash \u2014 1M tokens",
+            "Gemini 2.5 Flash Lite \u2014 1M tokens"
           ],
           "description": "AI model to calculate context budget against"
         },
@@ -197,7 +197,7 @@
         "tokalator.enableSessionLogging": {
           "type": "boolean",
           "default": false,
-          "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores — no file names or contents."
+          "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores \u2014 no file names or contents."
         }
       }
     }
