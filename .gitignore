@@ -52,6 +52,13 @@ next-env.d.ts
 !/user-content/claude-code/.gitkeep
 __pycache__/
 
-# spec-kit (agent credentials/tokens)
-.github/
+# spec-kit (private agents/prompts — not for public repo)
+.github/agents/
+.github/prompts/
+
+# private research paper (drafts, submission files)
 paper/
+
+# nested node_modules (subdirectory packages)
+tokalator-mcp/node_modules/
+tokalator-extension-vs/node_modules/
