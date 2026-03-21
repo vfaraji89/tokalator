@@ -4,3 +4,7 @@ src/**
 tsconfig.json
 .gitignore
 **/*.map
+__tests__/**
+scripts/**
+jest.config.js
+evaluation/**
