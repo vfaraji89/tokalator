@@ -1,5 +1,34 @@
 # Changelog
 
+## 3.1.3 — 2026-03-21
+
+### Fixed
+
+- Session logger receiving wrong object shape — all logged fields were undefined
+- `logOptimize` called with wrong arguments (threshold passed as token count)
+- Missing `await` on model switch caused stale token budget in response
+- Dashboard listener memory leak — subscription now properly disposed
+
+### Changed
+
+- Model list updated to 17 profiles: Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.2/5.1 Codex, Gemini 3.x
+- Model auto-detection improved: `vscode.lm.onDidChangeChatModels` listener added
+- Unknown model warning when switching to a model not in profiles
+- Security: Next.js 16.2.1 (5 CVEs patched), hono, flatted
+
+## 3.1.2 — 2026-03-06
+
+### Added
+
+- Auto-sync model from Copilot chat window
+
+### Fixed
+
+- Stale token counts after rapid file switching
+- Duplicate tab entries in multi-root workspaces
+- `CLAUDE.md` and `AGENTS.md` now counted in instruction scanner budget
+- Pin/unpin event propagation in dashboard
+
 ## 3.1.1 — 2026-02-11
 
 ### Fixed
