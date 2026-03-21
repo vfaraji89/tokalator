@@ -1,9 +1,17 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "motion/react";
 import Image from "next/image";
 import ext from "../../content/extension.json";
 import { CliTerminal } from "../../components/cli-terminal";
+
+const scrollReveal = (delay = 0) => ({
+  initial: { opacity: 0, y: 24 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] as const },
+});
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
@@ -153,7 +161,7 @@ export default function ExtensionPage() {
         <div className="section-divider" />
         <h2 className="section-header">Screenshots</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(240px, 1fr))", gap: "1.5rem", marginTop: "1rem" }}>
-          <figure style={{ margin: 0 }}>
+          <motion.figure {...scrollReveal(0)} style={{ margin: 0 }}>
             <Image
               src="/screenshots/tokalator-ui.png"
               alt="Tokalator sidebar dashboard showing token budget, next turn preview, and budget breakdown"
@@ -164,8 +172,8 @@ export default function ExtensionPage() {
             <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
               Sidebar dashboard — live token budget, next turn preview, and budget breakdown
             </figcaption>
-          </figure>
-          <figure style={{ margin: 0 }}>
+          </motion.figure>
+          <motion.figure {...scrollReveal(0.1)} style={{ margin: 0 }}>
             <Image
               src="/screenshots/tokalator-breakdown.png"
               alt="Tokalator /breakdown command in chat showing file token counts and relevance scores"
@@ -176,8 +184,8 @@ export default function ExtensionPage() {
             <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
               @tokalator /breakdown — per-file token counts and relevance scores in chat
             </figcaption>
-          </figure>
-          <figure style={{ margin: 0 }}>
+          </motion.figure>
+          <motion.figure {...scrollReveal(0.2)} style={{ margin: 0 }}>
             <Image
               src="/screenshots/tokalator-commands.png"
               alt="Tokalator chat command autocomplete showing all @tokalator slash commands"
@@ -188,7 +196,7 @@ export default function ExtensionPage() {
             <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
               11 chat commands via @tokalator — full context management workflow
             </figcaption>
-          </figure>
+          </motion.figure>
         </div>
       </section>
 

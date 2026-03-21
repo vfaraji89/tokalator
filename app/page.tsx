@@ -3,8 +3,27 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
+import { motion } from "motion/react";
 import content from "../content/homepage.json";
 import { CommandTyper } from "../components/command-typer";
+import { PixelAbacus } from "../components/cli-terminal";
+
+const fadeUp = (delay = 0) => ({
+  initial: { opacity: 0, y: 18 },
+  animate: { opacity: 1, y: 0 },
+  transition: { duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] as const },
+});
+const fadeIn = (delay = 0) => ({
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  transition: { duration: 0.4, delay },
+});
+const inView = {
+  initial: { opacity: 0, y: 22 },
+  whileInView: { opacity: 1, y: 0 },
+  viewport: { once: true, margin: "-60px" },
+  transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] as const },
+};
 
 function LiveClock() {
   const [now, setNow] = useState<Date | null>(null);
@@ -70,12 +89,16 @@ export default function HomePage() {
     <article className="article">
       {/* Hero — Agentation-inspired marker highlight */}
       <header className="hero">
-        <a href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
+        <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
           <span className="update-dot" /> Now on VS Code Marketplace
           <span className="update-arrow">→</span>
-        </a>
+        </motion.a>
+        {/* Pixel abacus mascot */}
+        <motion.div {...fadeIn(0.08)} style={{ display: "flex", alignItems: "center", gap: "1rem" }} aria-hidden>
+          <PixelAbacus width={56} height={80} />
+        </motion.div>
         {/* Motionable outline icon */}
-        <div className="hero-outline-icon" aria-hidden>
+        <motion.div {...fadeIn(0.08)} className="hero-outline-icon" aria-hidden>
           <svg width="48" height="48" viewBox="0 0 28 28" fill="none" className="hero-abacus">
             <path d="M4 4 L4 24 L24 24 L24 4 Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
             <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1" />
@@ -90,20 +113,20 @@ export default function HomePage() {
             <circle className="hero-bead hero-bead-7" cx="13" cy="19" r="2" />
             <circle className="hero-bead hero-bead-8" cx="18" cy="19" r="2" />
           </svg>
-        </div>
-        <h1 className="hero-headline">
+        </motion.div>
+        <motion.h1 {...fadeUp(0.15)} className="hero-headline">
           {headlineParts.map((part, i) => (
             <span key={i} className={i === 0 ? "hero-marker" : "hero-underline"}>
               {i > 0 && <br />}
               {part}
             </span>
           ))}
-        </h1>
-        <p className="hero-description">
+        </motion.h1>
+        <motion.p {...fadeUp(0.25)} className="hero-description">
           <span className="accent-highlight">{hero.highlightPhrase}</span>{" "}
           {hero.description}
-        </p>
-        <div className="hero-ctas">
+        </motion.p>
+        <motion.div {...fadeUp(0.35)} className="hero-ctas">
           <Link href={hero.secondaryCta.href} className="cta-secondary">
             {hero.secondaryCta.label}
           </Link>
@@ -116,10 +139,10 @@ export default function HomePage() {
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
             Star on GitHub
           </a>
-        </div>
+        </motion.div>
 
         {/* IDE Install Options */}
-        <div className="ide-install">
+        <motion.div {...fadeUp(0.42)} className="ide-install">
           <a
             href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
             target="_blank"
@@ -139,17 +162,24 @@ export default function HomePage() {
             Claude Code
             <span className="ide-soon-tag">Soon</span>
           </span>
-        </div>
-        <div className="install-cmd">
+        </motion.div>
+        <motion.div {...fadeUp(0.48)} className="install-cmd">
           <code>{hero.installCmd}</code>
           <CopyButton text={hero.installCmd} />
-        </div>
+        </motion.div>
 
         {/* Command typing animation */}
-        <CommandTyper />
+        <motion.div {...fadeIn(0.55)}>
+          <CommandTyper />
+        </motion.div>
 
         {/* Dashboard screenshot */}
-        <div style={{ marginTop: "2rem", maxWidth: 420, width: "100%" }}>
+        <motion.div
+          initial={{ opacity: 0, y: 28, scale: 0.98 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          transition={{ duration: 0.55, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] as const }}
+          style={{ marginTop: "2rem", maxWidth: 420, width: "100%" }}
+        >
           <Image
             src="/screenshots/tokalator-ui.png"
             alt="Tokalator token budget dashboard in VS Code — LOW budget, next turn preview, budget breakdown"
@@ -157,11 +187,11 @@ export default function HomePage() {
             height={560}
             style={{ width: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--border)", display: "block" }}
           />
-        </div>
+        </motion.div>
       </header>
 
       {/* Quick Start */}
-      <section>
+      <motion.section {...inView}>
         <div className="section-divider" />
         <h2 className="section-header">{quickStart.title}</h2>
         <ol className="how-to-steps">
@@ -183,10 +213,10 @@ export default function HomePage() {
             ))}
           </dl>
         </div>
-      </section>
+      </motion.section>
 
       {/* All Commands */}
-      <section className="extension-section">
+      <motion.section {...inView} className="extension-section">
         <div className="section-divider" />
         <h2 className="section-header">{commands.title}</h2>
         <p>{commands.description}</p>
@@ -208,10 +238,10 @@ export default function HomePage() {
             View on GitHub →
           </a>
         </div>
-      </section>
+      </motion.section>
 
       {/* Beyond VS Code */}
-      <section className="extension-section">
+      <motion.section {...inView} className="extension-section">
         <div className="section-divider" />
         <h2 className="section-header">Beyond VS Code</h2>
         <p>Token budget awareness wherever you work — not just in the editor.</p>
@@ -241,10 +271,10 @@ export default function HomePage() {
             <span className="feature-badge feature-badge--cli">CLI</span>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       {/* Open Source */}
-      <section className="community-section">
+      <motion.section {...inView} className="community-section">
         <div className="community-glow" aria-hidden />
         <div className="community-content">
           <h2 className="community-headline">Every token you save<br />makes the next prompt better.</h2>
@@ -263,7 +293,7 @@ export default function HomePage() {
             </a>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       <footer className="footer">
         <div className="footer-nav">

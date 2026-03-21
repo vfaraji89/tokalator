@@ -1,3 +1,5 @@
+import { motion } from "motion/react";
+
 // ASCII block art: TOKALATOR (5 rows × 5-wide letters, single-space separated)
 const LOGO_LINES = [
   "█████  ███  █   █   █   █       █   █████  ███  ████ ",
@@ -21,19 +23,27 @@ const LOGO_LINES = [
 //   bead-b1: active → slides DOWN +12px then returns (animation: abacus-down-sm)
 //   bead-b2: inactive → slides UP -12px then returns (animation: abacus-up-sm)
 //   bead-b3: active → same as b1, offset delay
-function PixelAbacus() {
+export function PixelAbacus({ width = 72, height = 103 }: { width?: number; height?: number }) {
+  const beadAnim = (yFrom: number, yTo: number, delay: number) => ({
+    animate: { y: [0, yTo - yFrom, 0] },
+    transition: { duration: 1.6, delay, repeat: Infinity, repeatDelay: 2.4, ease: [0.45, 0, 0.55, 1] as const },
+  });
+
   return (
-    <svg
+    <motion.svg
       viewBox="0 0 56 80"
-      width="72"
-      height="103"
+      width={width}
+      height={height}
       aria-hidden="true"
       style={{ flexShrink: 0 }}
+      initial={{ opacity: 0, scale: 0.9 }}
+      animate={{ opacity: 1, scale: 1 }}
+      transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] as const }}
     >
       {/* Body */}
       <rect width="56" height="80" fill="#0d0505" />
 
-      {/* Frame — top / bottom bars + side posts */}
+      {/* Frame */}
       <rect x="0" y="0" width="56" height="6" fill="#8b1208" />
       <rect x="0" y="74" width="56" height="6" fill="#8b1208" />
       <rect x="0" y="0" width="6" height="80" fill="#8b1208" />
@@ -47,31 +57,31 @@ function PixelAbacus() {
       <rect x="6" y="59" width="44" height="2" fill="#444" />
 
       {/* ── Top beads ── */}
-      <g className="abacus-bead-t1">
+      <motion.g {...beadAnim(28, 9, 0.2)}>
         <rect x="10" y="28" width="8" height="8" rx="1" fill="#e3120b" />
         <rect x="11" y="29" width="2" height="2" fill="#ff4433" opacity="0.6" />
-      </g>
-      <g className="abacus-bead-t2">
+      </motion.g>
+      <motion.g {...beadAnim(9, 28, 0.5)}>
         <rect x="24" y="9" width="8" height="8" rx="1" fill="#7a1208" />
-      </g>
-      <g className="abacus-bead-t3">
+      </motion.g>
+      <motion.g {...beadAnim(28, 9, 0.8)}>
         <rect x="38" y="28" width="8" height="8" rx="1" fill="#e3120b" />
         <rect x="39" y="29" width="2" height="2" fill="#ff4433" opacity="0.6" />
-      </g>
+      </motion.g>
 
       {/* ── Bottom beads ── */}
-      <g className="abacus-bead-b1">
+      <motion.g {...beadAnim(50, 62, 0.3)}>
         <rect x="10" y="50" width="8" height="8" rx="1" fill="#e3120b" />
         <rect x="11" y="51" width="2" height="2" fill="#ff4433" opacity="0.6" />
-      </g>
-      <g className="abacus-bead-b2">
+      </motion.g>
+      <motion.g {...beadAnim(62, 50, 0.6)}>
         <rect x="24" y="62" width="8" height="8" rx="1" fill="#7a1208" />
-      </g>
-      <g className="abacus-bead-b3">
+      </motion.g>
+      <motion.g {...beadAnim(50, 62, 0.9)}>
         <rect x="38" y="50" width="8" height="8" rx="1" fill="#e3120b" />
         <rect x="39" y="51" width="2" height="2" fill="#ff4433" opacity="0.6" />
-      </g>
-    </svg>
+      </motion.g>
+    </motion.svg>
   );
 }
 

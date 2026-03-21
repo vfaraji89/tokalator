@@ -1,9 +1,19 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { motion, AnimatePresence } from 'motion/react';
 import type { CatalogItem, Ecosystem, ContentSource } from '@/lib/types/catalog';
 import { FilterBar } from './filter-bar';
 import { CatalogCard } from './catalog-card';
+
+const gridVariants = {
+  hidden: {},
+  show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } },
+};
+const cardVariants = {
+  hidden: { opacity: 0, y: 18 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: [0.25, 0.1, 0.25, 1] as const } },
+};
 
 interface CatalogGridProps {
   items: CatalogItem[];
@@ -31,6 +41,8 @@ export function CatalogGrid({ items, title, description, icon }: CatalogGridProp
     });
   }, [items, search, ecosystemFilter, sourceFilter]);
 
+  const filterKey = `${search}-${ecosystemFilter}-${sourceFilter}`;
+
   return (
     <article className="article">
       <header className="hero">
@@ -52,27 +64,43 @@ export function CatalogGrid({ items, title, description, icon }: CatalogGridProp
 
       {/* Grid */}
       <section>
-        {filtered.length > 0 ? (
-          <div className="wiki-grid">
-            {filtered.map((item) => (
-              <CatalogCard key={`${item.source}-${item.id}`} item={item} />
-            ))}
-          </div>
-        ) : (
-          <div className="wiki-empty">
-            <p>No items match your filters.</p>
-            <button
-              onClick={() => {
-                setSearch('');
-                setEcosystemFilter('all');
-                setSourceFilter('all');
-              }}
-              className="cta-secondary"
+        <AnimatePresence mode="wait">
+          {filtered.length > 0 ? (
+            <motion.div
+              key={filterKey}
+              className="wiki-grid"
+              variants={gridVariants}
+              initial="hidden"
+              animate="show"
             >
-              Clear all filters
-            </button>
-          </div>
-        )}
+              {filtered.map((item) => (
+                <motion.div key={`${item.source}-${item.id}`} variants={cardVariants}>
+                  <CatalogCard item={item} />
+                </motion.div>
+              ))}
+            </motion.div>
+          ) : (
+            <motion.div
+              key="empty"
+              className="wiki-empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.2 }}
+            >
+              <p>No items match your filters.</p>
+              <button
+                onClick={() => {
+                  setSearch('');
+                  setEcosystemFilter('all');
+                  setSourceFilter('all');
+                }}
+                className="cta-secondary"
+              >
+                Clear all filters
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </section>
     </article>
   );
