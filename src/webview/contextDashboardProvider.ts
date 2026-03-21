@@ -6,19 +6,24 @@ import type { ContextSnapshot } from '../core/types';
  * WebviewViewProvider for the Tokalator sidebar panel.
  * Shows a simplified token budget dashboard.
  */
-export class ContextDashboardProvider implements vscode.WebviewViewProvider {
+export class ContextDashboardProvider implements vscode.WebviewViewProvider, vscode.Disposable {
 
   public static readonly viewType = 'tokalator.dashboard';
 
   private view?: vscode.WebviewView;
+  private readonly _snapshotListener: vscode.Disposable;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly monitor: ContextMonitor,
   ) {
-    this.monitor.onDidUpdateSnapshot(snapshot => {
+    this._snapshotListener = this.monitor.onDidUpdateSnapshot(snapshot => {
       this.postSnapshot(snapshot);
     });
+  }
+
+  dispose(): void {
+    this._snapshotListener.dispose();
   }
 
   resolveWebviewView(
