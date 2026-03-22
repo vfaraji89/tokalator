@@ -105,16 +105,22 @@
     "subtitle": "What landed in v3.1.3.",
     "items": [
       {
-        "name": "17 Model Profiles",
-        "description": "Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, Gemini 3.x — auto-detected from Copilot chat window.",
-        "badge": "Updated",
+        "name": "Claude Code via MCP",
+        "description": "Real Claude BPE token counting inside Claude Code — count_tokens, estimate_budget, preview_turn, list_models via stdio MCP transport. Zero API calls.",
+        "badge": "Live",
         "number": 1
       },
       {
-        "name": "Session Logger & Bug Fixes",
-        "description": "Fixed session logger object shape, logOptimize arguments, missing await on model switch, and dashboard listener memory leak.",
-        "badge": "Fix",
+        "name": "17 Model Profiles",
+        "description": "Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, Gemini 3.x — auto-detected from VS Code Copilot chat.",
+        "badge": "Updated",
         "number": 2
+      },
+      {
+        "name": "Economist-Style Calculator",
+        "description": "Redesigned cost calculator with animated horizontal bar charts, cost-at-scale table, and stacked breakdown bars. No pie charts.",
+        "badge": "New",
+        "number": 3
       }
     ]
   },
