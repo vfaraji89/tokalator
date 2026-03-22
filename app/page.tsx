@@ -152,11 +152,11 @@ export default function HomePage() {
             Cursor
             <span className="ide-soon-tag">Soon</span>
           </span>
-          <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <Image src="/icons/claude.svg" alt="Claude" width={18} height={18} />
+          <Link href="/extension#mcp" className="ide-install-btn ide-install-btn--mcp" title="Use via MCP server">
+            <Image src="/icons/claude.svg" alt="Claude Code" width={18} height={18} />
             Claude Code
-            <span className="ide-soon-tag">Soon</span>
-          </span>
+            <span className="ide-mcp-tag">MCP</span>
+          </Link>
         </motion.div>
         <motion.div {...fadeUp(0.48)} className="install-cmd">
           <code>{hero.installCmd}</code>

@@ -9,7 +9,7 @@ const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g
 const tt = { contentStyle: { background: P.white, border: "1px solid " + P.g3, borderRadius: 4, fontSize: 12, color: P.black } };
 
 const models = [
-  { name: "Claude Opus 4.5", tier: "Most Capable", input: "$5.00", output: "$25.00", cacheWrite: "$6.25", cacheRead: "$0.50", ratio: "5.0x", inputNum: 5, outputNum: 25 },
+  { name: "Claude Opus 4.6", tier: "Most Capable", input: "$5.00", output: "$25.00", cacheWrite: "$6.25", cacheRead: "$0.50", ratio: "5.0x", inputNum: 5, outputNum: 25 },
   {
     name: "Claude Sonnet 4.5", tier: "Best Value", input: "$3.00", output: "$15.00", cacheWrite: "$3.75", cacheRead: "$0.30", ratio: "5.0x", inputNum: 3, outputNum: 15,
     extended: { input: "$6.00", output: "$22.50", cacheWrite: "$7.50", cacheRead: "$0.60", ratio: "3.75x" },
@@ -52,7 +52,7 @@ export default function PricingPage() {
           <span className="hero-marker">Pricing Reference</span>
         </h1>
         <p className="hero-description">
-          Current pricing for Claude models and services (January 2026). All prices per million tokens.
+          Current pricing for Claude models and services (March 2026). All prices per million tokens.
         </p>
       </header>
 

@@ -59,32 +59,6 @@
       ]
     },
     {
-      "section": "Catalog",
-      "collapsible": true,
-      "items": [
-        {
-          "href": "/catalog",
-          "label": "Browse All"
-        },
-        {
-          "href": "/agents",
-          "label": "Agents"
-        },
-        {
-          "href": "/prompts",
-          "label": "Prompts"
-        },
-        {
-          "href": "/instructions",
-          "label": "Instructions"
-        },
-        {
-          "href": "/collections",
-          "label": "Collections"
-        }
-      ]
-    },
-    {
       "section": "Extension",
       "items": [
         {
@@ -106,6 +80,20 @@
           "href": "/pro",
           "label": "Tokalator Pro",
           "badge": "Soon"
+        }
+      ]
+    },
+    {
+      "section": "Legal",
+      "collapsible": true,
+      "items": [
+        {
+          "href": "/privacy",
+          "label": "Privacy Policy"
+        },
+        {
+          "href": "/terms",
+          "label": "Terms of Service"
         }
       ]
     }

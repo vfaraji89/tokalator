@@ -1449,6 +1449,30 @@ html, body {
   filter: brightness(1.2);
 }
 
+.ide-install-btn--mcp {
+  background: var(--bg);
+  color: var(--text-secondary);
+  border-color: var(--accent);
+  cursor: pointer;
+  text-decoration: none;
+}
+.ide-install-btn--mcp:hover {
+  background: rgba(227, 18, 11, 0.06);
+  color: var(--accent);
+  text-decoration: none;
+}
+.ide-install-btn--mcp .ide-mcp-tag {
+  font-size: 0.5625rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: 2px;
+  padding: 0.1em 0.3em;
+  line-height: 1;
+}
+
 .ide-install-btn--soon {
   background: var(--bg);
   color: var(--text-muted);
