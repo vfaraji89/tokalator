@@ -1,6 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import { SideNav } from "@/components/side-nav";
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import { WebVitals } from "./_components/web-vitals";
 
 const siteUrl = "https://tokalator.wiki";
 
@@ -73,6 +76,9 @@ export default function RootLayout({
           <SideNav />
           <main className="main-content">{children}</main>
         </div>
+        <WebVitals />
+        <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
