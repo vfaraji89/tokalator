@@ -170,6 +170,11 @@ export function SideNav() {
             <GitHubIcon />
           </a>
           <span className="mobile-menu-version">{siteContent.version}</span>
+          <div className="sidebar-legal-links">
+            <Link href="/privacy" className="sidebar-legal-link">Privacy</Link>
+            <span className="sidebar-legal-sep">·</span>
+            <Link href="/terms" className="sidebar-legal-link">Terms</Link>
+          </div>
         </div>
       </div>
 
@@ -237,6 +242,11 @@ export function SideNav() {
             >
               <GitHubIcon />
             </a>
+          </div>
+          <div className="sidebar-legal-links">
+            <Link href="/privacy" className="sidebar-legal-link">Privacy</Link>
+            <span className="sidebar-legal-sep">·</span>
+            <Link href="/terms" className="sidebar-legal-link">Terms</Link>
           </div>
           <SidebarHeart />
         </div>
