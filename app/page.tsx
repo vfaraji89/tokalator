@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import content from "../content/homepage.json";
 import { CommandTyper } from "../components/command-typer";
-import { PixelAbacus } from "../components/cli-terminal";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
@@ -93,10 +92,6 @@ export default function HomePage() {
           <span className="update-dot" /> Now on VS Code Marketplace
           <span className="update-arrow">→</span>
         </motion.a>
-        {/* Pixel abacus mascot */}
-        <motion.div {...fadeIn(0.08)} style={{ display: "flex", alignItems: "center", gap: "1rem" }} aria-hidden>
-          <PixelAbacus width={56} height={80} />
-        </motion.div>
         {/* Motionable outline icon */}
         <motion.div {...fadeIn(0.08)} className="hero-outline-icon" aria-hidden>
           <svg width="48" height="48" viewBox="0 0 28 28" fill="none" className="hero-abacus">
