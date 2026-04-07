@@ -23,3 +23,19 @@ vercel prod
 ---
 
 why wiki fetch is not updated
+
+---
+
+gitingnore paper files and push and commit
+
+---
+
+how to send new version on vs marketplace
+
+---
+
+version 3.1.3+ we said
+
+---
+
+so update the versio 3.1.4 in web too

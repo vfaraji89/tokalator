@@ -3,7 +3,7 @@
   "checkpoint_id": "bf5730204009",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 15,
+  "checkpoints_count": 11,
   "files_touched": [
     ".github/workflows/ci.yml",
     ".github/workflows/fetch-wiki.yml",
@@ -33,7 +33,6 @@
     "eslint.config.mjs",
     "next.config.ts",
     "package.json",
-    "paper/demo-paper.tex",
     "paper/paper-jss-01-frontmatter.txt",
     "paper/paper-jss-02-introduction.txt",
     "paper/paper-jss-03-related-work.txt",
@@ -41,7 +40,6 @@
     "paper/paper-jss-05-examples-evaluation.txt",
     "paper/paper-jss-06-discussion-limitations-conclusions.txt",
     "paper/paper-jss-07-backmatter-appendices.txt",
-    "scripts/requirements.txt",
     "tokalator-extension-vs/.vscodeignore",
     "tokalator-extension-vs/CHANGELOG.md",
     "tokalator-extension-vs/README.md",
@@ -51,8 +49,6 @@
     "tokalator-extension-vs/scripts/generate-models.ts",
     "tokalator-extension-vs/src/chat/contextChatParticipant.ts",
     "tokalator-extension-vs/src/core/contextMonitor.ts",
-    "tokalator-extension-vs/src/core/modelProfiles.ts",
-    "tokalator-extension-vs/src/core/types.ts",
     "tokalator-extension-vs/src/webview/contextDashboardProvider.ts",
     "tsconfig.json",
     "vercel.json"
@@ -81,10 +77,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 9330,
-    "cache_creation_tokens": 680756,
-    "cache_read_tokens": 24112443,
-    "output_tokens": 159302,
-    "api_call_count": 238
+    "input_tokens": 9172,
+    "cache_creation_tokens": 553245,
+    "cache_read_tokens": 18440122,
+    "output_tokens": 122587,
+    "api_call_count": 153
   }
 }

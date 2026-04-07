@@ -3,37 +3,35 @@
   "checkpoint_id": "bf5730204009",
   "session_id": "d7d2b32f-b704-4791-8c78-182de21cc2c6",
   "strategy": "manual-commit",
-  "created_at": "2026-04-07T02:43:11.949405Z",
+  "created_at": "2026-04-07T02:50:05.865417Z",
   "branch": "main",
-  "checkpoints_count": 6,
+  "checkpoints_count": 2,
   "files_touched": [
     "app/extension/page.tsx",
     "content/extension.json",
     "content/homepage.json",
     "content/site.json",
-    "paper/demo-paper.tex",
-    "scripts/requirements.txt",
-    "tokalator-extension-vs/src/chat/contextChatParticipant.ts",
-    "tokalator-extension-vs/src/core/contextMonitor.ts",
-    "tokalator-extension-vs/src/core/modelProfiles.ts",
-    "tokalator-extension-vs/src/core/types.ts",
-    "tokalator-extension-vs/src/webview/contextDashboardProvider.ts"
+    "package.json",
+    "tokalator-extension-vs/package.json"
   ],
   "agent": "Claude Code",
+  "transcript_identifier_at_start": "6f10115d-0d60-424c-98e0-6a8ed8b6de58",
+  "checkpoint_transcript_start": 363,
+  "transcript_lines_at_start": 363,
   "token_usage": {
-    "input_tokens": 197,
-    "cache_creation_tokens": 138990,
-    "cache_read_tokens": 10444252,
-    "output_tokens": 40804,
-    "api_call_count": 116
+    "input_tokens": 39,
+    "cache_creation_tokens": 11479,
+    "cache_read_tokens": 4771931,
+    "output_tokens": 4089,
+    "api_call_count": 31
   },
   "initial_attribution": {
-    "calculated_at": "2026-04-07T02:43:11.854717Z",
-    "agent_lines": 1,
-    "human_added": 0,
-    "human_modified": 272,
-    "human_removed": 254,
-    "total_committed": 273,
-    "agent_percentage": 0.3663003663003663
+    "calculated_at": "2026-04-07T02:50:05.758973Z",
+    "agent_lines": 85,
+    "human_added": 139,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 224,
+    "agent_percentage": 37.94642857142857
   }
 }
