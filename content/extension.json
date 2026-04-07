@@ -3,7 +3,7 @@
   "icon": "⬡",
   "headline": "Real-time context monitoring.\nInside your editor.",
   "highlightPhrase": "context monitoring",
-  "tagline": "Track token budgets with real tokenizers, score tab relevance, and manage context — available as a VS Code extension, MCP server, and CLI.",
+  "tagline": "Track token budgets, estimate costs per turn, score tab relevance, and manage context — available as a VS Code extension, MCP server, and CLI.",
   "installCmd": "ext install vfaraji89.tokalator",
   "vsCodeMinVersion": "1.99",
   "githubUrl": "https://github.com/vfaraji89/tokalator",
@@ -12,7 +12,7 @@
     {
       "icon": "▣",
       "name": "Token Budget Dashboard",
-      "description": "Activity bar sidebar panel showing real-time token usage, budget meter, per-file breakdown, and active tokenizer info.",
+      "description": "Activity bar sidebar panel showing real-time token usage, budget meter, per-file breakdown, cost estimation, and active tokenizer info.",
       "command": "View via sidebar icon",
       "number": 1
     },
@@ -40,7 +40,7 @@
     {
       "icon": "◇",
       "name": "17 Model Profiles",
-      "description": "Built-in profiles for Claude Opus/Sonnet/Haiku 4.x, GPT-5.4, GPT-5.4 Mini, GPT-5.2/5.1 Codex, GPT-4.1, o3, o4-mini, Gemini 3.x Pro/Flash, Gemini 2.5 Pro. Context windows and rot thresholds auto-configured.",
+      "description": "Built-in profiles for Claude Opus/Sonnet/Haiku 4.x, GPT-5.4, GPT-5.4 Mini, GPT-5.2/5.1 Codex, GPT-4.1, o3, o4-mini, Gemini 3.x Pro/Flash, Gemini 2.5 Pro. Context windows, rot thresholds, and per-MTok pricing auto-configured.",
       "command": "Settings: tokalator.model",
       "number": 5
     },
@@ -73,25 +73,32 @@
       "number": 9
     },
     {
+      "icon": "$",
+      "name": "Price Estimation",
+      "description": "Live cost breakdown in the sidebar dashboard — input token cost, output token cost (at max capacity), and total estimated turn cost. Per-MTok rates shown for all 17 models. Also visible in /count and /model chat commands.",
+      "command": "Automatic in dashboard, @tokalator /count",
+      "number": 10
+    },
+    {
       "icon": "◉",
       "name": "Session Management",
       "description": "Track per-turn context growth with compaction analysis. Reset sessions, save summaries, and see last session stats on activation.",
       "command": "@tokalator /compaction, /reset, /exit",
-      "number": 10
+      "number": 11
     },
     {
       "icon": "⬡",
       "name": "MCP Server for Claude Code",
       "description": "Brings real Claude BPE token counting into Claude Code and any MCP-capable agent via stdio transport. Four tools: count_tokens, estimate_budget, preview_turn, list_models. Zero API calls — fully offline.",
       "command": "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js",
-      "number": 11
+      "number": 12
     },
     {
       "icon": "◆",
       "name": "CLI — tokalator count, budget, preview, models",
       "description": "Standalone terminal tool for non-VS Code workflows. Count tokens in files, get full budget breakdowns, preview next-turn cost, and list Claude model profiles — all from the command line.",
       "command": "npm install -g . (from tokalator-mcp/) · tokalator count src/main.ts · tokalator budget src/**/*.ts",
-      "number": 12
+      "number": 13
     }
   ],
   "stats": {
@@ -155,19 +162,24 @@
       "number": 3
     },
     {
+      "layer": "Cost Estimator",
+      "purpose": "Computes per-turn cost from model pricing (inputCostPerMTok, outputCostPerMTok) and current token counts. Input cost from files + overhead, output cost from model max output. Displayed in sidebar dashboard and /count command.",
+      "number": 4
+    },
+    {
       "layer": "Context Optimizer",
       "purpose": "Identifies distractor tabs (R < 0.3) and closes them via /optimize or the Optimize Tabs button. Reduces attention dilution by removing files unlikely to contribute to the current task.",
-      "number": 4
+      "number": 5
     },
     {
       "layer": "Chat Participant",
       "purpose": "@tokalator with 11 slash commands — /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit.",
-      "number": 5
+      "number": 6
     },
     {
       "layer": "MCP Server & CLI (tokalator-mcp)",
       "purpose": "Separate component: exposes count_tokens, estimate_budget, preview_turn, list_models to Claude Code via stdio MCP transport. Also ships a standalone CLI binary for terminal workflows.",
-      "number": 6
+      "number": 7
     }
   ],
   "tokenizers": [

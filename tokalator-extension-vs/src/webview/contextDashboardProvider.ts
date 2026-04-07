@@ -138,11 +138,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       activeFile: snapshot.activeFile
         ? { ...snapshot.activeFile, uri: snapshot.activeFile.uri.toString() }
         : null,
-      models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow })),
+      models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow, inputCostPerMTok: m.inputCostPerMTok, outputCostPerMTok: m.outputCostPerMTok })),
       tokenizerType: snapshot.tokenizerType,
       tokenizerLabel: snapshot.tokenizerLabel,
       turnHistory: snapshot.turnHistory,
       budgetBreakdown: snapshot.budgetBreakdown,
+      costEstimate: snapshot.costEstimate,
     };
 
     const lastSession = this.monitor.getLastSession();
@@ -488,6 +489,48 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       margin-top: 4px;
     }
 
+    .cost-box {
+      background: var(--card-bg);
+      border: 1px solid color-mix(in srgb, var(--low) 30%, var(--border));
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .cost-title {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--low);
+      margin-bottom: 6px;
+    }
+    .cost-total {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--fg);
+      margin-bottom: 6px;
+    }
+    .cost-grid {
+      display: grid;
+      grid-template-columns: 1fr auto auto;
+      gap: 3px 10px;
+      font-size: 11px;
+    }
+    .cost-label { color: var(--desc-fg); }
+    .cost-tokens { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+    .cost-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); font-weight: 600; }
+    .cost-sep {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--border);
+      margin: 3px 0;
+    }
+    .cost-rate {
+      font-size: 10px;
+      color: var(--desc-fg);
+      margin-top: 4px;
+    }
+
     /* High Contrast theme overrides — VS Code sets data-vscode-theme-kind on <body> */
     body[data-vscode-theme-kind="vscode-high-contrast"],
     body[data-vscode-theme-kind="vscode-high-contrast-light"] {
@@ -553,6 +596,13 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       return days + 'd ago';
     }
 
+    function fmtCost(n) {
+      if (n < 0.001) return '<$0.001';
+      if (n < 0.01) return '$' + n.toFixed(4);
+      if (n < 1) return '$' + n.toFixed(3);
+      return '$' + n.toFixed(2);
+    }
+
     function relClass(score) {
       if (score >= 0.6) return 'high';
       if (score >= 0.3) return 'med';
@@ -563,14 +613,14 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
               healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
               models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel,
-              turnHistory, budgetBreakdown } = s;
+              turnHistory, budgetBreakdown, costEstimate } = s;
 
       const threshold = 0.3;
       const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
       const distractors = tabs.filter(t => t.relevanceScore < threshold && !t.isActive && !t.isPinned);
 
       const modelOptions = (models || []).map(m =>
-        '<option value="' + m.id + '"' + (m.id === modelId ? ' selected' : '') + '>' + m.label + ' (' + fmtTokens(m.contextWindow) + ')' + '</option>'
+        '<option value="' + m.id + '"' + (m.id === modelId ? ' selected' : '') + '>' + m.label + ' (' + fmtTokens(m.contextWindow) + ' | $' + m.inputCostPerMTok + '/$' + m.outputCostPerMTok + ')' + '</option>'
       ).join('');
 
       app.innerHTML = \`
@@ -606,6 +656,26 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           <div class="budget-value">\${budgetLevel.toUpperCase()}</div>
           <div class="budget-tokens">~\${fmtTokens(totalEstimatedTokens)} / \${fmtTokens(windowCapacity)}</div>
         </div>
+
+        \${costEstimate ? \`
+          <div class="cost-box">
+            <div class="cost-title">Estimated Turn Cost</div>
+            <div class="cost-total">\${fmtCost(costEstimate.totalCost)}</div>
+            <div class="cost-grid">
+              <span class="cost-label">Input</span>
+              <span class="cost-tokens">~\${fmtTokens(costEstimate.inputTokens)}</span>
+              <span class="cost-value">\${fmtCost(costEstimate.inputCost)}</span>
+              <span class="cost-label">Output (max)</span>
+              <span class="cost-tokens">~\${fmtTokens(costEstimate.outputTokens)}</span>
+              <span class="cost-value">\${fmtCost(costEstimate.outputCost)}</span>
+              <div class="cost-sep"></div>
+              <span class="cost-label" style="font-weight:600">Total</span>
+              <span class="cost-tokens"></span>
+              <span class="cost-value">\${fmtCost(costEstimate.totalCost)}</span>
+            </div>
+            <div class="cost-rate">Rate: $\${costEstimate.inputCostPerMTok}/MTok in, $\${costEstimate.outputCostPerMTok}/MTok out</div>
+          </div>
+        \` : ''}
 
         \${(function() {
           var perTurn = 800;

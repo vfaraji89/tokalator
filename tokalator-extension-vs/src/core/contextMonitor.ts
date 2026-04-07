@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary } from './types';
+import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary, CostEstimate } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
@@ -437,6 +437,21 @@ export class ContextMonitor implements vscode.Disposable {
 
     const activeFile = tabs.find(t => t.isActive) || null;
 
+    // 10. Estimate cost for this turn
+    const inputTokens = budget.used;
+    const outputTokens = this.activeModel.maxOutput;
+    const inputCost = (inputTokens / 1_000_000) * this.activeModel.inputCostPerMTok;
+    const outputCost = (outputTokens / 1_000_000) * this.activeModel.outputCostPerMTok;
+    const costEstimate: CostEstimate = {
+      inputTokens,
+      outputTokens,
+      inputCost,
+      outputCost,
+      totalCost: inputCost + outputCost,
+      inputCostPerMTok: this.activeModel.inputCostPerMTok,
+      outputCostPerMTok: this.activeModel.outputCostPerMTok,
+    };
+
     return {
       timestamp: Date.now(),
       activeFile,
@@ -458,6 +473,7 @@ export class ContextMonitor implements vscode.Disposable {
       tokenizerLabel: this.tokenizer.getTokenizerLabel(this.activeModel.provider),
       turnHistory: [...this.turnHistory],
       budgetBreakdown: budget.breakdown,
+      costEstimate,
     };
   }
 

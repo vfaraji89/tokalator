@@ -113,7 +113,10 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| **Tokens used** | ~${this.fmtTokens(snapshot.totalEstimatedTokens)} |\n`);
     stream.markdown(`| **Window size** | ${this.fmtTokens(snapshot.windowCapacity)} |\n`);
     stream.markdown(`| **Tokenizer** | ${snapshot.tokenizerLabel} |\n`);
-    stream.markdown(`| **Chat turns** | ${snapshot.chatTurnCount} |\n\n`);
+    stream.markdown(`| **Chat turns** | ${snapshot.chatTurnCount} |\n`);
+    stream.markdown(`| **Est. input cost** | ${this.fmtCost(snapshot.costEstimate.inputCost)} |\n`);
+    stream.markdown(`| **Est. output cost** | ${this.fmtCost(snapshot.costEstimate.outputCost)} (max ${this.fmtTokens(snapshot.costEstimate.outputTokens)}) |\n`);
+    stream.markdown(`| **Est. turn cost** | ${this.fmtCost(snapshot.costEstimate.totalCost)} |\n\n`);
 
     // Health notes
     for (const reason of snapshot.healthReasons) {
@@ -595,13 +598,15 @@ export class ContextChatParticipant implements vscode.Disposable {
       stream.markdown(`| **Max output** | ${this.fmtTokens(currentModel.maxOutput)} |\n`);
       stream.markdown(`| **Tokenizer** | ${tokenizer.getTokenizerLabel(currentModel.provider)} |\n`);
       stream.markdown(`| **Rot threshold** | ${currentModel.rotThreshold} turns |\n`);
+      stream.markdown(`| **Input price** | $${currentModel.inputCostPerMTok}/MTok |\n`);
+      stream.markdown(`| **Output price** | $${currentModel.outputCostPerMTok}/MTok |\n`);
       stream.markdown(`| **Provider** | ${currentModel.provider} |\n\n`);
 
       stream.markdown(`### Available Models\n\n`);
       const models = this.monitor.getModels();
       for (const m of models) {
         const active = m.id === currentModel.id ? ' ← active' : '';
-        stream.markdown(`- **${m.label}** — ${this.fmtTokens(m.contextWindow)}${active}\n`);
+        stream.markdown(`- **${m.label}** — ${this.fmtTokens(m.contextWindow)}, $${m.inputCostPerMTok}/$${m.outputCostPerMTok} per MTok${active}\n`);
       }
       stream.markdown(`\nSwitch with: \`@tokalator /model claude sonnet 4.5\`\n`);
       return {};
@@ -620,6 +625,8 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| | |\n|---|---|\n`);
     stream.markdown(`| **Context window** | ${this.fmtTokens(match.contextWindow)} |\n`);
     stream.markdown(`| **Max output** | ${this.fmtTokens(match.maxOutput)} |\n`);
+    stream.markdown(`| **Input price** | $${match.inputCostPerMTok}/MTok |\n`);
+    stream.markdown(`| **Output price** | $${match.outputCostPerMTok}/MTok |\n`);
     stream.markdown(`| **Rot threshold** | ${match.rotThreshold} turns |\n`);
 
     return {};
@@ -627,6 +634,13 @@ export class ContextChatParticipant implements vscode.Disposable {
 
   private fmtTokens(n: number): string {
     return n >= 1000 ? (n / 1000).toFixed(1) + 'K' : n.toString();
+  }
+
+  private fmtCost(n: number): string {
+    if (n < 0.001) return '<$0.001';
+    if (n < 0.01) return '$' + n.toFixed(4);
+    if (n < 1) return '$' + n.toFixed(3);
+    return '$' + n.toFixed(2);
   }
 
   private relevanceLabel(score: number): string {
