@@ -3,7 +3,7 @@
   "checkpoint_id": "bf5730204009",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 2,
+  "checkpoints_count": 9,
   "files_touched": [
     ".github/workflows/ci.yml",
     ".github/workflows/fetch-wiki.yml",
@@ -33,6 +33,13 @@
     "eslint.config.mjs",
     "next.config.ts",
     "package.json",
+    "paper/paper-jss-01-frontmatter.txt",
+    "paper/paper-jss-02-introduction.txt",
+    "paper/paper-jss-03-related-work.txt",
+    "paper/paper-jss-04-software-description.txt",
+    "paper/paper-jss-05-examples-evaluation.txt",
+    "paper/paper-jss-06-discussion-limitations-conclusions.txt",
+    "paper/paper-jss-07-backmatter-appendices.txt",
     "tokalator-extension-vs/.vscodeignore",
     "tokalator-extension-vs/CHANGELOG.md",
     "tokalator-extension-vs/README.md",
@@ -53,13 +60,20 @@
       "context": "/bf/5730204009/0/context.md",
       "content_hash": "/bf/5730204009/0/content_hash.txt",
       "prompt": "/bf/5730204009/0/prompt.txt"
+    },
+    {
+      "metadata": "/bf/5730204009/1/metadata.json",
+      "transcript": "/bf/5730204009/1/full.jsonl",
+      "context": "/bf/5730204009/1/context.md",
+      "content_hash": "/bf/5730204009/1/content_hash.txt",
+      "prompt": "/bf/5730204009/1/prompt.txt"
     }
   ],
   "token_usage": {
-    "input_tokens": 52,
-    "cache_creation_tokens": 24286,
-    "cache_read_tokens": 6868492,
-    "output_tokens": 12356,
-    "api_call_count": 46
+    "input_tokens": 9133,
+    "cache_creation_tokens": 541766,
+    "cache_read_tokens": 13668191,
+    "output_tokens": 118498,
+    "api_call_count": 122
   }
 }

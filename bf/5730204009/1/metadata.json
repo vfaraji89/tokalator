@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "bf5730204009",
+  "session_id": "8411c189-57d1-4a50-9bb4-fbe336a59229",
+  "strategy": "manual-commit",
+  "created_at": "2026-04-07T02:42:40.567149Z",
+  "branch": "main",
+  "checkpoints_count": 7,
+  "files_touched": [
+    "paper/paper-jss-01-frontmatter.txt",
+    "paper/paper-jss-02-introduction.txt",
+    "paper/paper-jss-03-related-work.txt",
+    "paper/paper-jss-04-software-description.txt",
+    "paper/paper-jss-05-examples-evaluation.txt",
+    "paper/paper-jss-06-discussion-limitations-conclusions.txt",
+    "paper/paper-jss-07-backmatter-appendices.txt"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "3537ac2b-dfbb-40c3-bc38-d170fdf9e8df",
+  "token_usage": {
+    "input_tokens": 9081,
+    "cache_creation_tokens": 517480,
+    "cache_read_tokens": 6799699,
+    "output_tokens": 106142,
+    "api_call_count": 76
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-04-07T02:42:40.376765Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 231,
+    "human_removed": 3161,
+    "total_committed": 231,
+    "agent_percentage": 0
+  }
+}
