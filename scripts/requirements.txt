@@ -1,6 +1,6 @@
 agno
 anthropic
-google-generativeai
+google-genai
 arxiv
 pypdf
 python-dotenv
