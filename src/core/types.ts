@@ -45,6 +45,19 @@ export interface BudgetBreakdown {
 }
 
 /**
+ * Estimated cost for the current context state.
+ */
+export interface CostEstimate {
+  inputTokens: number;
+  outputTokens: number;
+  inputCost: number;        // $ for input tokens
+  outputCost: number;       // $ for estimated output tokens
+  totalCost: number;        // inputCost + outputCost
+  inputCostPerMTok: number; // model rate for display
+  outputCostPerMTok: number;
+}
+
+/**
  * Full snapshot of the context window state at a point in time.
  */
 export interface ContextSnapshot {
@@ -68,6 +81,7 @@ export interface ContextSnapshot {
   tokenizerLabel: string;
   turnHistory: TurnSnapshot[];
   budgetBreakdown: BudgetBreakdown;
+  costEstimate: CostEstimate;
 }
 
 /**
