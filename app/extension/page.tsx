@@ -203,7 +203,7 @@ export default function ExtensionPage() {
       {/* What's New in 3.1.3+ */}
       <section>
         <div className="section-divider" />
-        <h2 className="section-header">What&apos;s New in v3.1.3+</h2>
+        <h2 className="section-header">What&apos;s New in v3.1.4</h2>
         <div className="feature-grid feature-grid--2col" style={{ marginTop: "1rem" }}>
           <motion.div {...scrollReveal(0)} className="feature-item feature-item--extension" style={{ borderColor: "color-mix(in srgb, var(--accent) 30%, var(--border))" }}>
             <span className="feature-number">$</span>
