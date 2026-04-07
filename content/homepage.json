@@ -106,7 +106,7 @@
   },
   "shipped": {
     "title": "Recently Shipped",
-    "subtitle": "What landed in v3.1.4.",
+    "subtitle": "What landed in v3.1.5.",
     "items": [
       {
         "name": "Price Estimation in Dashboard",
