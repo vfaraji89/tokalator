@@ -3,7 +3,7 @@
   "checkpoint_id": "bf5730204009",
   "strategy": "manual-commit",
   "branch": "main",
-  "checkpoints_count": 11,
+  "checkpoints_count": 13,
   "files_touched": [
     ".github/workflows/ci.yml",
     ".github/workflows/fetch-wiki.yml",
@@ -44,6 +44,7 @@
     "tokalator-extension-vs/CHANGELOG.md",
     "tokalator-extension-vs/README.md",
     "tokalator-extension-vs/__tests__/modelProfiles.test.ts",
+    "tokalator-extension-vs/changelog.md",
     "tokalator-extension-vs/models.json",
     "tokalator-extension-vs/package.json",
     "tokalator-extension-vs/scripts/generate-models.ts",
@@ -77,10 +78,10 @@
     }
   ],
   "token_usage": {
-    "input_tokens": 9172,
-    "cache_creation_tokens": 553245,
-    "cache_read_tokens": 18440122,
-    "output_tokens": 122587,
-    "api_call_count": 153
+    "input_tokens": 9209,
+    "cache_creation_tokens": 597617,
+    "cache_read_tokens": 21274919,
+    "output_tokens": 127477,
+    "api_call_count": 176
   }
 }

@@ -46,3 +46,58 @@ version 3.1.3+ we said
 
 so update the versio 3.1.4 in web too
 
+### Prompt 12
+
+fix github vulnerabilities
+
+### Prompt 13
+
+check wiki fetch and update
+
+### Prompt 14
+
+let do later
+
+### Prompt 15
+
+Please analyze this codebase and create a CLAUDE.md file, which will be given to future instances of Claude Code to operate in this repository.
+
+What to add:
+1. Commands that will be commonly used, such as how to build, lint, and run tests. Include the necessary commands to develop in this codebase, such as how to run a single test.
+2. High-level code architecture and structure so that future instances can be productive more quickly. Focus on the "big picture" architecture that requires reading ...
+
+### Prompt 16
+
+add changelog for vs market briefly
+
+### Prompt 17
+
+see on live marketplace
+
+### Prompt 18
+
+no
+
+### Prompt 19
+
+what if v3.1.3.1?
+
+### Prompt 20
+
+so why you didnt changelog at v3.1.4 and all time confused
+
+### Prompt 21
+
+no all conflict how to keep v3.1.4 everywhere, if not update all v3.1.5 everywhere
+
+### Prompt 22
+
+This session is being continued from a previous conversation that ran out of context. The summary below covers the earlier portion of the conversation.
+
+Summary:
+1. Primary Request and Intent:
+   The user had multiple sequential requests throughout this session:
+   - Create a 3-page LaTeX demo paper about the Tokalator project in simple language
+   - Revise the paper to focus on "how to use", remove formulas, add 1 page (4 total)
+   - Add a section about why token visibility and usage limits mat...
+
