@@ -4,7 +4,7 @@
     "headline": "Count your tokens.\nLike beads on an abacus.",
     "markerLine": "Count your tokens.",
     "highlightPhrase": "Every token counts",
-    "description": "— monitor budgets, optimize context, and cut AI costs before they add up. A VS Code extension, MCP server, and CLI that makes the invisible visible.",
+    "description": "— monitor budgets, estimate costs, optimize context, and cut AI spending before it adds up. A VS Code extension, MCP server, and CLI that makes the invisible visible.",
     "installCmd": "ext install tokalator",
     "primaryCta": {
       "label": "Install Extension",
@@ -42,6 +42,10 @@
         {
           "label": "Scoring",
           "value": "Relevance from 0 to 1 based on imports, language, path similarity, recency, and diagnostics"
+        },
+        {
+          "label": "Pricing",
+          "value": "Live cost estimation per turn — input/output breakdown with per-MTok rates for all 17 models"
         },
         {
           "label": "MCP & CLI",
@@ -102,25 +106,31 @@
   },
   "shipped": {
     "title": "Recently Shipped",
-    "subtitle": "What landed in v3.1.3.",
+    "subtitle": "What landed in v3.1.3+.",
     "items": [
+      {
+        "name": "Price Estimation in Dashboard",
+        "description": "Live input/output cost breakdown in the sidebar. See estimated turn cost, per-token rates, and total spend before you send a single prompt. All 17 model prices built in.",
+        "badge": "New",
+        "number": 1
+      },
       {
         "name": "Claude Code via MCP",
         "description": "Real Claude BPE token counting inside Claude Code — count_tokens, estimate_budget, preview_turn, list_models via stdio MCP transport. Zero API calls.",
         "badge": "Live",
-        "number": 1
+        "number": 2
       },
       {
-        "name": "17 Model Profiles",
-        "description": "Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, Gemini 3.x — auto-detected from VS Code Copilot chat.",
+        "name": "17 Model Profiles with Pricing",
+        "description": "Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, Gemini 3.x — each with per-MTok input/output prices. Auto-detected from VS Code Copilot chat.",
         "badge": "Updated",
-        "number": 2
+        "number": 3
       },
       {
         "name": "Economist-Style Calculator",
         "description": "Redesigned cost calculator with animated horizontal bar charts, cost-at-scale table, and stacked breakdown bars. No pie charts.",
-        "badge": "New",
-        "number": 3
+        "badge": "Live",
+        "number": 4
       }
     ]
   },

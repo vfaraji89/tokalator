@@ -13,6 +13,8 @@ export interface ModelProfile {
   contextWindow: number;   // tokens
   maxOutput: number;        // max output tokens
   rotThreshold: number;     // chat turns before context rot risk
+  inputCostPerMTok: number;  // $ per million input tokens
+  outputCostPerMTok: number; // $ per million output tokens
 }
 
 /**
@@ -21,27 +23,27 @@ export interface ModelProfile {
  */
 export const MODEL_PROFILES: ModelProfile[] = [
   // Anthropic
-  { id: 'claude-opus-4.6'  , label: 'Claude Opus 4.6'  , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  32000, rotThreshold: 40 },
-  { id: 'claude-opus-4.5'  , label: 'Claude Opus 4.5'  , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  32000, rotThreshold: 35 },
-  { id: 'claude-sonnet-4.6', label: 'Claude Sonnet 4.6', provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 25 },
-  { id: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5', provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 20 },
-  { id: 'claude-sonnet-4'  , label: 'Claude Sonnet 4'  , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 18 },
-  { id: 'claude-haiku-4.5' , label: 'Claude Haiku 4.5' , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 15 },
+  { id: 'claude-opus-4.6'  , label: 'Claude Opus 4.6'  , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  32000, rotThreshold: 40, inputCostPerMTok: 5.00 , outputCostPerMTok: 25.00 },
+  { id: 'claude-opus-4.5'  , label: 'Claude Opus 4.5'  , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  32000, rotThreshold: 35, inputCostPerMTok: 5.00 , outputCostPerMTok: 25.00 },
+  { id: 'claude-sonnet-4.6', label: 'Claude Sonnet 4.6', provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 25, inputCostPerMTok: 3.00 , outputCostPerMTok: 15.00 },
+  { id: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5', provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 20, inputCostPerMTok: 3.00 , outputCostPerMTok: 15.00 },
+  { id: 'claude-sonnet-4'  , label: 'Claude Sonnet 4'  , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 18, inputCostPerMTok: 3.00 , outputCostPerMTok: 15.00 },
+  { id: 'claude-haiku-4.5' , label: 'Claude Haiku 4.5' , provider: 'anthropic'  , contextWindow:  200000, maxOutput:  16000, rotThreshold: 15, inputCostPerMTok: 1.00 , outputCostPerMTok: 5.00  },
 
   // OpenAI
-  { id: 'gpt-5.4'          , label: 'GPT-5.4'          , provider: 'openai'     , contextWindow: 1000000, maxOutput: 128000, rotThreshold: 35 },
-  { id: 'gpt-5.4-mini'     , label: 'GPT-5.4 Mini'     , provider: 'openai'     , contextWindow:  400000, maxOutput: 128000, rotThreshold: 22 },
-  { id: 'gpt-5.2-codex'    , label: 'GPT-5.2 Codex'    , provider: 'openai'     , contextWindow:  400000, maxOutput: 128000, rotThreshold: 28 },
-  { id: 'gpt-5.1-codex'    , label: 'GPT-5.1 Codex'    , provider: 'openai'     , contextWindow:  400000, maxOutput: 128000, rotThreshold: 25 },
-  { id: 'gpt-4.1'          , label: 'GPT-4.1'          , provider: 'openai'     , contextWindow: 1047576, maxOutput:  32768, rotThreshold: 20 },
-  { id: 'o3'               , label: 'o3'               , provider: 'openai'     , contextWindow:  200000, maxOutput: 100000, rotThreshold: 20 },
-  { id: 'o4-mini'          , label: 'o4-mini'          , provider: 'openai'     , contextWindow:  200000, maxOutput: 100000, rotThreshold: 15 },
+  { id: 'gpt-5.4'          , label: 'GPT-5.4'          , provider: 'openai'     , contextWindow: 1000000, maxOutput: 128000, rotThreshold: 35, inputCostPerMTok: 2.50 , outputCostPerMTok: 10.00 },
+  { id: 'gpt-5.4-mini'     , label: 'GPT-5.4 Mini'     , provider: 'openai'     , contextWindow:  400000, maxOutput: 128000, rotThreshold: 22, inputCostPerMTok: 0.40 , outputCostPerMTok: 1.60  },
+  { id: 'gpt-5.2-codex'    , label: 'GPT-5.2 Codex'    , provider: 'openai'     , contextWindow:  400000, maxOutput: 128000, rotThreshold: 28, inputCostPerMTok: 2.50 , outputCostPerMTok: 10.00 },
+  { id: 'gpt-5.1-codex'    , label: 'GPT-5.1 Codex'    , provider: 'openai'     , contextWindow:  400000, maxOutput: 128000, rotThreshold: 25, inputCostPerMTok: 2.50 , outputCostPerMTok: 10.00 },
+  { id: 'gpt-4.1'          , label: 'GPT-4.1'          , provider: 'openai'     , contextWindow: 1047576, maxOutput:  32768, rotThreshold: 20, inputCostPerMTok: 2.00 , outputCostPerMTok: 8.00  },
+  { id: 'o3'               , label: 'o3'               , provider: 'openai'     , contextWindow:  200000, maxOutput: 100000, rotThreshold: 20, inputCostPerMTok: 2.00 , outputCostPerMTok: 8.00  },
+  { id: 'o4-mini'          , label: 'o4-mini'          , provider: 'openai'     , contextWindow:  200000, maxOutput: 100000, rotThreshold: 15, inputCostPerMTok: 1.10 , outputCostPerMTok: 4.40  },
 
   // Google
-  { id: 'gemini-3.1-pro'   , label: 'Gemini 3.1 Pro'   , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 32 },
-  { id: 'gemini-3-pro'     , label: 'Gemini 3 Pro'     , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 30 },
-  { id: 'gemini-3-flash'   , label: 'Gemini 3 Flash'   , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 25 },
-  { id: 'gemini-2.5-pro'   , label: 'Gemini 2.5 Pro'   , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 22 },
+  { id: 'gemini-3.1-pro'   , label: 'Gemini 3.1 Pro'   , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 32, inputCostPerMTok: 1.25 , outputCostPerMTok: 5.00  },
+  { id: 'gemini-3-pro'     , label: 'Gemini 3 Pro'     , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 30, inputCostPerMTok: 1.25 , outputCostPerMTok: 5.00  },
+  { id: 'gemini-3-flash'   , label: 'Gemini 3 Flash'   , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 25, inputCostPerMTok: 0.075, outputCostPerMTok: 0.30  },
+  { id: 'gemini-2.5-pro'   , label: 'Gemini 2.5 Pro'   , provider: 'google'     , contextWindow: 1048576, maxOutput:  65536, rotThreshold: 22, inputCostPerMTok: 1.25 , outputCostPerMTok: 5.00  },
 ];
 
 /** Default model when nothing is detected */

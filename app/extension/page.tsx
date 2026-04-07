@@ -200,6 +200,42 @@ export default function ExtensionPage() {
         </div>
       </section>
 
+      {/* What's New in 3.1.3+ */}
+      <section>
+        <div className="section-divider" />
+        <h2 className="section-header">What&apos;s New in v3.1.3+</h2>
+        <div className="feature-grid feature-grid--2col" style={{ marginTop: "1rem" }}>
+          <motion.div {...scrollReveal(0)} className="feature-item feature-item--extension" style={{ borderColor: "color-mix(in srgb, var(--accent) 30%, var(--border))" }}>
+            <span className="feature-number">$</span>
+            <h3>Price Estimation in Dashboard</h3>
+            <p>
+              The sidebar now shows a live cost breakdown for every turn.
+              Input tokens (files, system prompt, conversation) and output tokens
+              (model max capacity) are multiplied by the selected model&apos;s per-MTok
+              rates to produce an estimated turn cost. The cost box updates in real
+              time as you open, close, or edit files.
+            </p>
+            <div style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+              <strong style={{ color: "var(--text-primary)" }}>Visible in:</strong> Sidebar dashboard, <code>@tokalator /count</code>, <code>@tokalator /model</code>, model selector dropdown
+            </div>
+          </motion.div>
+          <motion.div {...scrollReveal(0.1)} className="feature-item feature-item--extension">
+            <span className="feature-number">17</span>
+            <h3>Model Pricing Built In</h3>
+            <p>
+              All 17 model profiles now include input and output pricing.
+              Anthropic (Claude Opus $5/$25, Sonnet $3/$15, Haiku $1/$5),
+              OpenAI (GPT-5.4 $2.50/$10, GPT-5.4 Mini $0.40/$1.60, o3, o4-mini),
+              and Google (Gemini Pro $1.25/$5, Flash $0.075/$0.30).
+              The model selector shows prices next to context window sizes.
+            </p>
+            <div style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
+              <strong style={{ color: "var(--text-primary)" }}>Rates:</strong> $/MTok for input and output, sourced from provider pricing pages
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
       {/* Features */}
       <section>
         <div className="section-divider" />
@@ -207,12 +243,12 @@ export default function ExtensionPage() {
         <div className="feature-grid feature-grid--3col">
           {ext.features.map((f) => {
             const badge =
-              f.number === 11 ? "MCP"
-              : f.number === 12 ? "CLI"
+              f.number === 12 ? "MCP"
+              : f.number === 13 ? "CLI"
               : "VS Code";
             const badgeCls =
-              f.number === 11 ? "feature-badge feature-badge--mcp"
-              : f.number === 12 ? "feature-badge feature-badge--cli"
+              f.number === 12 ? "feature-badge feature-badge--mcp"
+              : f.number === 13 ? "feature-badge feature-badge--cli"
               : "feature-badge feature-badge--extension";
             return (
               <div
