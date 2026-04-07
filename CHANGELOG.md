@@ -1,5 +1,21 @@
 # Changelog
 
+## 3.1.5 — 2026-04-07
+
+### Added
+
+- **Price estimation in sidebar dashboard** — new cost box showing input cost, output cost (at max capacity), and total estimated turn cost per API call
+- Per-MTok pricing for all 17 model profiles (Anthropic, OpenAI, Google)
+- Model selector dropdown now displays input/output prices alongside context window size
+- `/count` command shows estimated input cost, output cost, and total turn cost
+- `/model` command and model list show per-MTok rates for each model
+
+### Changed
+
+- `ModelProfile` interface extended with `inputCostPerMTok` and `outputCostPerMTok`
+- `ContextSnapshot` now includes `CostEstimate` with full cost breakdown
+- npm dependency audit fixes (0 vulnerabilities)
+
 ## 3.1.3 — 2026-03-21
 
 ### Fixed
