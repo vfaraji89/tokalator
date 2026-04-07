@@ -43,6 +43,12 @@ npm run fetch-wiki           # Fetch arXiv papers → content/wiki/articles.json
 npm run fetch-wiki-agent     # Agentic version (requires GOOGLE_API_KEY)
 ```
 
+### Deploy & Publish
+```bash
+vercel --prod                # Deploy web platform to production
+cd tokalator-extension-vs && vsce publish   # Publish extension to VS Code Marketplace
+```
+
 ## Architecture
 
 The repo has four independent subsystems that each build and test separately.
@@ -68,7 +74,9 @@ Core logic in `src/core/`:
 - `tokenBudgetEstimator.ts` — computes budget from model context window minus system/conversation overhead
 - `tokenizerService.ts` — wraps `@anthropic-ai/tokenizer` (Claude BPE) and `js-tiktoken` (OpenAI o200k_base)
 - `sessionLogger.ts` — opt-in anonymized research logging (aggregate counts only, no filenames)
-- `modelProfiles.ts` — 14 model profiles (Claude Opus/Sonnet/Haiku 4.x, GPT-5.x, o3, Gemini 3)
+- `modelProfiles.ts` — 17 model profiles with per-MTok pricing (Claude Opus/Sonnet/Haiku 4.x, GPT-5.x, o3, o4-mini, Gemini 3.x/2.5). Each profile has `inputCostPerMTok` and `outputCostPerMTok` for live cost estimation in the dashboard.
+
+The sidebar dashboard (`src/webview/contextDashboardProvider.ts`) renders an inline HTML webview with a cost estimation box that computes per-turn cost from input tokens and model max output using the model's pricing rates.
 
 Bundled with esbuild (not tsc), outputs a single `dist/extension.js`. The scorer evaluation framework lives in `/evaluation/` with human labels and scripts to compute precision/recall/F1.
 
@@ -83,4 +91,4 @@ FastAPI backend for CSV upload and Cobb-Douglas econometric calculations. Separa
 - `lib/db.ts` and `prisma/` are **excluded from the TypeScript build** (`tsconfig.json`) due to Prisma 7 breaking changes (config moved to `prisma.config.ts`). Don't import `lib/db.ts` until this is resolved.
 - `tokalator-extension-vs/`, `copilot-contribution/`, `user-content/`, `awesome-copilot/`, `examples/`, and `reference-material/` are all excluded from the root `tsconfig.json`. Each subdirectory has its own build.
 - Static content lives in `/content/*.json` — homepage, site nav, events, extension features, wiki articles.
-- The `fetch-wiki-agent.py` script requires `GOOGLE_API_KEY` and `ANTHROPIC_API_KEY` environment variables (used by CI's `fetch-wiki.yml` workflow).
+- The `fetch-wiki-agent.py` script requires `GOOGLE_API_KEY` and `ANTHROPIC_API_KEY` environment variables (used by CI's `fetch-wiki.yml` workflow). These must be set as GitHub repo secrets for the scheduled workflow to succeed. The script uses `agno` framework with `google-genai` (not `google-generativeai`).
