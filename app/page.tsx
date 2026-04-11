@@ -89,7 +89,7 @@ export default function HomePage() {
       {/* Hero — Agentation-inspired marker highlight */}
       <header className="hero">
         <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
-          <span className="update-dot" /> Now on VS Code Marketplace
+          <span className="update-dot" /> v3.1.6: Live pricing catalog + price compare
           <span className="update-arrow">→</span>
         </motion.a>
         {/* Motionable outline icon */}
