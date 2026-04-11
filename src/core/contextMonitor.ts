@@ -3,7 +3,14 @@ import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary, CostEstimate } 
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
 import { TokenizerService } from './tokenizerService';
-import { ModelProfile, MODEL_PROFILES, DEFAULT_MODEL_ID, getModel, findModel } from './modelProfiles';
+import type { ModelProfile } from './modelProfiles';
+import {
+  DEFAULT_MODEL_ID,
+  getModel,
+  findModel,
+  getActiveCatalog,
+  onDidChangeCatalog,
+} from './catalogStore';
 import { SessionLogger } from './sessionLogger';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
@@ -110,6 +117,11 @@ export class ContextMonitor implements vscode.Disposable {
       // deprecation, or user installs a new Copilot extension)
       vscode.lm.onDidChangeChatModels(() => {
         void this.syncModelFromAvailableLMs();
+      }),
+      // Refresh when the remote pricing catalog updates
+      onDidChangeCatalog(() => {
+        this.activeModel = getModel(this.activeModel.id);
+        this.refresh();
       }),
     );
 
@@ -648,10 +660,10 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   /**
-   * Get all available models.
+   * Get all available models from the active (possibly remote-overlaid) catalog.
    */
   getModels(): ModelProfile[] {
-    return MODEL_PROFILES;
+    return getActiveCatalog();
   }
 
   /**

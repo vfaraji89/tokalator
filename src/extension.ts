@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import { ContextMonitor } from './core/contextMonitor';
 import { ContextDashboardProvider } from './webview/contextDashboardProvider';
 import { ContextChatParticipant } from './chat/contextChatParticipant';
+import { loadPricingCatalog, refreshPricingCatalog } from './core/pricingCatalog';
 
 // Module-level reference so deactivate() can save session
 let monitorRef: ContextMonitor | undefined;
@@ -32,6 +33,11 @@ function formatTimeAgo(iso: string): string {
  *  4. Commands — refresh, optimize, clearPins
  */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
+
+  // 0. Load pricing catalog from cache and kick a background refresh.
+  //    Applies cached remote payload synchronously if present so ContextMonitor
+  //    construction sees the freshest known prices.
+  void loadPricingCatalog(context);
 
   // 1. Core monitor (with persistence for pinned files)
   const monitor = new ContextMonitor(context.workspaceState);
@@ -75,6 +81,13 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand('tokalator.clearPins', () => {
       monitor.clearPins();
       vscode.window.showInformationMessage('All pinned files cleared');
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('tokalator.refreshPricing', async () => {
+      await refreshPricingCatalog(context);
+      vscode.window.showInformationMessage('Tokalator pricing catalog refreshed');
     }),
   );
 

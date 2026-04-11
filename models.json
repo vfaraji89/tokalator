@@ -1,4 +1,7 @@
 {
+  "schemaVersion": 1,
+  "updatedAt": "2026-04-11T00:00:00Z",
+  "source": "tokalator",
   "defaultModelId": "claude-opus-4.6",
   "models": [
     {
@@ -7,7 +10,11 @@
       "provider": "anthropic",
       "contextWindow": 200000,
       "maxOutput": 32000,
-      "rotThreshold": 40
+      "rotThreshold": 40,
+      "inputCostPerMTok": 5.00,
+      "outputCostPerMTok": 25.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "claude-opus-4.5",
@@ -15,7 +22,11 @@
       "provider": "anthropic",
       "contextWindow": 200000,
       "maxOutput": 32000,
-      "rotThreshold": 35
+      "rotThreshold": 35,
+      "inputCostPerMTok": 5.00,
+      "outputCostPerMTok": 25.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "claude-sonnet-4.6",
@@ -23,7 +34,11 @@
       "provider": "anthropic",
       "contextWindow": 200000,
       "maxOutput": 16000,
-      "rotThreshold": 25
+      "rotThreshold": 25,
+      "inputCostPerMTok": 3.00,
+      "outputCostPerMTok": 15.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "claude-sonnet-4.5",
@@ -31,7 +46,11 @@
       "provider": "anthropic",
       "contextWindow": 200000,
       "maxOutput": 16000,
-      "rotThreshold": 20
+      "rotThreshold": 20,
+      "inputCostPerMTok": 3.00,
+      "outputCostPerMTok": 15.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "claude-sonnet-4",
@@ -39,7 +58,11 @@
       "provider": "anthropic",
       "contextWindow": 200000,
       "maxOutput": 16000,
-      "rotThreshold": 18
+      "rotThreshold": 18,
+      "inputCostPerMTok": 3.00,
+      "outputCostPerMTok": 15.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "claude-haiku-4.5",
@@ -47,7 +70,11 @@
       "provider": "anthropic",
       "contextWindow": 200000,
       "maxOutput": 16000,
-      "rotThreshold": 15
+      "rotThreshold": 15,
+      "inputCostPerMTok": 1.00,
+      "outputCostPerMTok": 5.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gpt-5.4",
@@ -55,7 +82,11 @@
       "provider": "openai",
       "contextWindow": 1000000,
       "maxOutput": 128000,
-      "rotThreshold": 35
+      "rotThreshold": 35,
+      "inputCostPerMTok": 2.50,
+      "outputCostPerMTok": 10.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gpt-5.4-mini",
@@ -63,7 +94,11 @@
       "provider": "openai",
       "contextWindow": 400000,
       "maxOutput": 128000,
-      "rotThreshold": 22
+      "rotThreshold": 22,
+      "inputCostPerMTok": 0.40,
+      "outputCostPerMTok": 1.60,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gpt-5.2-codex",
@@ -71,7 +106,11 @@
       "provider": "openai",
       "contextWindow": 400000,
       "maxOutput": 128000,
-      "rotThreshold": 28
+      "rotThreshold": 28,
+      "inputCostPerMTok": 2.50,
+      "outputCostPerMTok": 10.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gpt-5.1-codex",
@@ -79,7 +118,11 @@
       "provider": "openai",
       "contextWindow": 400000,
       "maxOutput": 128000,
-      "rotThreshold": 25
+      "rotThreshold": 25,
+      "inputCostPerMTok": 2.50,
+      "outputCostPerMTok": 10.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gpt-4.1",
@@ -87,7 +130,11 @@
       "provider": "openai",
       "contextWindow": 1047576,
       "maxOutput": 32768,
-      "rotThreshold": 20
+      "rotThreshold": 20,
+      "inputCostPerMTok": 2.00,
+      "outputCostPerMTok": 8.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "o3",
@@ -95,7 +142,11 @@
       "provider": "openai",
       "contextWindow": 200000,
       "maxOutput": 100000,
-      "rotThreshold": 20
+      "rotThreshold": 20,
+      "inputCostPerMTok": 2.00,
+      "outputCostPerMTok": 8.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "o4-mini",
@@ -103,7 +154,11 @@
       "provider": "openai",
       "contextWindow": 200000,
       "maxOutput": 100000,
-      "rotThreshold": 15
+      "rotThreshold": 15,
+      "inputCostPerMTok": 1.10,
+      "outputCostPerMTok": 4.40,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gemini-3.1-pro",
@@ -111,7 +166,11 @@
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
-      "rotThreshold": 32
+      "rotThreshold": 32,
+      "inputCostPerMTok": 1.25,
+      "outputCostPerMTok": 5.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gemini-3-pro",
@@ -119,7 +178,11 @@
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
-      "rotThreshold": 30
+      "rotThreshold": 30,
+      "inputCostPerMTok": 1.25,
+      "outputCostPerMTok": 5.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gemini-3-flash",
@@ -127,7 +190,11 @@
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
-      "rotThreshold": 25
+      "rotThreshold": 25,
+      "inputCostPerMTok": 0.075,
+      "outputCostPerMTok": 0.30,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     },
     {
       "id": "gemini-2.5-pro",
@@ -135,7 +202,11 @@
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
-      "rotThreshold": 22
+      "rotThreshold": 22,
+      "inputCostPerMTok": 1.25,
+      "outputCostPerMTok": 5.00,
+      "priceSource": "verified",
+      "verifiedAt": "2026-04-11"
     }
   ]
 }
