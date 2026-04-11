@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "9459648db041",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".github/workflows/fetch-pricing.yml",
+    "CLAUDE.md",
+    "package.json",
+    "tokalator-extension-vs/CHANGELOG.md",
+    "tokalator-extension-vs/package.json",
+    "tokalator-extension-vs/src/webview/contextDashboardProvider.ts",
+    "tokalator-mcp/package.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/94/59648db041/0/metadata.json",
+      "transcript": "/94/59648db041/0/full.jsonl",
+      "context": "/94/59648db041/0/context.md",
+      "content_hash": "/94/59648db041/0/content_hash.txt",
+      "prompt": "/94/59648db041/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 319,
+    "cache_creation_tokens": 436142,
+    "cache_read_tokens": 10476444,
+    "output_tokens": 87012,
+    "api_call_count": 120
+  }
+}

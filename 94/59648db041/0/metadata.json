@@ -1,0 +1,36 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "9459648db041",
+  "session_id": "09437e76-2b37-45d6-92bc-057f15daa607",
+  "strategy": "manual-commit",
+  "created_at": "2026-04-11T18:16:18.338636Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".github/workflows/fetch-pricing.yml",
+    "CLAUDE.md",
+    "package.json",
+    "tokalator-extension-vs/CHANGELOG.md",
+    "tokalator-extension-vs/package.json",
+    "tokalator-extension-vs/src/webview/contextDashboardProvider.ts",
+    "tokalator-mcp/package.json"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "93e36dd5-06f9-45ad-947e-4e1110ad3d1c",
+  "token_usage": {
+    "input_tokens": 319,
+    "cache_creation_tokens": 436142,
+    "cache_read_tokens": 10476444,
+    "output_tokens": 87012,
+    "api_call_count": 120
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-04-11T18:16:18.178662Z",
+    "agent_lines": 206,
+    "human_added": 745,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 951,
+    "agent_percentage": 21.661409043112513
+  }
+}
