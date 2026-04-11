@@ -1,5 +1,20 @@
 # Changelog
 
+## 3.1.6 — 2026-04-11
+
+### Added
+
+- **Dynamic pricing catalog** — remote fetch with ETag caching, 24h TTL, and bundled fallback. Prices stay current without extension updates.
+- **Price comparison table** — sidebar dashboard shows per-turn cost across all 17 models, sorted ascending by total cost. Active model highlighted.
+- **Refresh Pricing command** — `Tokalator: Refresh Pricing Catalog` fetches latest rates on demand.
+- **Monthly pricing workflow** — GitHub Actions cron (`fetch-pricing-agent.py` via Agno + Gemini) refreshes `models.json` on the 1st of each month.
+
+### Changed
+
+- Dashboard top block compacted: single-row budget display with smaller padding and font.
+- Removed turn-related emoji from Next Turn Preview section.
+- Model selector label removed for cleaner layout.
+
 ## 3.1.5 — 2026-04-07
 
 ### Added
