@@ -1,6 +1,27 @@
 {
   "articles": [
     {
+      "slug": "arxiv-tokalator-context-engineering-toolkit",
+      "title": "Tokalator: A Context Engineering Toolkit for Artificial Intelligence Coding Assistants",
+      "description": "We present Tokalator, an open-source context engineering toolkit that provides real-time token budget monitoring, 11 slash commands, quality modeling calculators, and cost analysis tools for AI coding assistants. Supporting 17 large language models across three providers, the toolkit includes a VS Code extension, CLI, and usage tracker. Survey findings reveal that instruction-file injection and low-relevance open tabs are among the primary invisible budget consumers.",
+      "source": "arxiv",
+      "sourceLabel": "arXiv",
+      "sourceColor": "#b31b1b",
+      "url": "https://arxiv.org/abs/2604.08290",
+      "content": "## Abstract\n\nWe present Tokalator, an open-source context engineering toolkit that addresses token consumption challenges in AI coding environments. The system provides real-time budget monitoring and 11 slash commands alongside calculators for quality modeling and cost analysis. The toolkit supports 17 large language models across three providers and includes a VS Code extension, CLI, and usage tracker. Survey findings reveal that instruction-file injection and low-relevance open tabs are among the primary invisible budget consumers.\n\n## Links\n\n- [arXiv Paper](https://arxiv.org/abs/2604.08290)\n- [DOI: 10.48550/arXiv.2604.08290](https://doi.org/10.48550/arXiv.2604.08290)\n- [GitHub Repository](https://github.com/vfaraji89/tokalator)",
+      "authors": [
+        "Vahid Farajijobehdar",
+        "İlknur Köseoğlu Sarı",
+        "Nazım Kemal Üre",
+        "Engin Zeydan"
+      ],
+      "date": "2026-04-09",
+      "tags": [
+        "cs.SE"
+      ],
+      "category": "context-management"
+    },
+    {
       "slug": "arxiv-engineering-tagging-languages-for-dsls",
       "title": "Engineering Tagging Languages for DSLs",
       "description": "To keep a DSL clean, readable and reusable in different contexts, it is useful to define a separate tagging language. A tag model logically adds information to the tagged DSL model while technically...",

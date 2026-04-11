@@ -55,6 +55,28 @@ export default function AboutPage() {
       </section>
 
       <section>
+        <h2>Research</h2>
+        <div className="eco-card" style={{ marginBottom: "1.5rem" }}>
+          <h3 style={{ margin: "0 0 0.5rem", fontSize: "1rem" }}>
+            <a href="https://arxiv.org/abs/2604.08290" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>
+              Tokalator: A Context Engineering Toolkit for Artificial Intelligence Coding Assistants
+            </a>
+          </h3>
+          <p style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", margin: "0 0 0.5rem" }}>
+            Vahid Farajijobehdar, İlknur Köseoğlu Sarı, Nazım Kemal Üre, Engin Zeydan
+          </p>
+          <p style={{ fontSize: "0.875rem", margin: "0 0 0.75rem" }}>
+            We present Tokalator, an open-source context engineering toolkit that provides real-time token budget monitoring, 11 slash commands, quality modeling calculators, and cost analysis tools for AI coding assistants. Supporting 17 large language models across three providers, the toolkit includes a VS Code extension, CLI, and usage tracker. Survey findings reveal that instruction-file injection and low-relevance open tabs are among the primary invisible budget consumers.
+          </p>
+          <div style={{ display: "flex", gap: "1rem", fontSize: "0.8125rem" }}>
+            <a href="https://arxiv.org/abs/2604.08290" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>arXiv:2604.08290</a>
+            <a href="https://doi.org/10.48550/arXiv.2604.08290" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>DOI</a>
+            <span style={{ color: "var(--text-muted)" }}>cs.SE · April 2026</span>
+          </div>
+        </div>
+      </section>
+
+      <section>
         <h2>Project</h2>
         <p>
           Tokalator is open source under the MIT License.{" "}
