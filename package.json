@@ -122,6 +122,12 @@
         "command": "tokalator.clearPins",
         "title": "Clear All Pinned Files",
         "category": "Tokalator"
+      },
+      {
+        "command": "tokalator.refreshPricing",
+        "title": "Refresh Pricing Catalog",
+        "category": "Tokalator",
+        "icon": "$(cloud-download)"
       }
     ],
     "menus": {
@@ -176,23 +182,23 @@
             "gemini-2.5-pro"
           ],
           "enumDescriptions": [
-            "Claude Opus 4.6 — 200K tokens",
-            "Claude Opus 4.5 — 200K tokens",
-            "Claude Sonnet 4.6 — 200K tokens",
-            "Claude Sonnet 4.5 — 200K tokens",
-            "Claude Sonnet 4 — 200K tokens",
-            "Claude Haiku 4.5 — 200K tokens",
-            "GPT-5.4 — 1M tokens",
-            "GPT-5.4 Mini — 400K tokens",
-            "GPT-5.2 Codex — 400K tokens",
-            "GPT-5.1 Codex — 400K tokens",
-            "GPT-4.1 — 1M tokens",
-            "o3 — 200K tokens",
-            "o4-mini — 200K tokens",
-            "Gemini 3.1 Pro — 1M tokens",
-            "Gemini 3 Pro — 1M tokens",
-            "Gemini 3 Flash — 1M tokens",
-            "Gemini 2.5 Pro — 1M tokens"
+            "Claude Opus 4.6 — 200K tokens — $5.00/$25.00 per MTok",
+            "Claude Opus 4.5 — 200K tokens — $5.00/$25.00 per MTok",
+            "Claude Sonnet 4.6 — 200K tokens — $3.00/$15.00 per MTok",
+            "Claude Sonnet 4.5 — 200K tokens — $3.00/$15.00 per MTok",
+            "Claude Sonnet 4 — 200K tokens — $3.00/$15.00 per MTok",
+            "Claude Haiku 4.5 — 200K tokens — $1.00/$5.00 per MTok",
+            "GPT-5.4 — 1M tokens — $2.50/$10.00 per MTok",
+            "GPT-5.4 Mini — 400K tokens — $0.400/$1.60 per MTok",
+            "GPT-5.2 Codex — 400K tokens — $2.50/$10.00 per MTok",
+            "GPT-5.1 Codex — 400K tokens — $2.50/$10.00 per MTok",
+            "GPT-4.1 — 1M tokens — $2.00/$8.00 per MTok",
+            "o3 — 200K tokens — $2.00/$8.00 per MTok",
+            "o4-mini — 200K tokens — $1.10/$4.40 per MTok",
+            "Gemini 3.1 Pro — 1M tokens — $1.25/$5.00 per MTok",
+            "Gemini 3 Pro — 1M tokens — $1.25/$5.00 per MTok",
+            "Gemini 3 Flash — 1M tokens — $0.075/$0.300 per MTok",
+            "Gemini 2.5 Pro — 1M tokens — $1.25/$5.00 per MTok"
           ],
           "description": "AI model to calculate context budget against"
         },
