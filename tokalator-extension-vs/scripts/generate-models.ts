@@ -13,6 +13,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 
+type PriceSource = 'verified' | 'pending' | 'stale';
+
 interface ModelEntry {
   id: string;
   label: string;
@@ -20,9 +22,17 @@ interface ModelEntry {
   contextWindow: number;
   maxOutput: number;
   rotThreshold: number;
+  inputCostPerMTok: number;
+  outputCostPerMTok: number;
+  cachedInputCostPerMTok?: number;
+  priceSource?: PriceSource;
+  verifiedAt?: string;
 }
 
 interface ModelsConfig {
+  schemaVersion?: number;
+  updatedAt?: string;
+  source?: string;
   defaultModelId: string;
   models: ModelEntry[];
 }
@@ -38,17 +48,21 @@ const config: ModelsConfig = JSON.parse(fs.readFileSync(modelsJsonPath, 'utf8'))
 const { models, defaultModelId } = config;
 
 if (!models.find(m => m.id === defaultModelId)) {
-  console.error(`❌  defaultModelId "${defaultModelId}" not found in models array`);
+  console.error(`defaultModelId "${defaultModelId}" not found in models array`);
   process.exit(1);
+}
+
+// Validate every model has required cost fields
+for (const m of models) {
+  if (typeof m.inputCostPerMTok !== 'number' || typeof m.outputCostPerMTok !== 'number') {
+    console.error(`Model "${m.id}" is missing inputCostPerMTok or outputCostPerMTok`);
+    process.exit(1);
+  }
 }
 
 // ─── Generate modelProfiles.ts ───────────────────────────────────────────────
 
-function padId(s: string, width = 24): string {
-  return `'${s}'`.padEnd(width + 2);
-}
-
-function padLabel(s: string, width = 24): string {
+function quote(s: string, width: number): string {
   return `'${s}'`.padEnd(width + 2);
 }
 
@@ -68,6 +82,10 @@ const providerNames: Record<string, string> = {
   other: 'Other',
 };
 
+function fmtPrice(n: number): string {
+  return n.toFixed(n < 1 ? 3 : 2);
+}
+
 let profileLines = '';
 for (const provider of providerOrder) {
   const group = byProvider[provider];
@@ -75,71 +93,81 @@ for (const provider of providerOrder) {
 
   profileLines += `\n  // ${providerNames[provider]}\n`;
   for (const m of group) {
-    const id    = padId(m.id, longestId);
-    const label = padLabel(m.label, longestLabel);
+    const id    = quote(m.id, longestId);
+    const label = quote(m.label, longestLabel);
     const prov  = `'${m.provider}'`.padEnd(13);
     const cw    = String(m.contextWindow).padStart(7);
     const mo    = String(m.maxOutput).padStart(6);
-    profileLines += `  { id: ${id}, label: ${label}, provider: ${prov}, contextWindow: ${cw}, maxOutput: ${mo}, rotThreshold: ${m.rotThreshold} },\n`;
+    const rot   = String(m.rotThreshold).padStart(2);
+    const inC   = fmtPrice(m.inputCostPerMTok).padStart(6);
+    const outC  = fmtPrice(m.outputCostPerMTok).padStart(6);
+    const ps    = m.priceSource ?? 'verified';
+    const va    = m.verifiedAt ?? '';
+    profileLines += `  { id: ${id}, label: ${label}, provider: ${prov}, contextWindow: ${cw}, maxOutput: ${mo}, rotThreshold: ${rot}, inputCostPerMTok: ${inC}, outputCostPerMTok: ${outC}, priceSource: '${ps}', verifiedAt: '${va}' },\n`;
   }
 }
 
+const schemaVersion = config.schemaVersion ?? 1;
+const updatedAt = config.updatedAt ?? new Date().toISOString();
+
 const tsContent = `/**
- * Known AI model profiles with context window sizes and metadata.
- * Used to auto-detect the active model and set the correct budget.
- *
- * ⚠️  DO NOT EDIT BY HAND — generated from models.json
- *     Run: npm run generate-models
+ * Known AI model profiles with context window, pricing, and metadata.
+ * DO NOT EDIT BY HAND — generated from models.json.
+ * Run: npm run generate-models
  */
+
+export type PriceSource = 'verified' | 'pending' | 'stale';
 
 export interface ModelProfile {
   id: string;
   label: string;
   provider: 'anthropic' | 'openai' | 'google' | 'other';
-  contextWindow: number;   // tokens
-  maxOutput: number;        // max output tokens
-  rotThreshold: number;     // chat turns before context rot risk
+  contextWindow: number;
+  maxOutput: number;
+  rotThreshold: number;
+  inputCostPerMTok: number;
+  outputCostPerMTok: number;
+  cachedInputCostPerMTok?: number;
+  priceSource: PriceSource;
+  verifiedAt: string;
 }
 
-/**
- * Built-in model profiles.
- * Context windows and rot thresholds based on published benchmarks.
- */
+export const BUNDLED_SCHEMA_VERSION = ${schemaVersion};
+export const BUNDLED_UPDATED_AT = '${updatedAt}';
+
 export const MODEL_PROFILES: ModelProfile[] = [${profileLines}];
 
-/** Default model when nothing is detected */
 export const DEFAULT_MODEL_ID = '${defaultModelId}';
 
 /**
- * Try to find a matching model profile by partial ID or label match.
+ * Find a model by partial ID or label match.
  * Priority: exact id → exact label → startsWith → contains.
  */
-export function findModel(query: string): ModelProfile | undefined {
+export function findModel(
+  query: string,
+  catalog: ModelProfile[] = MODEL_PROFILES,
+): ModelProfile | undefined {
   const q = query.toLowerCase().replace(/[^a-z0-9.]/g, '');
   if (!q) return undefined;
 
-  // 1. Exact match on normalized id
-  const exact = MODEL_PROFILES.find(m =>
+  const exact = catalog.find(m =>
     m.id.toLowerCase().replace(/[^a-z0-9.]/g, '') === q
   );
   if (exact) return exact;
 
-  // 2. Exact match on normalized label
-  const labelExact = MODEL_PROFILES.find(m =>
+  const labelExact = catalog.find(m =>
     m.label.toLowerCase().replace(/[^a-z0-9.]/g, '') === q
   );
   if (labelExact) return labelExact;
 
-  // 3. Starts-with on id or label
-  const startsWith = MODEL_PROFILES.find(m => {
+  const startsWith = catalog.find(m => {
     const mid = m.id.toLowerCase().replace(/[^a-z0-9.]/g, '');
     const mlabel = m.label.toLowerCase().replace(/[^a-z0-9.]/g, '');
     return mid.startsWith(q) || mlabel.startsWith(q);
   });
   if (startsWith) return startsWith;
 
-  // 4. Contains match (fallback)
-  return MODEL_PROFILES.find(m => {
+  return catalog.find(m => {
     const mid = m.id.toLowerCase().replace(/[^a-z0-9.]/g, '');
     const mlabel = m.label.toLowerCase().replace(/[^a-z0-9.]/g, '');
     return mid.includes(q) || mlabel.includes(q) || q.includes(mid);
@@ -149,16 +177,20 @@ export function findModel(query: string): ModelProfile | undefined {
 /**
  * Get a model profile by exact ID, falling back to default.
  */
-export function getModel(id: string): ModelProfile {
-  return MODEL_PROFILES.find(m => m.id === id)
+export function getModel(
+  id: string,
+  catalog: ModelProfile[] = MODEL_PROFILES,
+): ModelProfile {
+  return catalog.find(m => m.id === id)
+    || catalog.find(m => m.id === DEFAULT_MODEL_ID)
     || MODEL_PROFILES.find(m => m.id === DEFAULT_MODEL_ID)!;
 }
 `;
 
 fs.writeFileSync(profilesTsPath, tsContent, 'utf8');
-console.log(`✅  Wrote ${path.relative(root, profilesTsPath)} (${models.length} models)`);
+console.log(`Wrote ${path.relative(root, profilesTsPath)} (${models.length} models)`);
 
-// ─── Update package.json enum ─────────────────────────────────────────────────
+// ─── Update package.json enum ────────────────────────────────────────────────
 
 function fmtWindowShort(n: number): string {
   if (n >= 900000) return `${Math.round(n / 100000) / 10}M`;
@@ -170,20 +202,20 @@ const pkg = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
 
 const modelConfig = pkg.contributes?.configuration?.properties?.['tokalator.model'];
 if (!modelConfig) {
-  console.error('❌  Could not find tokalator.model in package.json contributes.configuration');
+  console.error('Could not find tokalator.model in package.json contributes.configuration');
   process.exit(1);
 }
 
 modelConfig.default         = defaultModelId;
 modelConfig.enum            = models.map(m => m.id);
 modelConfig.enumDescriptions = models.map(m =>
-  `${m.label} — ${fmtWindowShort(m.contextWindow)} tokens`
+  `${m.label} — ${fmtWindowShort(m.contextWindow)} tokens — $${fmtPrice(m.inputCostPerMTok)}/$${fmtPrice(m.outputCostPerMTok)} per MTok`
 );
 
 fs.writeFileSync(packageJsonPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
-console.log(`✅  Updated package.json enum (${models.length} entries)`);
+console.log(`Updated package.json enum (${models.length} entries)`);
 
-// ─── Summary ──────────────────────────────────────────────────────────────────
+// ─── Summary ─────────────────────────────────────────────────────────────────
 
 const byProv = models.reduce<Record<string, number>>((acc, m) => {
   acc[m.provider] = (acc[m.provider] ?? 0) + 1;
