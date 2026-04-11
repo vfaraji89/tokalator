@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { ContextMonitor } from '../core/contextMonitor';
 import type { ContextSnapshot } from '../core/types';
+import { compareAcrossModels, defaultOutputFor } from '../core/pricing';
+import { getCatalogMeta, onDidChangeCatalog, getActiveCatalog } from '../core/catalogStore';
 
 /**
  * WebviewViewProvider for the Tokalator sidebar panel.
@@ -12,6 +14,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 
   private view?: vscode.WebviewView;
   private readonly _snapshotListener: vscode.Disposable;
+  private readonly _catalogListener: vscode.Disposable;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
@@ -20,10 +23,15 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
     this._snapshotListener = this.monitor.onDidUpdateSnapshot(snapshot => {
       this.postSnapshot(snapshot);
     });
+    this._catalogListener = onDidChangeCatalog(() => {
+      const snapshot = this.monitor.getLatestSnapshot();
+      if (snapshot) { this.postSnapshot(snapshot); }
+    });
   }
 
   dispose(): void {
     this._snapshotListener.dispose();
+    this._catalogListener.dispose();
   }
 
   resolveWebviewView(
@@ -113,6 +121,11 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           await this.monitor.setModel(message.modelId);
           break;
         }
+
+        case 'refreshPricing': {
+          await vscode.commands.executeCommand('tokalator.refreshPricing');
+          break;
+        }
       }
     });
 
@@ -146,8 +159,13 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       costEstimate: snapshot.costEstimate,
     };
 
+    const catalog = getActiveCatalog();
+    const inputTokens = snapshot.totalEstimatedTokens;
+    const priceCompare = compareAcrossModels(catalog, inputTokens, p => defaultOutputFor(p));
+    const catalogMeta = getCatalogMeta();
+
     const lastSession = this.monitor.getLastSession();
-    this.view.webview.postMessage({ type: 'snapshot', data: serialized, lastSession });
+    this.view.webview.postMessage({ type: 'snapshot', data: { ...serialized, priceCompare, catalogMeta }, lastSession });
   }
 
   private getHtml(_webview: vscode.Webview): string {
@@ -201,23 +219,25 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 12px;
+      margin-bottom: 6px;
     }
     .header-icon { font-size: 20px; }
     .header-title { font-weight: 600; font-size: 14px; }
 
     .budget-level {
-      padding: 12px;
+      padding: 8px;
       border-radius: 6px;
       margin-bottom: 12px;
-      text-align: center;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
     .budget-level.low { background: color-mix(in srgb, var(--low) 12%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 25%, transparent); }
     .budget-level.medium { background: color-mix(in srgb, var(--medium) 12%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 25%, transparent); }
     .budget-level.high { background: color-mix(in srgb, var(--high) 12%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 25%, transparent); }
     .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-    .budget-value { font-size: 24px; font-weight: 700; margin-top: 4px; }
-    .budget-tokens { font-size: 12px; margin-top: 4px; }
+    .budget-value { font-size: 13px; font-weight: 700; }
+    .budget-tokens { font-size: 12px; }
 
     .stats {
       display: flex;
@@ -329,7 +349,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       display: flex;
       align-items: center;
       gap: 8px;
-      margin-bottom: 10px;
+      margin-bottom: 6px;
       padding: 0 2px;
     }
     .model-selector label {
@@ -531,6 +551,65 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       margin-top: 4px;
     }
 
+    .compare-box {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      margin-bottom: 12px;
+      font-size: 12px;
+    }
+    .compare-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+    .compare-title {
+      font-weight: 600;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--desc-fg);
+    }
+    .compare-sync {
+      font-size: 10px;
+      color: var(--desc-fg);
+    }
+    .compare-refresh {
+      background: none;
+      border: none;
+      color: var(--link-fg);
+      cursor: pointer;
+      font-size: 10px;
+      padding: 0;
+      text-decoration: underline;
+    }
+    .compare-refresh:hover { opacity: 0.8; }
+    .compare-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .compare-table th {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--desc-fg);
+      font-weight: 500;
+      text-align: left;
+      padding: 2px 4px;
+      border-bottom: 1px solid var(--border);
+    }
+    .compare-table th:not(:first-child) { text-align: right; }
+    .compare-table td {
+      padding: 3px 4px;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums;
+    }
+    .compare-table td:not(:first-child) { text-align: right; }
+    .compare-row.active td { font-weight: 600; }
+    .compare-row.cheapest td:last-child { color: var(--low); }
+
     /* High Contrast theme overrides — VS Code sets data-vscode-theme-kind on <body> */
     body[data-vscode-theme-kind="vscode-high-contrast"],
     body[data-vscode-theme-kind="vscode-high-contrast-light"] {
@@ -613,7 +692,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
               healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
               models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel,
-              turnHistory, budgetBreakdown, costEstimate } = s;
+              turnHistory, budgetBreakdown, costEstimate, priceCompare, catalogMeta } = s;
 
       const threshold = 0.3;
       const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
@@ -645,14 +724,12 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         \` : ''}
 
         <div class="model-selector">
-          <label>Model</label>
           <select data-action="setModel">
             \${modelOptions}
           </select>
         </div>
 
         <div class="budget-level \${budgetLevel}">
-          <div class="budget-label">Token Budget</div>
           <div class="budget-value">\${budgetLevel.toUpperCase()}</div>
           <div class="budget-tokens">~\${fmtTokens(totalEstimatedTokens)} / \${fmtTokens(windowCapacity)}</div>
         </div>
@@ -678,6 +755,34 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         \` : ''}
 
         \${(function() {
+          if (!s.priceCompare || s.priceCompare.length === 0) return '';
+          var rows = s.priceCompare.map(function(c, i) {
+            var cls = 'compare-row';
+            if (c.modelId === modelId) cls += ' active';
+            if (i === 0) cls += ' cheapest';
+            return '<tr class="' + cls + '">' +
+              '<td>' + c.label + '</td>' +
+              '<td>' + fmtCost(c.inputCost) + '</td>' +
+              '<td>' + fmtCost(c.outputCost) + '</td>' +
+              '<td>' + fmtCost(c.totalCost) + '</td>' +
+              '</tr>';
+          }).join('');
+          var meta = s.catalogMeta || {};
+          var syncLabel = meta.source === 'remote' ? 'Remote' : 'Bundled';
+          if (meta.lastSyncAt) syncLabel += ' ' + formatTimeAgo(meta.lastSyncAt);
+          return '<div class="compare-box">' +
+            '<div class="compare-header">' +
+            '<span class="compare-title">Price Compare</span>' +
+            '<span class="compare-sync">' + syncLabel + ' <button class="compare-refresh" data-action="refreshPricing">Refresh</button></span>' +
+            '</div>' +
+            '<table class="compare-table">' +
+            '<thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Total</th></tr></thead>' +
+            '<tbody>' + rows + '</tbody>' +
+            '</table>' +
+            '</div>';
+        })()}
+
+        \${(function() {
           var perTurn = 800;
           var nextInput = totalEstimatedTokens + perTurn;
           var nextPct = Math.min((nextInput / windowCapacity) * 100, 100).toFixed(1);
@@ -686,13 +791,13 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           var turnsLeft = Math.floor(remaining / perTurn);
           var warn = nextPct >= 90 ? 'High risk of overflow on next turn' : nextPct >= 75 ? 'Approaching context limit' : '';
           return '<div class="preview-box">' +
-            '<div class="preview-title">🔮 Next Turn Preview</div>' +
+            '<div class="preview-title">Next Turn Preview</div>' +
             '<div class="preview-stats">' +
             '<span class="preview-stat">+~' + fmtTokens(perTurn) + '</span>' +
             '<span class="preview-stat">→ ~' + fmtTokens(nextInput) + ' (' + nextPct + '%)</span>' +
             '<span class="preview-stat">~' + turnsLeft + ' turns left</span>' +
             '</div>' +
-            (warn ? '<div class="preview-warn">⚠️ ' + warn + '</div>' : '') +
+            (warn ? '<div class="preview-warn">' + warn + '</div>' : '') +
             '</div>';
         })()}
 
@@ -821,6 +926,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         case 'closeTab': e.stopPropagation(); vscode.postMessage({ command: 'closeTab', uri: uri }); break;
         case 'optimize': vscode.postMessage({ command: 'optimize' }); break;
         case 'resetTurns': vscode.postMessage({ command: 'resetTurns' }); break;
+        case 'refreshPricing': vscode.postMessage({ command: 'refreshPricing' }); break;
       }
     });
 
