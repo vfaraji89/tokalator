@@ -2,6 +2,12 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## Communication style (enforced)
+- Concise and technical. No preamble, no trailing summaries.
+- No emoji. Do not use `--` or em dashes in prose; prefer a period, comma, or parentheses.
+- Ground claims in code citations (`file:line`) or external references.
+- No over-engineering: no speculative abstractions, helpers, fallbacks, validation, or backwards-compat shims that weren't asked for. No explanatory comments describing what code does.
+
 ## Commands
 
 ### Web Platform
