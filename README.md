@@ -46,10 +46,6 @@ cd tokalator-extension-vs && npm install && npm run compile
 # then F5 in VS Code
 ```
 
-## Contributing
-
-Open an issue, submit a PR, or just drop prompt files into `user-content/`.
-
 ## License
 
 MIT
