@@ -12,11 +12,14 @@ import io
 import csv
 import uuid
 from datetime import datetime
-from fastapi import APIRouter, UploadFile, File, HTTPException
+from fastapi import APIRouter, UploadFile, File, HTTPException, Request
+from slowapi import Limiter
+from slowapi.util import get_remote_address
 
 from api.models import UsageRecord, CSVParseResponse, Provider
 
 router = APIRouter(prefix="/csv", tags=["csv"])
+limiter = Limiter(key_func=get_remote_address)
 
 # ── Pricing lookup (mirrors lib/providers.ts) ──
 
@@ -122,8 +125,13 @@ def _safe_int(val: str) -> int:
         return 0
 
 
+MAX_UPLOAD_BYTES = 10 * 1024 * 1024  # 10 MB
+ALLOWED_CONTENT_TYPES = {"text/csv", "application/csv", "text/plain", "application/vnd.ms-excel"}
+
+
 @router.post("/parse", response_model=CSVParseResponse)
-async def parse_csv(file: UploadFile = File(...)):
+@limiter.limit("10/minute")
+async def parse_csv(request: Request, file: UploadFile = File(...)):
     """
     Parse a CSV file from Anthropic / OpenAI / Google dashboards.
     Returns normalized UsageRecord array.
@@ -131,7 +139,16 @@ async def parse_csv(file: UploadFile = File(...)):
     if not file.filename or not file.filename.endswith(".csv"):
         raise HTTPException(400, "Only .csv files accepted")
 
-    content = await file.read()
+    if file.content_type and file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(
+            400,
+            f"Invalid content type '{file.content_type}'. Expected CSV.",
+        )
+
+    content = await file.read(MAX_UPLOAD_BYTES + 1)
+    if len(content) > MAX_UPLOAD_BYTES:
+        raise HTTPException(413, "File too large (max 10 MB)")
+
     try:
         text = content.decode("utf-8-sig")  # handles BOM
     except UnicodeDecodeError:

@@ -57,8 +57,11 @@ function renderMarkdown(md: string): string {
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
   html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
 
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
+  // Links (sanitize href to block javascript: URIs)
+  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) => {
+    const href = sanitizeHref(url);
+    return `<a href="${href}">${text}</a>`;
+  });
 
   // Horizontal rules
   html = html.replace(/^---$/gm, '<hr>');
@@ -88,4 +91,12 @@ function escapeHtml(text: string): string {
     .replace(/</g, '&lt;')
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
+}
+
+function sanitizeHref(url: string): string {
+  const trimmed = url.trim();
+  if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed) || /^vbscript:/i.test(trimmed)) {
+    return "#";
+  }
+  return trimmed;
 }

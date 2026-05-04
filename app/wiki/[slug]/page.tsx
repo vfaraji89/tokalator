@@ -21,6 +21,14 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   };
 }
 
+function sanitizeHref(url: string): string {
+  const trimmed = url.trim();
+  if (/^javascript:/i.test(trimmed) || /^data:/i.test(trimmed) || /^vbscript:/i.test(trimmed)) {
+    return "#";
+  }
+  return trimmed;
+}
+
 function renderMarkdownToHtml(md: string): string {
   return md
     // Code blocks
@@ -35,8 +43,10 @@ function renderMarkdownToHtml(md: string): string {
     .replace(/\*(.+?)\*/g, "<em>$1</em>")
     // Inline code
     .replace(/`([^`]+)`/g, "<code>$1</code>")
-    // Links
-    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>')
+    // Links (sanitize href to block javascript: URIs)
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (_m, text, url) =>
+      `<a href="${sanitizeHref(url)}" target="_blank" rel="noopener">${text}</a>`
+    )
     // Horizontal rules
     .replace(/^---$/gm, "<hr />")
     // Lists
