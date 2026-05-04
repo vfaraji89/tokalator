@@ -98,3 +98,12 @@ FastAPI backend for CSV upload and Cobb-Douglas econometric calculations. Separa
 - `tokalator-extension-vs/`, `copilot-contribution/`, `user-content/`, `awesome-copilot/`, `examples/`, and `reference-material/` are all excluded from the root `tsconfig.json`. Each subdirectory has its own build.
 - Static content lives in `/content/*.json` — homepage, site nav, events, extension features, wiki articles.
 - The `fetch-wiki-agent.py` script requires `GOOGLE_API_KEY` and `ANTHROPIC_API_KEY` environment variables (used by CI's `fetch-wiki.yml` workflow). These must be set as GitHub repo secrets for the scheduled workflow to succeed. The script uses `agno` framework with `google-genai` (not `google-generativeai`).
+
+### 5. Agent Skills (`/skills`)
+Reusable SKILL.md files that package domain expertise as first-class artifacts for LLM-based agents.
+
+- `skills/context-management/` — MCP-backed token budget awareness
+- `skills/terminology-optimization/` — auto-discover and inject project glossary to reduce token waste (saves ~74% terminology overhead across 25-turn sessions)
+- `skills/env-secrets-guard/` — prevent .env and credential leakage into agent context windows
+
+Run `npx tsx scripts/terminology-scanner.ts` to auto-generate a compressed glossary. Use `--format=instructions` to emit a `.instructions.md` file for always-on injection.
