@@ -1,9 +1,10 @@
 # Tokalator
 
-A context engineering toolkit for AI coding. Website + VS Code extension + reusable prompts
+A context engineering toolkit for AI coding. Website + VS Code extension + Claude Code plugin + reusable prompts
 
 **Site**: [tokalator.wiki](https://tokalator.wiki)
 **Extension**: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator)
+**Claude Code Plugin**: [tokalator-glossary](https://github.com/vfaraji89/tokalator-glossary)
 
 ---
 
@@ -33,6 +34,17 @@ A VS Code sidebar that tracks your context budget in real time:
 - Chat commands via `@tokalator` — count, optimize, pin, breakdown, instructions, model
 
 Scores files based on language match, import relationships, path proximity, edit recency, and diagnostics.
+
+## Claude Code Plugin
+
+Auto-generates a codebase glossary (symbol index) after `/init`. Saves tokens by giving Claude a compressed map of your codebase.
+
+```
+/plugin marketplace add vfaraji89/tokalator-glossary
+/plugin install tokalator-glossary
+```
+
+Commands: `/tokalator-glossary:glossary`, `/tokalator-glossary:glossary-lookup`, `/tokalator-glossary:glossary-stats`, `/tokalator-glossary:glossary-refresh`
 
 ## Getting Started
 
