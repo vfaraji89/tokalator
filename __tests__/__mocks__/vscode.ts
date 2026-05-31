@@ -75,6 +75,24 @@ export class TabInputText {
   constructor(public readonly uri: Uri) {}
 }
 
+// ── ThemeIcon ────────────────────────────────────────
+export class ThemeIcon {
+  constructor(public readonly id: string) {}
+}
+
+// ── RelativePattern ──────────────────────────────────
+export class RelativePattern {
+  constructor(public readonly base: any, public readonly pattern: string) {}
+}
+
+// ── chat ─────────────────────────────────────────────
+export const chat = {
+  createChatParticipant: jest.fn((_id: string, _handler: any) => ({
+    iconPath: undefined as any,
+    dispose: jest.fn(),
+  })),
+};
+
 // ── workspace ────────────────────────────────────────
 export const workspace = {
   textDocuments: [] as any[],
@@ -89,6 +107,7 @@ export const workspace = {
   onDidCloseTextDocument: jest.fn(() => ({ dispose: () => {} })),
   onDidChangeConfiguration: jest.fn(() => ({ dispose: () => {} })),
   findFiles: jest.fn(async () => []),
+  asRelativePath: jest.fn((uri: any) => (typeof uri === 'string' ? uri : uri.fsPath ?? uri.path)),
   fs: { readFile: jest.fn(async () => new Uint8Array()) },
 };
 
@@ -104,6 +123,16 @@ export const window = {
   onDidChangeTextEditorSelection: jest.fn(() => ({ dispose: () => {} })),
   showInformationMessage: jest.fn(async () => undefined),
   showTextDocument: jest.fn(async () => {}),
+};
+
+// ── commands ─────────────────────────────────────────
+export const commands = {
+  executeCommand: jest.fn(async () => undefined),
+};
+
+// ── env ──────────────────────────────────────────────
+export const env = {
+  openExternal: jest.fn(async () => true),
 };
 
 // ── languages ────────────────────────────────────────

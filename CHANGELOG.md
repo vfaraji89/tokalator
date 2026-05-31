@@ -1,5 +1,22 @@
 # Changelog
 
+## 3.1.7 — 2026-05-31
+
+### Added
+
+- **Generate Glossary** -- new `/terminology-gen` chat command scans the workspace's Markdown docs for terminology sources, measures their real token cost, and estimates glossary compression potential.
+- **Feature panel** in sidebar dashboard with Generate Glossary (free), plus locked Pro feature previews (Secure Workspace, SKILL.md, AI Settings) linking to [tokalator.ai](https://tokalator.ai).
+- **Collapsible price compare** with "vs Current" savings column showing cost delta against your active model.
+- **Context Engineering stats** panel: context-window % used, turns-to-rot, measured tokens/turn growth, and estimated turns left.
+
+### Changed
+
+- Dashboard redesigned to match Tokalator Pro layout: animated calculator SVG icon, "FREE" badge, compact card-based sections, pills stats row.
+- Model is now auto-detected from the active Copilot chat model; the manual model dropdown was removed.
+- Cost box relabeled **API Cost Simulation**. Next-turn and turns-left projections render only from measured turn history (no fabricated defaults).
+- Model catalog updated to 17 models with May 2026 pricing (Claude Opus 4.8, GPT-5.5, Gemini 3.5 Flash).
+- High-contrast theme overrides extended for new UI components.
+
 ## 3.1.6 — 2026-04-11
 
 ### Added

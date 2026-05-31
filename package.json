@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Count your tokens like beads on an abacus. Real-time context budget calculator for AI coding assistants.",
-  "version": "3.1.6",
+  "version": "3.1.7",
   "publisher": "vfaraji89",
   "license": "MIT",
   "repository": {
@@ -101,6 +101,10 @@
           {
             "name": "exit",
             "description": "End the current session and save summary"
+          },
+          {
+            "name": "terminology-gen",
+            "description": "Scan terminology sources and show compression potential"
           }
         ]
       }
@@ -161,44 +165,44 @@
         },
         "tokalator.model": {
           "type": "string",
-          "default": "claude-opus-4.6",
+          "default": "claude-opus-4.8",
           "enum": [
+            "claude-opus-4.8",
+            "claude-opus-4.7",
             "claude-opus-4.6",
-            "claude-opus-4.5",
             "claude-sonnet-4.6",
-            "claude-sonnet-4.5",
-            "claude-sonnet-4",
             "claude-haiku-4.5",
+            "gpt-5.5",
             "gpt-5.4",
             "gpt-5.4-mini",
-            "gpt-5.2-codex",
-            "gpt-5.1-codex",
-            "gpt-4.1",
-            "o3",
+            "gpt-5.4-nano",
+            "gpt-5.3-codex",
             "o4-mini",
+            "gemini-3.5-flash",
             "gemini-3.1-pro",
-            "gemini-3-pro",
-            "gemini-3-flash",
-            "gemini-2.5-pro"
+            "gemini-3.1-flash-lite",
+            "gemini-2.5-pro",
+            "gemini-2.5-flash",
+            "gemini-2.5-flash-lite"
           ],
           "enumDescriptions": [
-            "Claude Opus 4.6 — 200K tokens — $5.00/$25.00 per MTok",
-            "Claude Opus 4.5 — 200K tokens — $5.00/$25.00 per MTok",
-            "Claude Sonnet 4.6 — 200K tokens — $3.00/$15.00 per MTok",
-            "Claude Sonnet 4.5 — 200K tokens — $3.00/$15.00 per MTok",
-            "Claude Sonnet 4 — 200K tokens — $3.00/$15.00 per MTok",
+            "Claude Opus 4.8 — 1M tokens — $5.00/$25.00 per MTok",
+            "Claude Opus 4.7 — 1M tokens — $5.00/$25.00 per MTok",
+            "Claude Opus 4.6 — 1M tokens — $5.00/$25.00 per MTok",
+            "Claude Sonnet 4.6 — 1M tokens — $3.00/$15.00 per MTok",
             "Claude Haiku 4.5 — 200K tokens — $1.00/$5.00 per MTok",
-            "GPT-5.4 — 1M tokens — $2.50/$10.00 per MTok",
-            "GPT-5.4 Mini — 400K tokens — $0.400/$1.60 per MTok",
-            "GPT-5.2 Codex — 400K tokens — $2.50/$10.00 per MTok",
-            "GPT-5.1 Codex — 400K tokens — $2.50/$10.00 per MTok",
-            "GPT-4.1 — 1M tokens — $2.00/$8.00 per MTok",
-            "o3 — 200K tokens — $2.00/$8.00 per MTok",
-            "o4-mini — 200K tokens — $1.10/$4.40 per MTok",
-            "Gemini 3.1 Pro — 1M tokens — $1.25/$5.00 per MTok",
-            "Gemini 3 Pro — 1M tokens — $1.25/$5.00 per MTok",
-            "Gemini 3 Flash — 1M tokens — $0.075/$0.300 per MTok",
-            "Gemini 2.5 Pro — 1M tokens — $1.25/$5.00 per MTok"
+            "GPT-5.5 — 1M tokens — $5.00/$30.00 per MTok",
+            "GPT-5.4 — 1M tokens — $2.50/$15.00 per MTok",
+            "GPT-5.4 Mini — 400K tokens — $0.75/$4.50 per MTok",
+            "GPT-5.4 Nano — 400K tokens — $0.20/$1.25 per MTok",
+            "GPT-5.3 Codex — 400K tokens — $1.75/$14.00 per MTok",
+            "o4-mini — 200K tokens — $4.00/$16.00 per MTok",
+            "Gemini 3.5 Flash — 1M tokens — $1.50/$9.00 per MTok",
+            "Gemini 3.1 Pro — 1M tokens — $2.00/$12.00 per MTok",
+            "Gemini 3.1 Flash-Lite — 1M tokens — $0.25/$1.50 per MTok",
+            "Gemini 2.5 Pro — 1M tokens — $1.25/$10.00 per MTok",
+            "Gemini 2.5 Flash — 1M tokens — $0.30/$2.50 per MTok",
+            "Gemini 2.5 Flash-Lite — 1M tokens — $0.10/$0.40 per MTok"
           ],
           "description": "AI model to calculate context budget against"
         },
@@ -225,7 +229,7 @@
     "compile": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap",
     "watch": "esbuild ./src/extension.ts --bundle --outfile=dist/extension.js --external:vscode --format=cjs --platform=node --sourcemap --watch",
     "generate-models": "npx tsx scripts/generate-models.ts",
-    "lint": "eslint src --ext ts",
+    "lint": "eslint src",
     "test": "jest --verbose"
   },
   "devDependencies": {
