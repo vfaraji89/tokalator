@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "a8d76c8736c7",
+  "strategy": "manual-commit",
+  "branch": "extension-3.1.7-polish",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "claude-guide.md"
+  ],
+  "sessions": [
+    {
+      "metadata": "/a8/d76c8736c7/0/metadata.json",
+      "transcript": "/a8/d76c8736c7/0/full.jsonl",
+      "context": "/a8/d76c8736c7/0/context.md",
+      "content_hash": "/a8/d76c8736c7/0/content_hash.txt",
+      "prompt": "/a8/d76c8736c7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 68,
+    "cache_creation_tokens": 36750,
+    "cache_read_tokens": 1263991,
+    "output_tokens": 10440,
+    "api_call_count": 38
+  }
+}
