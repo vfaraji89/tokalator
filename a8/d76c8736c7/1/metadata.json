@@ -1,9 +1,11 @@
 {
   "cli_version": "0.4.2",
   "checkpoint_id": "a8d76c8736c7",
+  "session_id": "268997b2-3fdf-43fe-a9ce-45e4166907d1",
   "strategy": "manual-commit",
+  "created_at": "2026-05-31T13:51:05.949656Z",
   "branch": "extension-3.1.7-polish",
-  "checkpoints_count": 6,
+  "checkpoints_count": 4,
   "files_touched": [
     ".gitignore",
     "LICENSE",
@@ -15,7 +17,6 @@
     "app/page.tsx",
     "app/pro/page.tsx",
     "app/terms/page.tsx",
-    "claude-guide.md",
     "content/homepage.json",
     "package.json",
     "scripts/qa-check.mjs",
@@ -31,27 +32,22 @@
     "tokalator-extension-vs/src/core/contextMonitor.ts",
     "tokalator-extension-vs/src/webview/contextDashboardProvider.ts"
   ],
-  "sessions": [
-    {
-      "metadata": "/a8/d76c8736c7/0/metadata.json",
-      "transcript": "/a8/d76c8736c7/0/full.jsonl",
-      "context": "/a8/d76c8736c7/0/context.md",
-      "content_hash": "/a8/d76c8736c7/0/content_hash.txt",
-      "prompt": "/a8/d76c8736c7/0/prompt.txt"
-    },
-    {
-      "metadata": "/a8/d76c8736c7/1/metadata.json",
-      "transcript": "/a8/d76c8736c7/1/full.jsonl",
-      "context": "/a8/d76c8736c7/1/context.md",
-      "content_hash": "/a8/d76c8736c7/1/content_hash.txt",
-      "prompt": "/a8/d76c8736c7/1/prompt.txt"
-    }
-  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "d5f58a8c-264c-406f-ac68-62d1e70c9e67",
   "token_usage": {
-    "input_tokens": 13594,
-    "cache_creation_tokens": 515730,
-    "cache_read_tokens": 32393951,
-    "output_tokens": 180838,
-    "api_call_count": 222
+    "input_tokens": 13526,
+    "cache_creation_tokens": 478980,
+    "cache_read_tokens": 31129960,
+    "output_tokens": 170398,
+    "api_call_count": 184
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-05-31T13:51:05.860576Z",
+    "agent_lines": 0,
+    "human_added": 0,
+    "human_modified": 3531,
+    "human_removed": 564,
+    "total_committed": 404,
+    "agent_percentage": 0
   }
 }
