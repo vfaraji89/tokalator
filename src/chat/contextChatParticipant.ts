@@ -2,7 +2,6 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
-import type { ContextSnapshot } from '../core/types';
 import { findModel } from '../core/modelProfiles';
 
 /**
@@ -17,7 +16,10 @@ import { findModel } from '../core/modelProfiles';
  *  /instructions — List and estimate tokens for instruction files
  *  /model        — Show or switch the active AI model
  *  /compaction   — Per-turn token growth and compaction recommendations
+ *  /preview      — Preview token cost of the next message
  *  /reset        — Reset session state (turn counter)
+ *  /exit         — End the session and save a summary
+ *  /terminology-gen — Scan terminology sources and show compression potential
  */
 export class ContextChatParticipant implements vscode.Disposable {
 
@@ -84,6 +86,9 @@ export class ContextChatParticipant implements vscode.Disposable {
 
       case 'exit':
         return this.handleExit(stream);
+
+      case 'terminology-gen':
+        return this.handleTerminologyGen(stream);
 
       default:
         return this.handleDefault(request, stream);
@@ -494,6 +499,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| \`@tokalator /compaction\` | Per-turn growth and compaction advice |\n`);
     stream.markdown(`| \`@tokalator /preview\` | Preview token cost before sending |\n`);
     stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n`);
+    stream.markdown(`| \`@tokalator /terminology-gen\` | Scan terminology sources and show compression potential |\n`);
     stream.markdown(`| \`@tokalator /exit\` | End session and save summary |\n\n`);
 
     if (snapshot) {
@@ -628,6 +634,71 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| **Input price** | $${match.inputCostPerMTok}/MTok |\n`);
     stream.markdown(`| **Output price** | $${match.outputCostPerMTok}/MTok |\n`);
     stream.markdown(`| **Rot threshold** | ${match.rotThreshold} turns |\n`);
+
+    return {};
+  }
+
+  /**
+   * /terminology-gen -- Scan the workspace's Markdown docs for terminology
+   * sources and show measured token cost + glossary compression potential.
+   * Sources are the project's own .md files, not a fabricated template.
+   */
+  private async handleTerminologyGen(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
+    stream.progress('Scanning workspace Markdown for terminology sources...');
+
+    const folders = vscode.workspace.workspaceFolders;
+    if (!folders) {
+      stream.markdown('No workspace open.\n');
+      return {};
+    }
+
+    const root = folders[0].uri;
+    const mdPattern = new vscode.RelativePattern(root, '**/*.md');
+    const mdFiles = await vscode.workspace.findFiles(mdPattern, '**/node_modules/**', 100);
+
+    stream.markdown(`## Terminology Generator\n\n`);
+
+    if (mdFiles.length === 0) {
+      stream.markdown(`No Markdown files found in this workspace. Add docs (\`README.md\`, \`*.md\`) describing your domain terms, then run \`@tokalator /terminology-gen\` again.\n`);
+      return {};
+    }
+
+    const model = this.monitor.getActiveModel();
+    const tokenizer = this.monitor.getTokenizer();
+
+    const scored: { path: string; tokens: number }[] = [];
+    let totalSourceTokens = 0;
+    for (const uri of mdFiles) {
+      try {
+        const doc = await vscode.workspace.openTextDocument(uri);
+        const tokens = tokenizer.countTokens(doc.getText(), model.provider);
+        totalSourceTokens += tokens;
+        scored.push({ path: vscode.workspace.asRelativePath(uri), tokens });
+      } catch { /* skip unreadable files */ }
+    }
+    scored.sort((a, b) => b.tokens - a.tokens);
+
+    stream.markdown(`### Sources (${scored.length} Markdown file${scored.length === 1 ? '' : 's'})\n\n`);
+    stream.markdown(`| File | Tokens |\n|---|---|\n`);
+    for (const f of scored.slice(0, 10)) {
+      stream.markdown(`| \`${f.path}\` | ~${this.fmtTokens(f.tokens)} |\n`);
+    }
+    if (scored.length > 10) {
+      stream.markdown(`| _+${scored.length - 10} more_ | |\n`);
+    }
+
+    stream.markdown(`\n### Compression Potential\n\n`);
+    stream.markdown(`| Metric | Value |\n|---|---|\n`);
+    stream.markdown(`| Markdown terminology | ~${this.fmtTokens(totalSourceTokens)} tokens (measured) |\n`);
+    stream.markdown(`| Approach | Extract recurring terms from these docs into a compact glossary injected once |\n\n`);
+    stream.markdown(`The glossary is derived from your own \`.md\` docs above, not a template. Actual savings depend on how often these terms recur across your session.\n\n`);
+
+    const instrPattern = new vscode.RelativePattern(root, '**/.github/instructions/terminology.instructions.md');
+    const instrFiles = await vscode.workspace.findFiles(instrPattern, undefined, 1);
+    if (instrFiles.length > 0) {
+      stream.markdown(`> Glossary already exists: \`${vscode.workspace.asRelativePath(instrFiles[0])}\`\n\n`);
+    }
+    stream.markdown(`Use the **Generate Glossary** button in the Tokalator sidebar to build one from these sources.\n`);
 
     return {};
   }

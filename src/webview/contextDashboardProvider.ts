@@ -4,10 +4,6 @@ import type { ContextSnapshot } from '../core/types';
 import { compareAcrossModels, defaultOutputFor } from '../core/pricing';
 import { getCatalogMeta, onDidChangeCatalog, getActiveCatalog } from '../core/catalogStore';
 
-/**
- * WebviewViewProvider for the Tokalator sidebar panel.
- * Shows a simplified token budget dashboard.
- */
 export class ContextDashboardProvider implements vscode.WebviewViewProvider, vscode.Disposable {
 
   public static readonly viewType = 'tokalator.dashboard';
@@ -46,7 +42,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       localResourceRoots: [this.extensionUri],
     };
 
-    // Keep webview alive when the sidebar is collapsed / user switches panels
     webviewView.onDidChangeVisibility(() => {
       if (webviewView.visible) {
         const snapshot = this.monitor.getLatestSnapshot();
@@ -56,7 +51,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       }
     });
 
-    // Clear reference when the webview is disposed (panel closed completely)
     webviewView.onDidDispose(() => {
       this.view = undefined;
     });
@@ -117,24 +111,33 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           break;
         }
 
-        case 'setModel': {
-          await this.monitor.setModel(message.modelId);
+        case 'refreshPricing': {
+          await vscode.commands.executeCommand('tokalator.refreshPricing');
           break;
         }
 
-        case 'refreshPricing': {
-          await vscode.commands.executeCommand('tokalator.refreshPricing');
+        case 'terminologyGen': {
+          await vscode.commands.executeCommand('workbench.action.chat.open', { query: '@tokalator /terminology-gen' });
+          break;
+        }
+
+        case 'proFeature': {
+          const action = await vscode.window.showInformationMessage(
+            `${message.feature} is a Tokalator Pro feature. Upgrade for secure workspaces, SKILL.md generation, AI settings, and more.`,
+            'Learn More'
+          );
+          if (action === 'Learn More') {
+            vscode.env.openExternal(vscode.Uri.parse('https://tokalator.ai'));
+          }
           break;
         }
       }
     });
 
-    // Post existing snapshot immediately, then force a fresh refresh
     const snapshot = this.monitor.getLatestSnapshot();
     if (snapshot) {
       this.postSnapshot(snapshot);
     }
-    // Trigger a fresh snapshot in case data changed while panel was hidden
     this.monitor.refresh();
   }
 
@@ -151,7 +154,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       activeFile: snapshot.activeFile
         ? { ...snapshot.activeFile, uri: snapshot.activeFile.uri.toString() }
         : null,
-      models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow, inputCostPerMTok: m.inputCostPerMTok, outputCostPerMTok: m.outputCostPerMTok })),
+      models: this.monitor.getModels().map(m => ({ id: m.id, label: m.label, provider: m.provider, contextWindow: m.contextWindow, rotThreshold: m.rotThreshold, inputCostPerMTok: m.inputCostPerMTok, outputCostPerMTok: m.outputCostPerMTok })),
       tokenizerType: snapshot.tokenizerType,
       tokenizerLabel: snapshot.tokenizerLabel,
       turnHistory: snapshot.turnHistory,
@@ -181,7 +184,6 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
   <title>Tokalator</title>
   <style>
     :root {
-      /* GitHub Primer-aligned palette with VS Code theme fallbacks */
       --bg: var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e));
       --fg: var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc));
       --border: var(--vscode-sideBarSectionHeader-border, var(--vscode-panel-border, rgba(128,128,128,0.2)));
@@ -194,763 +196,433 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       --list-hover: var(--vscode-list-hoverBackground, rgba(128,128,128,0.1));
       --card-bg: rgba(255,255,255,0.03);
       --accent: var(--vscode-focusBorder, #58a6ff);
-      --input-bg: var(--vscode-input-background, var(--vscode-sideBar-background, var(--vscode-editor-background, #1e1e1e)));
-      --input-fg: var(--vscode-input-foreground, var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc)));
+      --input-bg: var(--vscode-input-background, var(--vscode-sideBar-background, #1e1e1e));
+      --input-fg: var(--vscode-input-foreground, var(--vscode-foreground, #cccccc));
       --input-border: var(--vscode-input-border, transparent);
       --badge-bg: var(--vscode-badge-background, #4d4d4d);
       --badge-fg: var(--vscode-badge-foreground, #ffffff);
-      --desc-fg: var(--vscode-descriptionForeground, var(--vscode-sideBar-foreground, var(--vscode-foreground, #cccccc)));
-      --chart-blue: var(--vscode-charts-blue, #58a6ff);
-      --chart-purple: var(--vscode-charts-purple, #bc8cff);
-      --chart-orange: var(--vscode-charts-orange, #d29922);
-      --chart-grey: var(--vscode-disabledForeground, #8b949e);
+      --desc-fg: var(--vscode-descriptionForeground, var(--vscode-foreground, #cccccc));
       --link-fg: var(--vscode-textLink-foreground, #58a6ff);
+      --free-green: var(--vscode-charts-green, #3fb950);
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      font-family: var(--vscode-font-family);
-      font-size: var(--vscode-font-size);
-      color: var(--fg);
-      background: var(--bg);
-      padding: 12px;
-    }
+    body { font-family: var(--vscode-font-family); font-size: var(--vscode-font-size); color: var(--fg); background: var(--bg); padding: 10px; }
 
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
+    .hdr { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; }
+    .hdr-icon { width: 20px; height: 20px; flex-shrink: 0; }
+    .hdr-icon svg { width: 100%; height: 100%; }
+    .hdr-title { font-weight: 700; font-size: 13px; }
+    .hdr-badge { background: var(--free-green); color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 8px; letter-spacing: 1px; }
+    @keyframes btnPress {
+      0%, 100% { opacity: 0.25; }
+      50% { opacity: 0.75; }
     }
-    .header-icon { font-size: 20px; }
-    .header-title { font-weight: 600; font-size: 14px; }
+    @keyframes screenGlow {
+      0%, 80% { opacity: 0.35; }
+      90% { opacity: 0.7; }
+      100% { opacity: 0.35; }
+    }
+    .hdr-icon .calc-btn { animation: btnPress 0.35s ease both; }
+    .hdr-icon .btn-1 { animation-delay: 0.3s; }
+    .hdr-icon .btn-2 { animation-delay: 0.55s; }
+    .hdr-icon .btn-3 { animation-delay: 0.8s; }
+    .hdr-icon .btn-4 { animation-delay: 1.05s; }
+    .hdr-icon .btn-5 { animation-delay: 1.3s; }
+    .hdr-icon .btn-6 { animation-delay: 1.55s; }
+    .hdr-icon .btn-7 { animation-delay: 1.8s; }
+    .hdr-icon .btn-8 { animation-delay: 2.05s; }
+    .hdr-icon .btn-eq { animation-delay: 2.3s; animation-duration: 0.5s; }
+    .hdr-icon .calc-screen { animation: screenGlow 3s ease 2.5s both; }
 
-    .budget-level {
-      padding: 8px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-    .budget-level.low { background: color-mix(in srgb, var(--low) 12%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 25%, transparent); }
-    .budget-level.medium { background: color-mix(in srgb, var(--medium) 12%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 25%, transparent); }
-    .budget-level.high { background: color-mix(in srgb, var(--high) 12%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 25%, transparent); }
-    .budget-label { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; }
-    .budget-value { font-size: 13px; font-weight: 700; }
-    .budget-tokens { font-size: 12px; }
+    .model-active { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; padding: 4px 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; font-size: 11px; }
+    .model-active-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); }
+    .model-active-name { font-weight: 600; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .model-active-sync { font-size: 9px; color: var(--free-green); font-weight: 600; }
 
-    .stats {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 12px;
-      flex-wrap: wrap;
-    }
-    .stat {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      padding: 5px 8px;
-      border-radius: 6px;
-      font-size: 11px;
-      color: var(--fg);
-      font-weight: 500;
-      font-variant-numeric: tabular-nums;
-    }
+    .ce-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+    .ce-stat { display: flex; flex-direction: column; gap: 1px; }
+    .ce-val { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+    .ce-lbl { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); }
 
-    .section {
-      margin-bottom: 12px;
-      border-top: 1px solid var(--border);
-      padding-top: 10px;
-    }
-    .section-title {
-      font-size: 11px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--desc-fg);
-      margin-bottom: 8px;
-    }
+    .meter { padding: 8px; border-radius: 6px; margin-bottom: 8px; display: flex; align-items: center; gap: 8px; }
+    .meter.low { background: color-mix(in srgb, var(--low) 12%, var(--bg)); color: var(--low); border: 1px solid color-mix(in srgb, var(--low) 25%, transparent); }
+    .meter.medium { background: color-mix(in srgb, var(--medium) 12%, var(--bg)); color: var(--medium); border: 1px solid color-mix(in srgb, var(--medium) 25%, transparent); }
+    .meter.high { background: color-mix(in srgb, var(--high) 12%, var(--bg)); color: var(--high); border: 1px solid color-mix(in srgb, var(--high) 25%, transparent); }
+    .meter-level { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+    .meter-tokens { font-size: 12px; }
+
+    .pills { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 8px; }
+    .pill { background: var(--card-bg); border: 1px solid var(--border); padding: 3px 7px; border-radius: 6px; font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+
+    .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; }
+    .card-title { font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); margin-bottom: 4px; }
+
+    .cost-total { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
+    .cost-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 11px; }
+    .cost-label { color: var(--desc-fg); }
+    .cost-val { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; }
+    .cost-tok { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
+    .cost-sep { grid-column: 1 / -1; border-top: 1px solid var(--border); margin: 2px 0; }
+    .cost-rate { font-size: 10px; color: var(--desc-fg); margin-top: 3px; }
+
+    .bar-wrap { height: 6px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 3px; overflow: hidden; margin: 4px 0 6px; }
+    .bar-fill { height: 100%; border-radius: 2px; }
+
+    .sec { margin-bottom: 8px; border-top: 1px solid var(--border); padding-top: 8px; }
+    .sec-title { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); margin-bottom: 6px; }
+
+    .feat-panel { border: 1px solid color-mix(in srgb, var(--free-green) 40%, var(--border)); border-radius: 6px; padding: 8px; margin-bottom: 8px; }
+    .feat-hdr { display: flex; align-items: center; gap: 5px; margin-bottom: 6px; }
+    .feat-hdr-label { font-weight: 700; font-size: 11px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .feat-btn { display: flex; align-items: center; gap: 6px; padding: 5px 7px; border-radius: 4px; border: 1px solid var(--border); background: var(--bg); cursor: pointer; margin-bottom: 4px; transition: border-color 0.15s; }
+    .feat-btn:last-child { margin-bottom: 0; }
+    .feat-btn:hover { border-color: var(--free-green); }
+    .feat-btn.locked { opacity: 0.6; }
+    .feat-btn.locked:hover { border-color: var(--medium); opacity: 0.8; }
+    .feat-btn-icon { font-size: 13px; flex-shrink: 0; }
+    .feat-btn-info { flex: 1; min-width: 0; }
+    .feat-btn-name { font-size: 11px; font-weight: 600; color: var(--fg); display: flex; align-items: center; gap: 4px; }
+    .feat-btn-desc { font-size: 9px; color: var(--desc-fg); }
+    .feat-btn-arrow { font-size: 11px; color: var(--desc-fg); }
+    .tag-new { background: var(--free-green); color: #fff; font-size: 8px; font-weight: 800; padding: 0px 4px; border-radius: 6px; letter-spacing: 0.5px; }
+    .tag-pro { background: var(--badge-bg); color: var(--badge-fg); font-size: 8px; font-weight: 700; padding: 0px 4px; border-radius: 6px; letter-spacing: 0.5px; }
 
     .tab-list { list-style: none; }
-    .tab-item {
-      display: flex;
-      align-items: center;
-      padding: 5px 6px;
-      border-radius: 4px;
-      cursor: pointer;
-      gap: 8px;
-      font-size: 12px;
-    }
+    .tab-item { display: flex; align-items: center; padding: 3px 4px; border-radius: 4px; cursor: pointer; gap: 6px; font-size: 11px; }
     .tab-item:hover { background: var(--list-hover); }
-    .tab-dot {
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      flex-shrink: 0;
-    }
-    .tab-dot.high { background: var(--low); opacity: 0.9; }
-    .tab-dot.med { background: var(--medium); opacity: 0.9; }
-    .tab-dot.low { background: var(--high); opacity: 0.9; }
-    .tab-name {
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
+    .tab-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; }
+    .tab-dot.hi { background: var(--low); } .tab-dot.md { background: var(--medium); } .tab-dot.lo { background: var(--high); }
+    .tab-name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .tab-name.active { font-weight: 600; }
-    .tab-tokens { font-size: 11px; color: var(--fg); opacity: 0.8; }
-    .tab-actions {
-      display: flex;
-      gap: 2px;
-    }
-    .tab-actions button {
-      background: none;
-      border: none;
-      color: var(--fg);
-      cursor: pointer;
-      font-size: 12px;
-      padding: 2px 5px;
-      border-radius: 3px;
-    }
-    .tab-actions button:hover { background: var(--list-hover); }
+    .tab-tok { font-size: 10px; opacity: 0.8; }
+    .tab-btns { display: flex; gap: 1px; }
+    .tab-btns button { background: none; border: none; color: var(--fg); cursor: pointer; font-size: 11px; padding: 1px 4px; border-radius: 3px; }
+    .tab-btns button:hover { background: var(--list-hover); }
 
-    .action-btn {
-      background: var(--btn-bg);
-      color: var(--btn-fg);
-      border: none;
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 12px;
-      font-weight: 500;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 8px;
-      transition: background 0.1s;
-    }
-    .action-btn:hover { background: var(--btn-hover); }
-    .action-btn.secondary {
-      background: var(--card-bg);
-      color: var(--fg);
-      border: 1px solid var(--border);
-    }
-    .action-btn.secondary:hover {
-      background: var(--list-hover);
-    }
-
-    .notes {
-      font-size: 12px;
-      color: var(--fg);
-      margin-top: 8px;
-    }
-    .notes li { margin-bottom: 4px; }
+    .act-btn { background: var(--btn-bg); color: var(--btn-fg); border: none; padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 500; cursor: pointer; width: 100%; margin-top: 6px; }
+    .act-btn:hover { background: var(--btn-hover); }
+    .act-btn.sec-btn { background: var(--card-bg); color: var(--fg); border: 1px solid var(--border); }
+    .act-btn.sec-btn:hover { background: var(--list-hover); }
 
     .empty { text-align: center; color: var(--desc-fg); padding: 20px; font-size: 12px; }
+    .err { color: var(--high); text-align: center; padding: 12px; font-size: 11px; }
 
-    .model-selector {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 6px;
-      padding: 0 2px;
-    }
-    .model-selector label {
-      font-size: 12px;
-      color: var(--fg);
-      white-space: nowrap;
-    }
-    .model-selector select {
-      flex: 1;
-      background: var(--input-bg);
-      color: var(--input-fg);
-      border: 1px solid var(--input-border);
-      border-radius: 4px;
-      padding: 4px 6px;
-      font-size: 11px;
-      cursor: pointer;
-      outline: none;
-    }
-    .model-selector select:hover { border-color: var(--accent); }
-    .model-selector select:focus { border-color: var(--accent); }
+    .compare-tbl { width: 100%; border-collapse: collapse; }
+    .compare-tbl th { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); font-weight: 500; text-align: left; padding: 2px 3px; border-bottom: 1px solid var(--border); }
+    .compare-tbl th:not(:first-child) { text-align: right; }
+    .compare-tbl td { padding: 2px 3px; font-size: 10px; font-variant-numeric: tabular-nums; }
+    .compare-tbl td:not(:first-child) { text-align: right; }
+    .compare-tbl .act td { font-weight: 600; }
+    .compare-tbl .cheap td:last-child { color: var(--low); }
+    .cmp-toggle { display:flex; align-items:center; justify-content:space-between; cursor:pointer; user-select:none; }
+    .cmp-toggle:hover .cmp-plus { color: var(--accent); }
+    .cmp-plus { font-size:14px; font-weight:700; width:18px; height:18px; display:flex; align-items:center; justify-content:center; border-radius:3px; color:var(--desc-fg); transition:color 0.15s,transform 0.3s; }
+    .cmp-body { max-height:0; overflow:hidden; transition:max-height 0.4s ease; }
+    .cmp-body.open { max-height:500px; }
 
-    .workspace-info {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      padding: 8px 10px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      font-size: 12px;
-      margin-top: 8px;
-      color: var(--fg);
-    }
+    .workspace-info { display: flex; flex-direction: column; gap: 4px; padding: 8px 10px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; font-size: 12px; margin-bottom: 8px; }
     .ws-warn { color: var(--medium); font-weight: 600; }
     .ws-ok { color: var(--low); font-weight: 500; }
-    .tokenizer { color: var(--chart-blue); font-weight: 500; }
 
-    .breakdown-grid {
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 4px 12px;
-      font-size: 12px;
-      margin-bottom: 8px;
-    }
-    .breakdown-label { color: var(--fg); }
-    .breakdown-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); font-weight: 500; }
-    .breakdown-bar {
-      grid-column: 1 / -1;
-      height: 6px;
-      border-radius: 3px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      margin: 4px 0 6px;
-      overflow: hidden;
-    }
-    .breakdown-bar-fill {
-      height: 100%;
-      border-radius: 2px;
-    }
-    .breakdown-bar-fill.files { background: var(--chart-blue); }
-    .breakdown-bar-fill.system { background: var(--chart-purple); }
-    .breakdown-bar-fill.conversation { background: var(--chart-orange); }
-    .breakdown-bar-fill.output { background: var(--chart-grey); }
-
-    .growth-bars {
-      display: flex;
-      align-items: flex-end;
-      gap: 2px;
-      height: 32px;
-      margin-bottom: 6px;
-    }
-    .growth-bar {
-      flex: 1;
-      min-width: 4px;
-      border-radius: 2px 2px 0 0;
-      background: var(--chart-blue);
-      opacity: 0.6;
-      position: relative;
-      transition: opacity 0.15s;
-    }
-    .growth-bar:last-child { opacity: 1; }
-    .growth-bar:hover { opacity: 1; }
-    .growth-label {
-      font-size: 11px;
-      color: var(--fg);
-      display: flex;
-      justify-content: space-between;
-    }
-    .suggestion {
-      font-size: 12px;
-      color: var(--medium);
-      font-weight: 500;
-      margin-top: 4px;
-    }
-
-    .last-session {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-    }
-    .last-session-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 4px;
-    }
-    .last-session-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--desc-fg);
-    }
-    .last-session-time {
-      font-size: 11px;
-      color: var(--desc-fg);
-    }
-    .last-session-stats {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .last-session-stat {
-      color: var(--fg);
-    }
-
-    .preview-box {
-      background: var(--card-bg);
-      border: 1px solid color-mix(in srgb, var(--chart-blue) 40%, var(--border));
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-    }
-    .preview-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--chart-blue);
-      margin-bottom: 4px;
-    }
-    .preview-stats {
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-    .preview-stat {
-      color: var(--fg);
-    }
-    .preview-warn {
-      color: var(--chart-orange);
-      font-weight: 600;
-      margin-top: 4px;
-    }
-
-    .cost-box {
-      background: var(--card-bg);
-      border: 1px solid color-mix(in srgb, var(--low) 30%, var(--border));
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-    }
-    .cost-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--low);
-      margin-bottom: 6px;
-    }
-    .cost-total {
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--fg);
-      margin-bottom: 6px;
-    }
-    .cost-grid {
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      gap: 3px 10px;
-      font-size: 11px;
-    }
-    .cost-label { color: var(--desc-fg); }
-    .cost-tokens { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); }
-    .cost-value { text-align: right; font-variant-numeric: tabular-nums; color: var(--fg); font-weight: 600; }
-    .cost-sep {
-      grid-column: 1 / -1;
-      border-top: 1px solid var(--border);
-      margin: 3px 0;
-    }
-    .cost-rate {
-      font-size: 10px;
-      color: var(--desc-fg);
-      margin-top: 4px;
-    }
-
-    .compare-box {
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 6px;
-      padding: 8px 10px;
-      margin-bottom: 12px;
-      font-size: 12px;
-    }
-    .compare-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-    .compare-title {
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--desc-fg);
-    }
-    .compare-sync {
-      font-size: 10px;
-      color: var(--desc-fg);
-    }
-    .compare-refresh {
-      background: none;
-      border: none;
-      color: var(--link-fg);
-      cursor: pointer;
-      font-size: 10px;
-      padding: 0;
-      text-decoration: underline;
-    }
-    .compare-refresh:hover { opacity: 0.8; }
-    .compare-table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    .compare-table th {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--desc-fg);
-      font-weight: 500;
-      text-align: left;
-      padding: 2px 4px;
-      border-bottom: 1px solid var(--border);
-    }
-    .compare-table th:not(:first-child) { text-align: right; }
-    .compare-table td {
-      padding: 3px 4px;
-      font-size: 11px;
-      font-variant-numeric: tabular-nums;
-    }
-    .compare-table td:not(:first-child) { text-align: right; }
-    .compare-row.active td { font-weight: 600; }
-    .compare-row.cheapest td:last-child { color: var(--low); }
-
-    /* High Contrast theme overrides — VS Code sets data-vscode-theme-kind on <body> */
+    /* High Contrast theme overrides */
     body[data-vscode-theme-kind="vscode-high-contrast"],
     body[data-vscode-theme-kind="vscode-high-contrast-light"] {
       --card-bg: transparent;
       --border: var(--vscode-contrastBorder, #6fc3df);
     }
-    body[data-vscode-theme-kind="vscode-high-contrast"] .budget-level,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .budget-level {
+    body[data-vscode-theme-kind="vscode-high-contrast"] .meter,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .meter {
       background: transparent !important;
       border-color: var(--vscode-contrastBorder, #6fc3df) !important;
     }
-    body[data-vscode-theme-kind="vscode-high-contrast"] .stat,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .stat,
-    body[data-vscode-theme-kind="vscode-high-contrast"] .last-session,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .last-session,
-    body[data-vscode-theme-kind="vscode-high-contrast"] .preview-box,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .preview-box,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .pill,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .pill,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .card,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .card,
     body[data-vscode-theme-kind="vscode-high-contrast"] .workspace-info,
     body[data-vscode-theme-kind="vscode-high-contrast-light"] .workspace-info,
-    body[data-vscode-theme-kind="vscode-high-contrast"] .breakdown-bar,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .breakdown-bar,
-    body[data-vscode-theme-kind="vscode-high-contrast"] .model-selector select,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .model-selector select {
+    body[data-vscode-theme-kind="vscode-high-contrast"] .bar-wrap,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .bar-wrap,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .model-active,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .model-active,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .feat-panel,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .feat-panel,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .feat-btn,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .feat-btn {
       background: transparent !important;
       border-color: var(--vscode-contrastBorder, #6fc3df) !important;
     }
-    body[data-vscode-theme-kind="vscode-high-contrast"] .action-btn,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .action-btn,
-    body[data-vscode-theme-kind="vscode-high-contrast"] .tab-actions button,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .tab-actions button {
+    body[data-vscode-theme-kind="vscode-high-contrast"] .act-btn,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .act-btn,
+    body[data-vscode-theme-kind="vscode-high-contrast"] .tab-btns button,
+    body[data-vscode-theme-kind="vscode-high-contrast-light"] .tab-btns button {
       border: 1px solid var(--vscode-contrastBorder, #6fc3df) !important;
     }
     body[data-vscode-theme-kind="vscode-high-contrast"] .tab-item:hover,
     body[data-vscode-theme-kind="vscode-high-contrast-light"] .tab-item:hover {
       outline: 1px solid var(--vscode-contrastBorder, #6fc3df);
     }
-    body[data-vscode-theme-kind="vscode-high-contrast"] .action-btn.secondary,
-    body[data-vscode-theme-kind="vscode-high-contrast-light"] .action-btn.secondary {
-      border-color: var(--vscode-contrastBorder, #6fc3df) !important;
-    }
   </style>
 </head>
 <body>
   <div id="app"><div class="empty">Loading...</div></div>
-
   <script nonce="${nonce}">
-    const vscode = acquireVsCodeApi();
-    const app = document.getElementById('app');
+    var vscode = acquireVsCodeApi();
+    var app = document.getElementById('app');
+    function fmt(n) { if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'K'; return ''+n; }
+    function fmtC(n) { if (n < 0.001) return '<$0.001'; if (n < 0.01) return '$'+n.toFixed(4); if (n < 1) return '$'+n.toFixed(3); return '$'+n.toFixed(2); }
+    function ago(iso) { var m=Math.floor((Date.now()-new Date(iso).getTime())/60000); if(m<60) return m+'m ago'; var h=Math.floor(m/60); if(h<24) return h+'h ago'; return Math.floor(h/24)+'d ago'; }
+    function rc(s) { return s >= 0.6 ? 'hi' : s >= 0.3 ? 'md' : 'lo'; }
 
-    function fmtTokens(n) {
-      if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-      if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
-      return n.toString();
-    }
+    function render(s, ls) {
+      try {
+        var t = s.tabs || [], bl = s.budgetLevel || 'low', tot = s.totalEstimatedTokens || 0, cap = s.windowCapacity || 200000;
+        var turns = s.chatTurnCount || 0, pins = (s.pinnedFiles || []).length, reasons = s.healthReasons || [];
+        var mid = s.modelId || '', models = s.models || [], ce = s.costEstimate;
+        var bd = s.budgetBreakdown, diag = s.diagnosticsSummary || {errors:0};
+        var tl = s.tokenizerLabel || '', wfc = s.workspaceFileCount || 0, wft = s.workspaceFileTokens || 0;
+        var th = 0.3, rel = t.filter(function(x){return x.relevanceScore>=th||x.isActive||x.isPinned;});
+        var dist = t.filter(function(x){return x.relevanceScore<th&&!x.isActive&&!x.isPinned;});
 
-    function formatTimeAgo(iso) {
-      var ms = Date.now() - new Date(iso).getTime();
-      var mins = Math.floor(ms / 60000);
-      if (mins < 60) return mins + 'm ago';
-      var hours = Math.floor(mins / 60);
-      if (hours < 24) return hours + 'h ago';
-      var days = Math.floor(hours / 24);
-      return days + 'd ago';
-    }
+        // Header with animated calc icon and FREE badge
+        var html = '<div class="hdr"><span class="hdr-icon">' +
+          '<svg viewBox="0 0 24 24" fill="none" stroke="var(--fg)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+          '<rect x="3" y="2" width="18" height="20" rx="2"/>' +
+          '<rect class="calc-screen" x="5.5" y="4.5" width="13" height="4" rx="1" fill="var(--accent)" opacity="0.35" stroke="none"/>' +
+          '<rect class="calc-btn btn-1" x="5.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-2" x="9.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-3" x="13.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-4" x="5.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-5" x="9.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-6" x="13.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-7" x="5.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-8" x="9.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-eq" x="13.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.45" stroke="none"/>' +
+          '</svg></span><span class="hdr-title">Tokalator</span><span class="hdr-badge">FREE</span></div>';
 
-    function fmtCost(n) {
-      if (n < 0.001) return '<$0.001';
-      if (n < 0.01) return '$' + n.toFixed(4);
-      if (n < 1) return '$' + n.toFixed(3);
-      return '$' + n.toFixed(2);
-    }
+        // Last session
+        if (ls && ls.totalTurns > 0) {
+          html += '<div class="card"><div class="card-title">Last Session <span style="float:right;font-weight:400">'+ago(ls.endedAt)+'</span></div>';
+          html += '<span>'+ls.modelLabel+'</span> &middot; <span>'+ls.totalTurns+' turns</span> &middot; <span>peak '+fmt(ls.peakTokens)+'</span></div>';
+        }
 
-    function relClass(score) {
-      if (score >= 0.6) return 'high';
-      if (score >= 0.3) return 'med';
-      return 'low';
-    }
+        // Active model (auto-detected from Copilot chat — read-only)
+        var mLabel = mid, rot = 0;
+        for (var mi = 0; mi < models.length; mi++) { if (models[mi].id === mid) { mLabel = models[mi].label; rot = models[mi].rotThreshold || 0; break; } }
+        html += '<div class="model-active" title="Auto-detected from your active Copilot chat model"><span class="model-active-label">Model</span><span class="model-active-name">'+(mLabel||'—')+'</span><span class="model-active-sync">&#x21BB; auto</span></div>';
 
-    function render(s, lastSession) {
-      const { tabs, budgetLevel, totalEstimatedTokens, windowCapacity, chatTurnCount,
-              healthReasons, pinnedFiles, diagnosticsSummary, modelId, modelLabel,
-              models, workspaceFileCount, workspaceFileTokens, tokenizerType, tokenizerLabel,
-              turnHistory, budgetBreakdown, costEstimate, priceCompare, catalogMeta } = s;
+        // Budget meter with context %
+        var pct = cap > 0 ? Math.round((tot/cap)*100) : 0;
+        html += '<div class="meter '+bl+'"><span class="meter-level">'+bl.toUpperCase()+'</span><span class="meter-tokens">~'+fmt(tot)+' / '+fmt(cap)+' ('+pct+'%)</span></div>';
 
-      const threshold = 0.3;
-      const relevant = tabs.filter(t => t.relevanceScore >= threshold || t.isActive || t.isPinned);
-      const distractors = tabs.filter(t => t.relevanceScore < threshold && !t.isActive && !t.isPinned);
+        // Context Engineering stats — projections only from measured turn history (no fabricated numbers)
+        var gh = s.turnHistory || [];
+        var hasGrowth = gh.length >= 2;
+        var growth = hasGrowth ? Math.round((gh[gh.length-1].inputTokens - gh[0].inputTokens)/(gh.length-1)) : 0;
+        var outResv = (bd && bd.outputReservation) ? bd.outputReservation : 0;
+        var tLeftTxt = (hasGrowth && growth > 0) ? '~'+Math.max(Math.floor((cap - tot - outResv)/growth), 0) : '\\u2014';
+        html += '<div class="card"><div class="card-title">Context Engineering</div><div class="ce-grid">';
+        html += '<div class="ce-stat"><span class="ce-val">'+pct+'%</span><span class="ce-lbl">context used</span></div>';
+        html += '<div class="ce-stat"><span class="ce-val">'+turns+(rot>0?' / '+rot:'')+'</span><span class="ce-lbl">'+(rot>0?'turns to rot':'turns')+'</span></div>';
+        html += '<div class="ce-stat"><span class="ce-val">'+(growth>0?'+'+fmt(growth):'\\u2014')+'</span><span class="ce-lbl">tokens/turn</span></div>';
+        html += '<div class="ce-stat"><span class="ce-val">'+tLeftTxt+'</span><span class="ce-lbl">turns left</span></div>';
+        html += '</div></div>';
 
-      const modelOptions = (models || []).map(m =>
-        '<option value="' + m.id + '"' + (m.id === modelId ? ' selected' : '') + '>' + m.label + ' (' + fmtTokens(m.contextWindow) + ' | $' + m.inputCostPerMTok + '/$' + m.outputCostPerMTok + ')' + '</option>'
-      ).join('');
+        // Cost estimate
+        if (ce) {
+          html += '<div class="card" style="border-color:color-mix(in srgb, var(--low) 30%, var(--border))">';
+          html += '<div class="card-title" style="color:var(--low)">API Cost Simulation</div>';
+          html += '<div class="cost-total">'+fmtC(ce.totalCost)+'</div>';
+          html += '<div class="cost-grid">';
+          html += '<span class="cost-label">Input</span><span class="cost-tok">~'+fmt(ce.inputTokens)+'</span><span class="cost-val">'+fmtC(ce.inputCost)+'</span>';
+          html += '<span class="cost-label">Output (max)</span><span class="cost-tok">~'+fmt(ce.outputTokens)+'</span><span class="cost-val">'+fmtC(ce.outputCost)+'</span>';
+          html += '<div class="cost-sep"></div>';
+          html += '<span class="cost-label" style="font-weight:600">Total</span><span class="cost-tok"></span><span class="cost-val">'+fmtC(ce.totalCost)+'</span>';
+          html += '</div>';
+          html += '<div class="cost-rate">Rate: $'+ce.inputCostPerMTok+'/MTok in, $'+ce.outputCostPerMTok+'/MTok out</div>';
+          html += '</div>';
+        }
 
-      app.innerHTML = \`
-        <div class="header">
-          <span class="header-icon">🧮</span>
-          <span class="header-title">Tokalator</span>
-        </div>
+        // Next turn preview — only when growth is measured (avoids fabricated projections)
+        if (hasGrowth && growth > 0) {
+          var nextIn = tot + growth, nextPct = Math.min((nextIn/cap)*100,100).toFixed(1);
+          var warn = nextPct >= 90 ? 'High risk of overflow' : nextPct >= 75 ? 'Approaching limit' : '';
+          html += '<div class="card" style="border-color:color-mix(in srgb, var(--accent) 40%, var(--border))">';
+          html += '<div class="card-title" style="color:var(--accent)">Next Turn Preview</div>';
+          html += '+~'+fmt(growth)+' &#8594; ~'+fmt(nextIn)+' ('+nextPct+'%)';
+          if (warn) html += '<div style="color:var(--medium);font-weight:600;margin-top:2px">'+warn+'</div>';
+          html += '</div>';
+        }
 
-        \${lastSession && lastSession.totalTurns > 0 ? \`
-          <div class="last-session">
-            <div class="last-session-header">
-              <span class="last-session-title">Last Session</span>
-              <span class="last-session-time">\${formatTimeAgo(lastSession.endedAt)}</span>
-            </div>
-            <div class="last-session-stats">
-              <span class="last-session-stat">\${lastSession.modelLabel}</span>
-              <span class="last-session-stat">\${lastSession.totalTurns} turns</span>
-              <span class="last-session-stat">peak \${fmtTokens(lastSession.peakTokens)}</span>
-              <span class="last-session-stat">\${lastSession.tabCount} tabs</span>
-            </div>
-          </div>
-        \` : ''}
+        // Stats pills
+        html += '<div class="pills">';
+        html += '<span class="pill">'+t.length+' open</span>';
+        html += '<span class="pill">'+pins+' pinned</span>';
+        if (wfc > 0) html += '<span class="pill">'+wfc+' in project</span>';
+        if (diag.errors > 0) html += '<span class="pill">'+diag.errors+' errors</span>';
+        if (tl) html += '<span class="pill" style="color:var(--accent)">'+tl+'</span>';
+        html += '</div>';
 
-        <div class="model-selector">
-          <select data-action="setModel">
-            \${modelOptions}
-          </select>
-        </div>
+        // Workspace info
+        if (wfc > 0) {
+          html += '<div class="workspace-info">';
+          html += '<span>Project: ~'+fmt(wft)+' tokens across '+wfc+' files</span>';
+          if (wft > cap) html += '<span class="ws-warn">Exceeds context window</span>';
+          else html += '<span class="ws-ok">Fits in context window</span>';
+          html += '</div>';
+        }
 
-        <div class="budget-level \${budgetLevel}">
-          <div class="budget-value">\${budgetLevel.toUpperCase()}</div>
-          <div class="budget-tokens">~\${fmtTokens(totalEstimatedTokens)} / \${fmtTokens(windowCapacity)}</div>
-        </div>
+        // Feature panel
+        html += '<div class="feat-panel">';
+        html += '<div class="feat-hdr"><span style="color:var(--free-green)">&#x2B21;</span><span class="feat-hdr-label" style="color:var(--free-green)">Features</span></div>';
+        html += '<div class="feat-btn" data-action="terminologyGen"><span class="feat-btn-icon">&#x1F4D6;</span><div class="feat-btn-info"><div class="feat-btn-name">Generate Glossary <span class="tag-new">NEW</span></div><div class="feat-btn-desc">Compress repeated terminology into a glossary</div></div><span class="feat-btn-arrow">&#8594;</span></div>';
+        html += '<div class="feat-btn locked" data-action="proFeature" data-feature="Secure Workspace"><span class="feat-btn-icon">&#x1F512;</span><div class="feat-btn-info"><div class="feat-btn-name">Secure Workspace <span class="tag-pro">PRO</span></div><div class="feat-btn-desc">Protect secrets from AI agents</div></div><span class="feat-btn-arrow">&#8594;</span></div>';
+        html += '<div class="feat-btn locked" data-action="proFeature" data-feature="Generate SKILL.md"><span class="feat-btn-icon">&#x1F512;</span><div class="feat-btn-info"><div class="feat-btn-name">Generate SKILL.md <span class="tag-pro">PRO</span></div><div class="feat-btn-desc">Package domain expertise for agents</div></div><span class="feat-btn-arrow">&#8594;</span></div>';
+        html += '<div class="feat-btn locked" data-action="proFeature" data-feature="Generate AI Settings"><span class="feat-btn-icon">&#x1F512;</span><div class="feat-btn-info"><div class="feat-btn-name">Generate AI Settings <span class="tag-pro">PRO</span></div><div class="feat-btn-desc">GitHub + VS Code agent configs</div></div><span class="feat-btn-arrow">&#8594;</span></div>';
+        html += '</div>';
 
-        \${costEstimate ? \`
-          <div class="cost-box">
-            <div class="cost-title">Estimated Turn Cost</div>
-            <div class="cost-total">\${fmtCost(costEstimate.totalCost)}</div>
-            <div class="cost-grid">
-              <span class="cost-label">Input</span>
-              <span class="cost-tokens">~\${fmtTokens(costEstimate.inputTokens)}</span>
-              <span class="cost-value">\${fmtCost(costEstimate.inputCost)}</span>
-              <span class="cost-label">Output (max)</span>
-              <span class="cost-tokens">~\${fmtTokens(costEstimate.outputTokens)}</span>
-              <span class="cost-value">\${fmtCost(costEstimate.outputCost)}</span>
-              <div class="cost-sep"></div>
-              <span class="cost-label" style="font-weight:600">Total</span>
-              <span class="cost-tokens"></span>
-              <span class="cost-value">\${fmtCost(costEstimate.totalCost)}</span>
-            </div>
-            <div class="cost-rate">Rate: $\${costEstimate.inputCostPerMTok}/MTok in, $\${costEstimate.outputCostPerMTok}/MTok out</div>
-          </div>
-        \` : ''}
+        // Budget breakdown
+        if (bd) {
+          var total = tot || 1;
+          var fp = Math.round((bd.files/total)*100), sp = Math.round(((bd.systemPrompt+bd.instructions)/total)*100);
+          var cp = Math.round((bd.conversation/total)*100), op = Math.round((bd.outputReservation/total)*100);
+          html += '<div class="sec"><div class="sec-title">Budget Breakdown</div>';
+          html += '<div style="display:grid;grid-template-columns:1fr auto;gap:2px 8px;font-size:11px">';
+          html += '<span>Files</span><span style="text-align:right">~'+fmt(bd.files)+'</span>';
+          html += '<span>System</span><span style="text-align:right">~'+fmt(bd.systemPrompt)+'</span>';
+          html += '<span>Instructions</span><span style="text-align:right">~'+fmt(bd.instructions)+'</span>';
+          html += '<span>Conversation</span><span style="text-align:right">~'+fmt(bd.conversation)+'</span>';
+          html += '<span>Output reserve</span><span style="text-align:right">~'+fmt(bd.outputReservation)+'</span>';
+          html += '</div>';
+          html += '<div class="bar-wrap"><div style="display:flex;height:100%"><div class="bar-fill" style="width:'+fp+'%;background:var(--accent)"></div><div class="bar-fill" style="width:'+sp+'%;background:#bc8cff"></div><div class="bar-fill" style="width:'+cp+'%;background:var(--medium)"></div><div class="bar-fill" style="width:'+op+'%;background:#8b949e"></div></div></div>';
+          html += '</div>';
+        }
 
-        \${(function() {
-          if (!s.priceCompare || s.priceCompare.length === 0) return '';
-          var rows = s.priceCompare.map(function(c, i) {
-            var cls = 'compare-row';
-            if (c.modelId === modelId) cls += ' active';
-            if (i === 0) cls += ' cheapest';
-            return '<tr class="' + cls + '">' +
-              '<td>' + c.label + '</td>' +
-              '<td>' + fmtCost(c.inputCost) + '</td>' +
-              '<td>' + fmtCost(c.outputCost) + '</td>' +
-              '<td>' + fmtCost(c.totalCost) + '</td>' +
-              '</tr>';
+        // Context growth
+        if (s.turnHistory && s.turnHistory.length > 0) {
+          var hist = s.turnHistory;
+          html += '<div class="sec"><div class="sec-title">Context Growth ('+hist.length+' turns)</div>';
+          html += '<div style="display:flex;align-items:flex-end;gap:2px;height:28px;margin-bottom:4px">';
+          for (var i = 0; i < hist.length; i++) {
+            var pct = Math.max(5, Math.round((hist[i].inputTokens/cap)*100));
+            html += '<div style="flex:1;min-width:3px;height:'+pct+'%;border-radius:2px 2px 0 0;background:var(--accent);opacity:'+(i===hist.length-1?'1':'0.5')+'" title="T'+hist[i].turn+': ~'+fmt(hist[i].inputTokens)+'"></div>';
+          }
+          html += '</div>';
+          html += '<div style="display:flex;justify-content:space-between;font-size:10px"><span>T1: ~'+fmt(hist[0].inputTokens)+'</span><span>T'+hist[hist.length-1].turn+': ~'+fmt(hist[hist.length-1].inputTokens)+'</span></div>';
+          if (hist.length >= 2) html += '<div style="font-size:11px;color:var(--medium);font-weight:500;margin-top:2px">+'+fmt(Math.round((hist[hist.length-1].inputTokens-hist[0].inputTokens)/(hist.length-1)))+'/turn avg</div>';
+          html += '</div>';
+        }
+
+        // File list
+        html += '<div class="sec"><div class="sec-title">Files ('+rel.length+')</div><ul class="tab-list">';
+        if (rel.length === 0) { html += '<li class="empty">No files open</li>'; }
+        else { for (var j = 0; j < rel.length; j++) html += tabHtml(rel[j]); }
+        html += '</ul></div>';
+
+        // Low relevance
+        if (dist.length > 0) {
+          html += '<div class="sec"><div class="sec-title">Low Relevance ('+dist.length+')</div><ul class="tab-list">';
+          for (var k = 0; k < dist.length; k++) html += tabHtml(dist[k]);
+          html += '</ul><button class="act-btn" data-action="optimize">Close '+dist.length+' Low-Relevance Tabs</button></div>';
+        }
+
+        // Price compare (collapsible, with "vs Current")
+        if (s.priceCompare && s.priceCompare.length > 0) {
+          var curCost = null;
+          for (var ci=0; ci<s.priceCompare.length; ci++) {
+            if (s.priceCompare[ci].modelId === mid) { curCost = s.priceCompare[ci].totalCost; break; }
+          }
+          var winMap = {};
+          for (var wi=0; wi<models.length; wi++) { winMap[models[wi].id] = models[wi].contextWindow; }
+
+          var rows = s.priceCompare.map(function(c,i) {
+            var cls = (c.modelId===mid?' act':'')+(i===0?' cheap':'');
+            var win = winMap[c.modelId] || 0;
+            var savTxt = '';
+            if (curCost !== null && c.modelId !== mid) {
+              var diff = c.totalCost - curCost;
+              if (diff < 0) savTxt = '<span style="color:var(--low)">'+fmtC(Math.abs(diff))+'</span>';
+              else if (diff > 0) savTxt = '<span style="color:var(--high)">+'+fmtC(diff)+'</span>';
+              else savTxt = '—';
+            } else if (c.modelId === mid) {
+              savTxt = '<span style="color:var(--accent)">current</span>';
+            }
+            return '<tr class="'+cls+'"><td>'+c.label+'</td><td>'+fmt(win)+'</td><td>'+fmtC(c.totalCost)+'</td><td>'+savTxt+'</td></tr>';
           }).join('');
           var meta = s.catalogMeta || {};
-          var syncLabel = meta.source === 'remote' ? 'Remote' : 'Bundled';
-          if (meta.lastSyncAt) syncLabel += ' ' + formatTimeAgo(meta.lastSyncAt);
-          return '<div class="compare-box">' +
-            '<div class="compare-header">' +
-            '<span class="compare-title">Price Compare</span>' +
-            '<span class="compare-sync">' + syncLabel + ' <button class="compare-refresh" data-action="refreshPricing">Refresh</button></span>' +
-            '</div>' +
-            '<table class="compare-table">' +
-            '<thead><tr><th>Model</th><th>Input</th><th>Output</th><th>Total</th></tr></thead>' +
-            '<tbody>' + rows + '</tbody>' +
-            '</table>' +
-            '</div>';
-        })()}
+          var sync = (meta.source==='remote'?'Remote':'Bundled') + (meta.lastSyncAt?' '+ago(meta.lastSyncAt):'');
+          html += '<div class="card">';
+          html += '<div class="cmp-toggle" data-action="toggleCompare"><div class="card-title" style="margin-bottom:0">Price Compare <span style="font-weight:400;font-size:9px">'+sync+' <button style="background:none;border:none;color:var(--link-fg);cursor:pointer;font-size:10px;text-decoration:underline" data-action="refreshPricing">Refresh</button></span></div><span class="cmp-plus" id="cmpPlus">+</span></div>';
+          html += '<div class="cmp-body" id="cmpBody" style="margin-top:6px">';
+          html += '<table class="compare-tbl"><thead><tr><th>Model</th><th>Window</th><th>Cost</th><th>vs Current</th></tr></thead><tbody>'+rows+'</tbody></table>';
+          html += '</div></div>';
+        }
 
-        \${(function() {
-          var perTurn = 800;
-          var nextInput = totalEstimatedTokens + perTurn;
-          var nextPct = Math.min((nextInput / windowCapacity) * 100, 100).toFixed(1);
-          var outputReserve = (budgetBreakdown && budgetBreakdown.outputReservation) ? budgetBreakdown.outputReservation : 4000;
-          var remaining = Math.max(windowCapacity - nextInput - outputReserve, 0);
-          var turnsLeft = Math.floor(remaining / perTurn);
-          var warn = nextPct >= 90 ? 'High risk of overflow on next turn' : nextPct >= 75 ? 'Approaching context limit' : '';
-          return '<div class="preview-box">' +
-            '<div class="preview-title">Next Turn Preview</div>' +
-            '<div class="preview-stats">' +
-            '<span class="preview-stat">+~' + fmtTokens(perTurn) + '</span>' +
-            '<span class="preview-stat">→ ~' + fmtTokens(nextInput) + ' (' + nextPct + '%)</span>' +
-            '<span class="preview-stat">~' + turnsLeft + ' turns left</span>' +
-            '</div>' +
-            (warn ? '<div class="preview-warn">' + warn + '</div>' : '') +
-            '</div>';
-        })()}
+        // Health notes
+        if (reasons.length > 0) {
+          html += '<ul style="font-size:11px;margin-top:6px;padding-left:16px">';
+          for (var r = 0; r < reasons.length; r++) html += '<li style="margin-bottom:3px">'+reasons[r]+'</li>';
+          html += '</ul>';
+        }
 
-        <div class="stats">
-          <div class="stat">\${tabs.length} open</div>
-          <div class="stat">\${pinnedFiles.length} pinned</div>
-          <div class="stat">\${chatTurnCount} turns</div>
-          \${workspaceFileCount > 0 ? '<div class="stat">' + workspaceFileCount + ' in project</div>' : ''}
-          \${diagnosticsSummary.errors > 0 ? '<div class="stat">' + diagnosticsSummary.errors + ' errors</div>' : ''}
-          \${tokenizerLabel ? '<div class="stat tokenizer">' + tokenizerLabel + '</div>' : ''}
-        </div>
+        if (turns > 0) html += '<button class="act-btn sec-btn" data-action="resetTurns">Reset Turn Counter</button>';
 
-        \${workspaceFileCount > 0 ? \`
-          <div class="workspace-info">
-            <span>Project: ~\${fmtTokens(workspaceFileTokens)} tokens across \${workspaceFileCount} files</span>
-            \${workspaceFileTokens > windowCapacity
-              ? '<span class="ws-warn">Exceeds context window — not all files can be attached</span>'
-              : '<span class="ws-ok">Fits in context window</span>'
-            }
-          </div>
-        \` : ''}
-
-        \${(function() {
-          if (!budgetBreakdown) return '';
-          var total = totalEstimatedTokens || 1;
-          var filesPct = Math.round((budgetBreakdown.files / total) * 100);
-          var sysPct = Math.round(((budgetBreakdown.systemPrompt + budgetBreakdown.instructions) / total) * 100);
-          var convPct = Math.round((budgetBreakdown.conversation / total) * 100);
-          var outPct = Math.round((budgetBreakdown.outputReservation / total) * 100);
-          return '<div class="section">' +
-            '<div class="section-title">Budget Breakdown</div>' +
-            '<div class="breakdown-grid">' +
-            '<span class="breakdown-label">Files</span>' +
-            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.files) + '</span>' +
-            '<span class="breakdown-label">System</span>' +
-            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.systemPrompt) + '</span>' +
-            '<span class="breakdown-label">Instructions</span>' +
-            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.instructions) + '</span>' +
-            '<span class="breakdown-label">Conversation</span>' +
-            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.conversation) + '</span>' +
-            '<span class="breakdown-label">Output reserve</span>' +
-            '<span class="breakdown-value">~' + fmtTokens(budgetBreakdown.outputReservation) + '</span>' +
-            '</div>' +
-            '<div class="breakdown-bar">' +
-            '<div style="display:flex;height:100%">' +
-            '<div class="breakdown-bar-fill files" style="width:' + filesPct + '%"></div>' +
-            '<div class="breakdown-bar-fill system" style="width:' + sysPct + '%"></div>' +
-            '<div class="breakdown-bar-fill conversation" style="width:' + convPct + '%"></div>' +
-            '<div class="breakdown-bar-fill output" style="width:' + outPct + '%"></div>' +
-            '</div>' +
-            '</div>' +
-            '</div>';
-        })()}
-
-        \${turnHistory && turnHistory.length > 0 ? \`
-          <div class="section">
-            <div class="section-title">Context Growth (\${turnHistory.length} turns)</div>
-            <div class="growth-bars">
-              \${turnHistory.map(function(t) {
-                var pct = Math.max(5, Math.round((t.inputTokens / windowCapacity) * 100));
-                return '<div class="growth-bar" style="height:' + pct + '%" title="Turn ' + t.turn + ': ~' + fmtTokens(t.inputTokens) + '"></div>';
-              }).join('')}
-            </div>
-            <div class="growth-label">
-              <span>T1: ~\${fmtTokens(turnHistory[0].inputTokens)}</span>
-              <span>T\${turnHistory[turnHistory.length-1].turn}: ~\${fmtTokens(turnHistory[turnHistory.length-1].inputTokens)}</span>
-            </div>
-            \${turnHistory.length >= 2 ? '<div class="suggestion">+' + fmtTokens(Math.round((turnHistory[turnHistory.length-1].inputTokens - turnHistory[0].inputTokens) / (turnHistory.length-1))) + '/turn avg growth</div>' : ''}
-          </div>
-        \` : ''}
-
-        <div class="section">
-          <div class="section-title">Files (\${relevant.length})</div>
-          <ul class="tab-list">
-            \${relevant.length === 0 ? '<li class="empty">No files open</li>' :
-              relevant.map(t => renderTab(t)).join('')}
-          </ul>
-        </div>
-
-        \${distractors.length > 0 ? \`
-          <div class="section">
-            <div class="section-title">Low Relevance (\${distractors.length})</div>
-            <ul class="tab-list">
-              \${distractors.map(t => renderTab(t)).join('')}
-            </ul>
-            <button class="action-btn" data-action="optimize">
-              Close \${distractors.length} Low-Relevance Tabs
-            </button>
-          </div>
-        \` : ''}
-
-        <ul class="notes">
-          \${healthReasons.map(r => '<li>' + r + '</li>').join('')}
-        </ul>
-
-        \${chatTurnCount > 0 ? '<button class="action-btn secondary" data-action="resetTurns">Reset Turn Counter</button>' : ''}
-      \`;
+        app.innerHTML = html;
+      } catch (e) {
+        app.innerHTML = '<div class="err">Render error: ' + e.message + '</div>';
+      }
     }
 
-    function renderTab(t) {
-      var safeUri = encodeURIComponent(t.uri);
-      var pinBtn = t.isPinned
-        ? '<button title="Unpin" data-action="unpin" data-uri="' + safeUri + '">\u{1F4CC}</button>'
-        : '<button title="Pin" data-action="pin" data-uri="' + safeUri + '">\u{1F4CD}</button>';
-      var closeBtn = !t.isActive
-        ? '<button title="Close" data-action="closeTab" data-uri="' + safeUri + '">✕</button>'
-        : '';
-
-      return '<li class="tab-item" data-action="openFile" data-uri="' + safeUri + '">' +
-        '<div class="tab-dot ' + relClass(t.relevanceScore) + '"></div>' +
-        '<span class="tab-name ' + (t.isActive ? 'active' : '') + '">' + t.label + (t.isDirty ? ' •' : '') + '</span>' +
-        '<span class="tab-tokens">~' + fmtTokens(t.estimatedTokens) + '</span>' +
-        '<div class="tab-actions">' + pinBtn + closeBtn + '</div>' +
-        '</li>';
+    function tabHtml(t) {
+      var u = encodeURIComponent(t.uri);
+      var pin = t.isPinned
+        ? '<button title="Unpin" data-action="unpin" data-uri="'+u+'">&#x1F4CC;</button>'
+        : '<button title="Pin" data-action="pin" data-uri="'+u+'">&#x1F4CD;</button>';
+      var cls = !t.isActive ? '<button title="Close" data-action="closeTab" data-uri="'+u+'">&#x2715;</button>' : '';
+      return '<li class="tab-item" data-action="openFile" data-uri="'+u+'"><div class="tab-dot '+rc(t.relevanceScore)+'"></div><span class="tab-name'+(t.isActive?' active':'')+'">'+t.label+(t.isDirty?' &bull;':'')+'</span><span class="tab-tok">~'+fmt(t.estimatedTokens)+'</span><div class="tab-btns">'+pin+cls+'</div></li>';
     }
 
-    // ── Event delegation (CSP blocks inline onclick) ──
     document.addEventListener('click', function(e) {
       var el = e.target.closest('[data-action]');
       if (!el) return;
-      var action = el.dataset.action;
-      var uri = el.dataset.uri ? decodeURIComponent(el.dataset.uri) : undefined;
-      switch (action) {
-        case 'pin':      e.stopPropagation(); vscode.postMessage({ command: 'pin', uri: uri }); break;
-        case 'unpin':    e.stopPropagation(); vscode.postMessage({ command: 'unpin', uri: uri }); break;
-        case 'closeTab': e.stopPropagation(); vscode.postMessage({ command: 'closeTab', uri: uri }); break;
-        case 'optimize': vscode.postMessage({ command: 'optimize' }); break;
-        case 'resetTurns': vscode.postMessage({ command: 'resetTurns' }); break;
-        case 'refreshPricing': vscode.postMessage({ command: 'refreshPricing' }); break;
+      var a = el.dataset.action, u = el.dataset.uri ? decodeURIComponent(el.dataset.uri) : undefined;
+      switch (a) {
+        case 'pin': e.stopPropagation(); vscode.postMessage({command:'pin',uri:u}); break;
+        case 'unpin': e.stopPropagation(); vscode.postMessage({command:'unpin',uri:u}); break;
+        case 'closeTab': e.stopPropagation(); vscode.postMessage({command:'closeTab',uri:u}); break;
+        case 'optimize': vscode.postMessage({command:'optimize'}); break;
+        case 'resetTurns': vscode.postMessage({command:'resetTurns'}); break;
+        case 'refreshPricing': vscode.postMessage({command:'refreshPricing'}); break;
+        case 'terminologyGen': vscode.postMessage({command:'terminologyGen'}); break;
+        case 'proFeature': vscode.postMessage({command:'proFeature',feature:el.dataset.feature||''}); break;
+        case 'toggleCompare':
+          var body = document.getElementById('cmpBody');
+          var plus = document.getElementById('cmpPlus');
+          if (body) { body.classList.toggle('open'); }
+          if (plus) { plus.textContent = body && body.classList.contains('open') ? '\\u2212' : '+'; }
+          break;
       }
     });
-
     document.addEventListener('dblclick', function(e) {
       var el = e.target.closest('[data-action="openFile"]');
-      if (el && el.dataset.uri) {
-        vscode.postMessage({ command: 'openFile', uri: decodeURIComponent(el.dataset.uri) });
-      }
+      if (el && el.dataset.uri) vscode.postMessage({command:'openFile',uri:decodeURIComponent(el.dataset.uri)});
     });
 
-    document.addEventListener('change', function(e) {
-      var el = e.target.closest('[data-action="setModel"]');
-      if (el) {
-        vscode.postMessage({ command: 'setModel', modelId: el.value });
-      }
-    });
-
-    let lastSessionData = null;
-    window.addEventListener('message', e => {
+    var lastSes = null;
+    window.addEventListener('message', function(e) {
       if (e.data.type === 'snapshot') {
-        if (e.data.lastSession) lastSessionData = e.data.lastSession;
-        render(e.data.data, lastSessionData);
+        if (e.data.lastSession) lastSes = e.data.lastSession;
+        render(e.data.data, lastSes);
       }
     });
+
+    setTimeout(function() {
+      document.querySelectorAll('.calc-btn, .calc-screen').forEach(function(el) {
+        el.style.animation = 'none';
+        el.offsetHeight;
+        el.style.animation = '';
+      });
+    }, 50);
   </script>
 </body>
 </html>`;
