@@ -108,9 +108,18 @@ describe('ContextDashboardProvider', () => {
       expect(monitor.optimizeTabs).toHaveBeenCalled();
     });
 
-    test('setModel command awaits monitor.setModel', async () => {
-      await mockView.simulateMessage({ command: 'setModel', modelId: 'gpt-5.2' });
-      expect(monitor.setModel).toHaveBeenCalledWith('gpt-5.2');
+    test('terminologyGen command opens the chat with /terminology-gen', async () => {
+      const exec = vscode.commands.executeCommand as jest.Mock;
+      await mockView.simulateMessage({ command: 'terminologyGen' });
+      expect(exec).toHaveBeenCalledWith('workbench.action.chat.open', { query: '@tokalator /terminology-gen' });
+    });
+
+    test('proFeature command shows an upgrade message', async () => {
+      await mockView.simulateMessage({ command: 'proFeature', feature: 'Secure Workspace' });
+      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
+        expect.stringContaining('Secure Workspace'),
+        'Learn More',
+      );
     });
 
     test('resetTurns command calls monitor.resetChatTurns', async () => {
@@ -125,15 +134,41 @@ describe('ContextDashboardProvider', () => {
       expect(html).not.toContain('onclick=');
       expect(html).not.toContain('ondblclick=');
       expect(html).not.toContain('onchange=');
-      expect(html).toContain('data-action="setModel"');
       expect(html).toContain('data-action="openFile"');
+      expect(html).toContain('data-action="terminologyGen"');
+      expect(html).toContain('data-action="proFeature"');
     });
 
     test('contains event delegation listeners', () => {
       const html = mockView.webview.html;
       expect(html).toContain("document.addEventListener('click'");
       expect(html).toContain("document.addEventListener('dblclick'");
-      expect(html).toContain("document.addEventListener('change'");
+    });
+
+    test('has no model dropdown (model is auto-detected, read-only)', () => {
+      const html = mockView.webview.html;
+      expect(html).not.toContain('data-action="setModel"');
+      expect(html).not.toContain("addEventListener('change'");
+      expect(html).toContain('model-active');
+      expect(html).toContain('Auto-detected from your active Copilot chat model');
+    });
+
+    test('renders Context Engineering stats and API Cost Simulation', () => {
+      const html = mockView.webview.html;
+      expect(html).toContain('Context Engineering');
+      expect(html).toContain('class="ce-grid"');
+      expect(html).toContain('context used');
+      expect(html).toContain('tokens/turn');
+      expect(html).toContain('turns left');
+      expect(html).toContain('API Cost Simulation');
+    });
+
+    test('renders feature panel and price-compare with vs Current', () => {
+      const html = mockView.webview.html;
+      expect(html).toContain('Generate Glossary');
+      expect(html).toContain('Secure Workspace');
+      expect(html).toContain('compare-tbl');
+      expect(html).toContain('vs Current');
     });
 
     test('contains CSP with nonce', () => {
@@ -147,8 +182,8 @@ describe('ContextDashboardProvider', () => {
       const html = mockView.webview.html;
       // The function definition should handle millions
       expect(html).toContain("n >= 1000000");
-      expect(html).toContain("+ 'M'");
-      expect(html).toContain("+ 'K'");
+      expect(html).toContain("+'M'");
+      expect(html).toContain("+'K'");
     });
   });
 

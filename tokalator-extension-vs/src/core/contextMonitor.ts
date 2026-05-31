@@ -641,7 +641,7 @@ export class ContextMonitor implements vscode.Disposable {
     if (this.workspaceState) {
       this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
     }
-    // Sync the VS Code setting so Settings UI / dashboard selector stay in sync
+    // Sync the VS Code setting so the Settings UI stays in sync
     const cfg = vscode.workspace.getConfiguration('tokalator');
     const currentSetting = cfg.get<string>('model');
     if (currentSetting !== modelId) {

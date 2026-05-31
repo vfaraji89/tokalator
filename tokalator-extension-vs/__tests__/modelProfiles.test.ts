@@ -24,12 +24,12 @@ describe('MODEL_PROFILES', () => {
     expect(providers).toEqual(new Set(['anthropic', 'openai', 'google']));
   });
 
-  it('has 6 Anthropic, 7 OpenAI, 4 Google models', () => {
+  it('has 5 Anthropic, 6 OpenAI, 6 Google models', () => {
     const counts: Record<string, number> = { anthropic: 0, openai: 0, google: 0 };
     MODEL_PROFILES.forEach((m: ModelProfile) => counts[m.provider]++);
-    expect(counts.anthropic).toBe(6);
-    expect(counts.openai).toBe(7);
-    expect(counts.google).toBe(4);
+    expect(counts.anthropic).toBe(5);
+    expect(counts.openai).toBe(6);
+    expect(counts.google).toBe(6);
   });
 
   it('all models have positive context window', () => {
@@ -77,8 +77,8 @@ describe('DEFAULT_MODEL_ID', () => {
     expect(found).toBeDefined();
   });
 
-  it('is claude-opus-4.6', () => {
-    expect(DEFAULT_MODEL_ID).toBe('claude-opus-4.6');
+  it('is claude-opus-4.8', () => {
+    expect(DEFAULT_MODEL_ID).toBe('claude-opus-4.8');
   });
 });
 
@@ -88,18 +88,18 @@ describe('DEFAULT_MODEL_ID', () => {
 
 describe('findModel', () => {
   it('exact ID match', () => {
-    const result = findModel('claude-opus-4.6');
-    expect(result?.id).toBe('claude-opus-4.6');
+    const result = findModel('claude-opus-4.8');
+    expect(result?.id).toBe('claude-opus-4.8');
   });
 
   it('exact label match', () => {
-    const result = findModel('Claude Opus 4.6');
-    expect(result?.id).toBe('claude-opus-4.6');
+    const result = findModel('Claude Opus 4.8');
+    expect(result?.id).toBe('claude-opus-4.8');
   });
 
   it('case-insensitive match', () => {
-    const result = findModel('CLAUDE-OPUS-4.6');
-    expect(result?.id).toBe('claude-opus-4.6');
+    const result = findModel('CLAUDE-OPUS-4.8');
+    expect(result?.id).toBe('claude-opus-4.8');
   });
 
   it('partial match (starts-with)', () => {
@@ -109,7 +109,7 @@ describe('findModel', () => {
 
   it('contains match (fallback)', () => {
     const result = findModel('opus');
-    expect(result?.id).toBe('claude-opus-4.6');
+    expect(result?.id).toBe('claude-opus-4.8');
   });
 
   it('returns undefined for empty string', () => {
@@ -128,13 +128,20 @@ describe('findModel', () => {
     expect(findModel('gemini-2.5-pro')?.provider).toBe('google');
   });
 
-  it('finds new GPT-5.4 model', () => {
-    expect(findModel('gpt-5.4')?.provider).toBe('openai');
-    expect(findModel('gpt-5.4')?.contextWindow).toBe(1_000_000);
+  it('finds GPT-5.5 model', () => {
+    expect(findModel('gpt-5.5')?.provider).toBe('openai');
+    expect(findModel('gpt-5.5')?.contextWindow).toBe(1_000_000);
   });
 
   it('finds Claude Sonnet 4.6', () => {
     expect(findModel('claude-sonnet-4.6')?.provider).toBe('anthropic');
+  });
+
+  it('finds Gemini 3.5 Flash model', () => {
+    const m = findModel('gemini-3.5-flash');
+    expect(m?.provider).toBe('google');
+    expect(m?.inputCostPerMTok).toBe(1.5);
+    expect(m?.outputCostPerMTok).toBe(9.0);
   });
 });
 
@@ -144,8 +151,8 @@ describe('findModel', () => {
 
 describe('getModel', () => {
   it('returns exact model for valid ID', () => {
-    const model = getModel('claude-sonnet-4.5');
-    expect(model.id).toBe('claude-sonnet-4.5');
+    const model = getModel('claude-sonnet-4.6');
+    expect(model.id).toBe('claude-sonnet-4.6');
     expect(model.provider).toBe('anthropic');
   });
 
@@ -155,10 +162,10 @@ describe('getModel', () => {
   });
 
   it('returns correct context window', () => {
-    const opus = getModel('claude-opus-4.6');
-    expect(opus.contextWindow).toBe(200_000);
+    const opus = getModel('claude-opus-4.8');
+    expect(opus.contextWindow).toBe(1_000_000);
 
-    const sonnet = getModel('claude-sonnet-4.5');
-    expect(sonnet.contextWindow).toBe(200_000);
+    const sonnet = getModel('claude-sonnet-4.6');
+    expect(sonnet.contextWindow).toBe(1_000_000);
   });
 });

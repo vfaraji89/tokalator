@@ -11,6 +11,8 @@ module.exports = {
         strict: true,
         skipLibCheck: true,
         resolveJsonModule: true,
+        rootDir: '.',
+        ignoreDeprecations: '6.0',
       },
     }],
   },
