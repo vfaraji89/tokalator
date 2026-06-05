@@ -194,43 +194,42 @@ export default function ExtensionPage() {
               style={{ width: "100%", height: "auto", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
             />
             <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              11 chat commands via @tokalator — full context management workflow
+              12 chat commands via @tokalator — full context management workflow
             </figcaption>
           </motion.figure>
         </div>
       </section>
 
-      {/* What's New in 3.1.3+ */}
+      {/* What's New in 3.1.7 */}
       <section>
         <div className="section-divider" />
-        <h2 className="section-header">What&apos;s New in v3.1.5</h2>
+        <h2 className="section-header">What&apos;s New in v3.1.7</h2>
         <div className="feature-grid feature-grid--2col" style={{ marginTop: "1rem" }}>
           <motion.div {...scrollReveal(0)} className="feature-item feature-item--extension" style={{ borderColor: "color-mix(in srgb, var(--accent) 30%, var(--border))" }}>
-            <span className="feature-number">$</span>
-            <h3>Price Estimation in Dashboard</h3>
+            <span className="feature-number">%</span>
+            <h3>Context Engineering Stats</h3>
             <p>
-              The sidebar now shows a live cost breakdown for every turn.
-              Input tokens (files, system prompt, conversation) and output tokens
-              (model max capacity) are multiplied by the selected model&apos;s per-MTok
-              rates to produce an estimated turn cost. The cost box updates in real
-              time as you open, close, or edit files.
+              A new sidebar panel tracks how your context budget is being spent:
+              context-window percentage used, turns-to-rot, measured tokens/turn
+              growth from your actual history, and estimated turns left. Next-turn
+              and turns-left projections render only from measured turns, never
+              fabricated defaults.
             </p>
             <div style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-primary)" }}>Visible in:</strong> Sidebar dashboard, <code>@tokalator /count</code>, <code>@tokalator /model</code>, model selector dropdown
+              <strong style={{ color: "var(--text-primary)" }}>Plus:</strong> model auto-detected from your Copilot chat, cost box relabeled <code>API Cost Simulation</code>
             </div>
           </motion.div>
           <motion.div {...scrollReveal(0.1)} className="feature-item feature-item--extension">
-            <span className="feature-number">17</span>
-            <h3>Model Pricing Built In</h3>
+            <span className="feature-number">/</span>
+            <h3>Generate Glossary</h3>
             <p>
-              All 17 model profiles now include input and output pricing.
-              Anthropic (Claude Opus $5/$25, Sonnet $3/$15, Haiku $1/$5),
-              OpenAI (GPT-5.4 $2.50/$10, GPT-5.4 Mini $0.40/$1.60, o3, o4-mini),
-              and Google (Gemini Pro $1.25/$5, Flash $0.075/$0.30).
-              The model selector shows prices next to context window sizes.
+              The new <code>/terminology-gen</code> chat command scans your
+              workspace Markdown docs for terminology sources, measures their real
+              token cost, and estimates how much a generated glossary could
+              compress them. Available free from the dashboard feature panel.
             </p>
             <div style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-primary)" }}>Rates:</strong> $/MTok for input and output, sourced from provider pricing pages
+              <strong style={{ color: "var(--text-primary)" }}>Also:</strong> redesigned abacus-branded dashboard, 17 models on May 2026 pricing (Claude Opus 4.8, GPT-5.5, Gemini 3.5 Flash)
             </div>
           </motion.div>
         </div>

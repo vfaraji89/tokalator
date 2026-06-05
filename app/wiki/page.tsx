@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useMemo } from "react";
 import wikiData from "../../content/wiki/articles.json";
 
-type WikiArticle = (typeof wikiData.articles)[number];
+type WikiArticle = (typeof wikiData.articles)[number] & { date?: string; authors?: string[] };
 
 const SOURCES = [
   { id: "all", label: "All" },

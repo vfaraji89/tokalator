@@ -121,9 +121,17 @@ async function fetchArxiv(source: WikiSource): Promise<WikiArticle[]> {
     console.log(`  arXiv: "${query}" (max ${maxResults})...`);
 
     try {
-      const res = await fetch(url);
-      if (!res.ok) {
-        console.warn(`  arXiv query failed: ${res.status}`);
+      let res: Response | undefined;
+      for (let attempt = 0; attempt < 4; attempt++) {
+        if (attempt > 0) await new Promise((r) => setTimeout(r, 3000 * attempt));
+        res = await fetch(url, {
+          headers: { "User-Agent": "tokalator-wiki/1.0 (+https://tokalator.wiki)" },
+        });
+        if (res.status !== 429) break;
+        console.warn(`  arXiv 429, backing off (attempt ${attempt + 1}/4)...`);
+      }
+      if (!res || !res.ok) {
+        console.warn(`  arXiv query failed: ${res ? res.status : "no response"}`);
         continue;
       }
       const xml = await res.text();
@@ -185,8 +193,8 @@ async function fetchArxiv(source: WikiSource): Promise<WikiArticle[]> {
         });
       }
 
-      // Rate limit politeness
-      await new Promise((r) => setTimeout(r, 500));
+      // Rate limit politeness (arXiv recommends ~3s between requests)
+      await new Promise((r) => setTimeout(r, 3000));
     } catch (err) {
       console.warn(`  arXiv error for "${query}":`, err);
     }

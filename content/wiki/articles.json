@@ -1,321 +1,6 @@
 {
   "articles": [
     {
-      "slug": "arxiv-engineering-tagging-languages-for-dsls",
-      "title": "Engineering Tagging Languages for DSLs",
-      "description": "To keep a DSL clean, readable and reusable in different contexts, it is useful to define a separate tagging language. A tag model logically adds information to the tagged DSL model while technically...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/1606.05112v1",
-      "content": "## Abstract\n\nTo keep a DSL clean, readable and reusable in different contexts, it is useful to define a separate tagging language. A tag model logically adds information to the tagged DSL model while technically keeping the artifacts separated. Using a generic tagging language leads to promiscuous tag models, whereas defining a target DSL-specific tag language has a high initial overhead. This paper presents a systematic approach to define a DSL-specific tag language and a corresponding schema language, combining the advantages of both worlds: (a) the tag language specifically fits to the DSL, (b) the artifacts are kept separated and enabling reuse with different tag decorations, (c) the tag language follows a defined type schema, and (d) systematic derivation considerably reduces the effort necessary to implement the tag language. An example shows that it can at least partially be realized by a generator and applied for any kind of DSL. Index Terms Software Engineering, Modeling, MDE, GSE",
-      "authors": [
-        "Timo Greifenberg",
-        "Markus Look",
-        "Sebastian Roidl",
-        "Bernhard Rumpe"
-      ],
-      "date": "2016-06-16",
-      "tags": [
-        "cs.SE"
-      ],
-      "category": "general"
-    },
-    {
-      "slug": "arxiv-data-engineering-for-scaling-language-models-to-128k-context",
-      "title": "Data Engineering for Scaling Language Models to 128K Context",
-      "description": "We study the continual pretraining recipe for scaling language models' context lengths to 128K, with a focus on data engineering. We hypothesize that long context modeling, in particular \\textit{the...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2402.10171v1",
-      "content": "## Abstract\n\nWe study the continual pretraining recipe for scaling language models' context lengths to 128K, with a focus on data engineering. We hypothesize that long context modeling, in particular \\textit{the ability to utilize information at arbitrary input locations}, is a capability that is mostly already acquired through large-scale pretraining, and that this capability can be readily extended to contexts substantially longer than seen during training~(e.g., 4K to 128K) through lightweight continual pretraining on appropriate data mixture. We investigate the \\textit{quantity} and \\textit{quality} of the data for continual pretraining: (1) for quantity, we show that 500 million to 5 billion tokens are enough to enable the model to retrieve information anywhere within the 128K context; (2) for quality, our results equally emphasize \\textit{domain balance} and \\textit{length upsampling}. Concretely, we find that naively upsampling longer data on certain domains like books, a common practice of existing work, gives suboptimal performance, and that a balanced domain mixture is important. We demonstrate that continual pretraining of the full model on 1B-5B tokens of such data is an effective and affordable strategy for scaling the context length of language models to 128K. Our recipe outperforms strong open-source long-context models and closes the gap to frontier models like GPT-4 128K.",
-      "authors": [
-        "Yao Fu",
-        "Rameswar Panda",
-        "Xinyao Niu",
-        "Xiang Yue",
-        "Hannaneh Hajishirzi"
-      ],
-      "date": "2024-02-15",
-      "tags": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "category": "token-optimization"
-    },
-    {
-      "slug": "arxiv-learning-from-failure-integrating-negative-examples-when-fine-tuning-large-langu",
-      "title": "Learning From Failure: Integrating Negative Examples when Fine-tuning Large Language Models as Agents",
-      "description": "Large language models (LLMs) have achieved success in acting as agents, which interact with environments through tools such as search engines. However, LLMs are optimized for language generation...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2402.11651v2",
-      "content": "## Abstract\n\nLarge language models (LLMs) have achieved success in acting as agents, which interact with environments through tools such as search engines. However, LLMs are optimized for language generation instead of tool use during training or alignment, limiting their effectiveness as agents. To resolve this problem, previous work has first collected interaction trajectories between LLMs and environments, using only trajectories that successfully finished the task to fine-tune smaller models, making fine-tuning data scarce and acquiring it both difficult and costly. Discarding failed trajectories also leads to significant wastage of data and resources and limits the possible optimization paths during fine-tuning. In this paper, we argue that unsuccessful trajectories offer valuable insights, and LLMs can learn from these trajectories through appropriate quality control and fine-tuning strategies. By simply adding a prefix or suffix that tells the model whether to generate a successful trajectory during training, we improve model performance by a large margin on mathematical reasoning, multi-hop question answering, and strategic question answering tasks. We further analyze the inference results and find that our method provides a better trade-off between valuable information and errors in unsuccessful trajectories. To our knowledge, we are the first to demonstrate the value of negative trajectories and their application in agent-tunning scenarios. Our findings offer guidance for developing better agent-tuning methods and low-resource data usage techniques.",
-      "authors": [
-        "Renxi Wang",
-        "Haonan Li",
-        "Xudong Han",
-        "Yixuan Zhang",
-        "Timothy Baldwin"
-      ],
-      "date": "2024-02-18",
-      "tags": [
-        "cs.CL"
-      ],
-      "category": "tool-use"
-    },
-    {
-      "slug": "arxiv-how-important-is-tokenization-in-french-medical-masked-language-models",
-      "title": "How Important Is Tokenization in French Medical Masked Language Models?",
-      "description": "Subword tokenization has become the prevailing standard in the field of natural language processing (NLP) over recent years, primarily due to the widespread utilization of pre-trained language...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2402.15010v2",
-      "content": "## Abstract\n\nSubword tokenization has become the prevailing standard in the field of natural language processing (NLP) over recent years, primarily due to the widespread utilization of pre-trained language models. This shift began with Byte-Pair Encoding (BPE) and was later followed by the adoption of SentencePiece and WordPiece. While subword tokenization consistently outperforms character and word-level tokenization, the precise factors contributing to its success remain unclear. Key aspects such as the optimal segmentation granularity for diverse tasks and languages, the influence of data sources on tokenizers, and the role of morphological information in Indo-European languages remain insufficiently explored. This is particularly pertinent for biomedical terminology, characterized by specific rules governing morpheme combinations. Despite the agglutinative nature of biomedical terminology, existing language models do not explicitly incorporate this knowledge, leading to inconsistent tokenization strategies for common terms. In this paper, we seek to delve into the complexities of subword tokenization in French biomedical domain across a variety of NLP tasks and pinpoint areas where further enhancements can be made. We analyze classical tokenization algorithms, including BPE and SentencePiece, and introduce an original tokenization strategy that integrates morpheme-enriched word segmentation into existing tokenization methods.",
-      "authors": [
-        "Yanis Labrak",
-        "Adrien Bazoge",
-        "Beatrice Daille",
-        "Mickael Rouvier",
-        "Richard Dufour"
-      ],
-      "date": "2024-02-22",
-      "tags": [
-        "cs.CL",
-        "cs.AI",
-        "cs.LG"
-      ],
-      "category": "token-optimization"
-    },
-    {
-      "slug": "arxiv-token-weighting-for-long-range-language-modeling",
-      "title": "Token Weighting for Long-Range Language Modeling",
-      "description": "Many applications of large language models (LLMs) require long-context understanding, but models continue to struggle with such tasks. We hypothesize that conventional next-token prediction training...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2503.09202v1",
-      "content": "## Abstract\n\nMany applications of large language models (LLMs) require long-context understanding, but models continue to struggle with such tasks. We hypothesize that conventional next-token prediction training could contribute to this, because each token is assigned equal weight. Yet, intuitively, the amount of context needed to predict the next token accurately varies greatly across different data. To reflect this, we propose various novel token-weighting schemes that assign different weights to each training token in the loss, thereby generalizing existing works. For this, we categorize token-weighting methods using a two-step framework which compares the confidences of a long-context and short-context model to score tokens. We evaluate all methods on multiple long-context understanding tasks and show that non-uniform loss weights are helpful to improve the long-context abilities of LLMs. Different short-context models can be used effectively for token scoring, including models that are much smaller than the long-context model that is trained. All in all, this work contributes to a better understanding of the trade-offs long-context language modeling faces and provides guidelines for model steering via loss-weighting based on empirical evidence. The code can be found on Github.",
-      "authors": [
-        "Falko Helm",
-        "Nico Daheim",
-        "Iryna Gurevych"
-      ],
-      "date": "2025-03-12",
-      "tags": [
-        "cs.CL"
-      ],
-      "category": "general"
-    },
-    {
-      "slug": "arxiv-on-the-solution-existence-and-stability-of-polynomial-optimization-problems",
-      "title": "On the solution existence and stability of polynomial optimization problems",
-      "description": "This paper introduces and investigates a regularity condition in the asymptotic sense for optimization problems whose objective functions are polynomial. Under this regularity condition, the...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/1808.06100v6",
-      "content": "## Abstract\n\nThis paper introduces and investigates a regularity condition in the asymptotic sense for optimization problems whose objective functions are polynomial. Under this regularity condition, the normalization argument in asymptotic analysis enables us to see the solution existence as well as the solution stability of these problems. We prove a Frank-Wolfe type theorem for regular optimization problems and an Eaves type theorem for non-regular pseudoconvex optimization problems. Moreover, we show results on the stability such as upper semicontinuity and local upper-Hölder stability of the solution map of polynomial optimization problems. At the end of the paper, we discuss the genericity of the regularity condition.",
-      "authors": [
-        "Vu Trung Hieu"
-      ],
-      "date": "2018-08-18",
-      "tags": [
-        "math.OC"
-      ],
-      "category": "general"
-    },
-    {
-      "slug": "arxiv-caching-with-rental-cost-and-zapping",
-      "title": "Caching with rental cost and zapping",
-      "description": "The \\emph{file caching} problem is defined as follows. Given a cache of size $k$ (a positive integer), the goal is to minimize the total retrieval cost for the given sequence of requests to files. A...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/1208.2724v5",
-      "content": "## Abstract\n\nThe \\emph{file caching} problem is defined as follows. Given a cache of size $k$ (a positive integer), the goal is to minimize the total retrieval cost for the given sequence of requests to files. A file $f$ has size $size(f)$ (a positive integer) and retrieval cost $cost(f)$ (a non-negative number) for bringing the file into the cache. A \\emph{miss} or \\emph{fault} occurs when the requested file is not in the cache and the file has to be retrieved into the cache by paying the retrieval cost, and some other file may have to be removed (\\emph{evicted}) from the cache so that the total size of the files in the cache does not exceed $k$. We study the following variants of the online file caching problem. \\textbf{\\emph{Caching with Rental Cost} (or \\emph{Rental Caching})}: There is a rental cost $λ$ (a positive number) for each file in the cache at each time unit. The goal is to minimize the sum of the retrieval costs and the rental costs. \\textbf{\\emph{Caching with Zapping}}: A file can be \\emph{zapped} by paying a zapping cost $N \\ge 1$. Once a file is zapped, all future requests of the file don't incur any cost. The goal is to minimize the sum of the retrieval costs and the zapping costs. We study these two variants and also the variant which combines these two (rental caching with zapping). We present deterministic lower and upper bounds in the competitive-analysis framework. We study and extend the online covering algorithm from \\citep{young02online} to give deterministic online algorithms. We also present randomized lower and upper bounds for some of these problems.",
-      "authors": [
-        "Monik Khare",
-        "Neal E. Young"
-      ],
-      "date": "2012-08-13",
-      "tags": [
-        "cs.DS"
-      ],
-      "category": "caching"
-    },
-    {
-      "slug": "arxiv-struq-defending-against-prompt-injection-with-structured-queries",
-      "title": "StruQ: Defending Against Prompt Injection with Structured Queries",
-      "description": "Recent advances in Large Language Models (LLMs) enable exciting LLM-integrated applications, which perform text-based tasks by utilizing their advanced language understanding capabilities. However,...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2402.06363v2",
-      "content": "## Abstract\n\nRecent advances in Large Language Models (LLMs) enable exciting LLM-integrated applications, which perform text-based tasks by utilizing their advanced language understanding capabilities. However, as LLMs have improved, so have the attacks against them. Prompt injection attacks are an important threat: they trick the model into deviating from the original application's instructions and instead follow user directives. These attacks rely on the LLM's ability to follow instructions and inability to separate prompts and user data. We introduce structured queries, a general approach to tackle this problem. Structured queries separate prompts and data into two channels. We implement a system that supports structured queries. This system is made of (1) a secure front-end that formats a prompt and user data into a special format, and (2) a specially trained LLM that can produce high-quality outputs from these inputs. The LLM is trained using a novel fine-tuning strategy: we convert a base (non-instruction-tuned) LLM to a structured instruction-tuned model that will only follow instructions in the prompt portion of a query. To do so, we augment standard instruction tuning datasets with examples that also include instructions in the data portion of the query, and fine-tune the model to ignore these. Our system significantly improves resistance to prompt injection attacks, with little or no impact on utility. Our code is released at https://github.com/Sizhe-Chen/StruQ.",
-      "authors": [
-        "Sizhe Chen",
-        "Julien Piet",
-        "Chawin Sitawarin",
-        "David Wagner"
-      ],
-      "date": "2024-02-09",
-      "tags": [
-        "cs.CR"
-      ],
-      "category": "prompt-engineering"
-    },
-    {
-      "slug": "arxiv-how-and-where-to-translate-the-impact-of-translation-strategies-in-cross-lingual",
-      "title": "How and Where to Translate? The Impact of Translation Strategies in Cross-lingual LLM Prompting",
-      "description": "Despite advances in the multilingual capabilities of Large Language Models (LLMs), their performance varies substantially across different languages and tasks. In multilingual retrieval-augmented...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2507.22923v1",
-      "content": "## Abstract\n\nDespite advances in the multilingual capabilities of Large Language Models (LLMs), their performance varies substantially across different languages and tasks. In multilingual retrieval-augmented generation (RAG)-based systems, knowledge bases (KB) are often shared from high-resource languages (such as English) to low-resource ones, resulting in retrieved information from the KB being in a different language than the rest of the context. In such scenarios, two common practices are pre-translation to create a mono-lingual prompt and cross-lingual prompting for direct inference. However, the impact of these choices remains unclear. In this paper, we systematically evaluate the impact of different prompt translation strategies for classification tasks with RAG-enhanced LLMs in multilingual systems. Experimental results show that an optimized prompting strategy can significantly improve knowledge sharing across languages, therefore improve the performance on the downstream classification task. The findings advocate for a broader utilization of multilingual resource sharing and cross-lingual prompt optimization for non-English languages, especially the low-resource ones.",
-      "authors": [
-        "Aman Gupta",
-        "Yingying Zhuang",
-        "Zhou Yu",
-        "Ziji Zhang",
-        "Anurag Beniwal"
-      ],
-      "date": "2025-07-21",
-      "tags": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "category": "rag"
-    },
-    {
-      "slug": "arxiv-exploiting-context-to-identify-lexical-atoms-a-statistical-view-of-linguistic-co",
-      "title": "Exploiting Context to Identify Lexical Atoms -- A Statistical View of Linguistic Context",
-      "description": "Interpretation of natural language is inherently context-sensitive. Most words in natural language are ambiguous and their meanings are heavily dependent on the linguistic context in which they are...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/cmp-lg/9701001v1",
-      "content": "## Abstract\n\nInterpretation of natural language is inherently context-sensitive. Most words in natural language are ambiguous and their meanings are heavily dependent on the linguistic context in which they are used. The study of lexical semantics can not be separated from the notion of context. This paper takes a contextual approach to lexical semantics and studies the linguistic context of lexical atoms, or \"sticky\" phrases such as \"hot dog\". Since such lexical atoms may occur frequently in unrestricted natural language text, recognizing them is crucial for understanding naturally-occurring text. The paper proposes several heuristic approaches to exploiting the linguistic context to identify lexical atoms from arbitrary natural language text.",
-      "authors": [
-        "Chengxiang Zhai"
-      ],
-      "date": "1997-01-02",
-      "tags": [
-        "cs.CL"
-      ],
-      "category": "general"
-    },
-    {
-      "slug": "arxiv-towards-adaptive-context-management-for-intelligent-conversational-question-answ",
-      "title": "Towards Adaptive Context Management for Intelligent Conversational Question Answering",
-      "description": "This particular paper introduces an Adaptive Context Management (ACM) framework for the Conversational Question Answering (ConvQA) systems. The key objective of the ACM framework is to optimize the...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2509.17829v1",
-      "content": "## Abstract\n\nThis particular paper introduces an Adaptive Context Management (ACM) framework for the Conversational Question Answering (ConvQA) systems. The key objective of the ACM framework is to optimize the use of the conversation history by dynamically managing context for maximizing the relevant information provided to a ConvQA model within its token limit. Our approach incorporates a Context Manager (CM) Module, a Summarization (SM) Module, and an Entity Extraction (EE) Module in a bid to handle the conversation history efficaciously. The CM Module dynamically adjusts the context size, thereby preserving the most relevant and recent information within a model's token limit. The SM Module summarizes the older parts of the conversation history via a sliding window. When the summarization window exceeds its limit, the EE Module identifies and retains key entities from the oldest conversation turns. Experimental results demonstrate the effectiveness of our envisaged framework in generating accurate and contextually appropriate responses, thereby highlighting the potential of the ACM framework to enhance the robustness and scalability of the ConvQA systems.",
-      "authors": [
-        "Manoj Madushanka Perera",
-        "Adnan Mahmood",
-        "Kasun Eranda Wijethilake",
-        "Quan Z. Sheng"
-      ],
-      "date": "2025-09-22",
-      "tags": [
-        "cs.CL"
-      ],
-      "category": "token-optimization"
-    },
-    {
-      "slug": "arxiv-impacts-of-national-cultures-on-managerial-decisions-of-engaging-in-core-earning",
-      "title": "Impacts of National Cultures on Managerial Decisions of Engaging in Core Earnings Management",
-      "description": "This study investigates the impact of Hofstede's cultural dimensions on abnormal core earnings management in multiple national cultural contexts. We employ an Ordinary Least Squares (OLS) regression...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2407.16854v1",
-      "content": "## Abstract\n\nThis study investigates the impact of Hofstede's cultural dimensions on abnormal core earnings management in multiple national cultural contexts. We employ an Ordinary Least Squares (OLS) regression model with abnormal core earnings as the dependent variable. The independent variables analyzed include Hofstede's dimensions: Power Distance Index (PDI), Individualism (IDV), Masculinity (MAS), and Uncertainty Avoidance Index (UAI). Our findings reveal that individualism is positively associated with abnormal core earnings, suggesting that cultures characterized by high individualism may encourage practices that inflate earnings due to the prominence of personal achievement and rewards. In contrast, masculinity negatively correlates with abnormal core earnings, indicating that the risk-taking attributes associated with masculine cultures may deter earnings management. Interestingly, uncertainty avoidance is positively linked to abnormal core earnings, supporting the notion that managers tend to engage more in earnings management to minimize fluctuations in financial reports in cultures with high uncertainty avoidance. The relationship between power distance and abnormal core earnings is found to be non-significant, indicating no substantial effect in this context. These findings contribute to the literature on cultural influences in financial reporting, providing valuable insights for policymakers and multinational firms concerning the cultural contexts within which financial decisions and reporting occur.",
-      "authors": [
-        "Muhammad Rofiqul Islam",
-        "Abdullah Al Mehdi"
-      ],
-      "date": "2024-07-23",
-      "tags": [
-        "econ.GN"
-      ],
-      "category": "rag"
-    },
-    {
-      "slug": "arxiv-evor-evolving-retrieval-for-code-generation",
-      "title": "EVOR: Evolving Retrieval for Code Generation",
-      "description": "Recently the retrieval-augmented generation (RAG) has been successfully applied in code generation. However, existing pipelines for retrieval-augmented code generation (RACG) employ static knowledge...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2402.12317v2",
-      "content": "## Abstract\n\nRecently the retrieval-augmented generation (RAG) has been successfully applied in code generation. However, existing pipelines for retrieval-augmented code generation (RACG) employ static knowledge bases with a single source, limiting the adaptation capabilities of Large Language Models (LLMs) to domains they have insufficient knowledge of. In this work, we develop a novel pipeline, EVOR, that employs the synchronous evolution of both queries and diverse knowledge bases. On two realistic settings where the external knowledge is required to solve code generation tasks, we compile four new datasets associated with frequently updated libraries and long-tail programming languages, named EVOR-BENCH. Extensive experiments demonstrate that EVOR achieves two to four times of execution accuracy compared to other methods such as Reflexion (Shinn et al., 2024), DocPrompting (Zhou et al., 2023), etc. We demonstrate that EVOR is flexible and can be easily combined with them to achieve further improvement. Further analysis reveals that EVOR benefits from the synchronous evolution of queries and documents and the diverse information sources in the knowledge base. We hope that our studies will inspire more insights into the design of advanced RACG pipelines in future research. Our model, code, and data are available at https://arks-codegen.github.io.",
-      "authors": [
-        "Hongjin Su",
-        "Shuyang Jiang",
-        "Yuhang Lai",
-        "Haoyuan Wu",
-        "Boao Shi"
-      ],
-      "date": "2024-02-19",
-      "tags": [
-        "cs.CL",
-        "cs.AI"
-      ],
-      "category": "rag"
-    },
-    {
-      "slug": "arxiv-ar-rag-autoregressive-retrieval-augmentation-for-image-generation",
-      "title": "AR-RAG: Autoregressive Retrieval Augmentation for Image Generation",
-      "description": "We introduce Autoregressive Retrieval Augmentation (AR-RAG), a novel paradigm that enhances image generation by autoregressively incorporating knearest neighbor retrievals at the patch level. Unlike...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2506.06962v3",
-      "content": "## Abstract\n\nWe introduce Autoregressive Retrieval Augmentation (AR-RAG), a novel paradigm that enhances image generation by autoregressively incorporating knearest neighbor retrievals at the patch level. Unlike prior methods that perform a single, static retrieval before generation and condition the entire generation on fixed reference images, AR-RAG performs context-aware retrievals at each generation step, using prior-generated patches as queries to retrieve and incorporate the most relevant patch-level visual references, enabling the model to respond to evolving generation needs while avoiding limitations (e.g., over-copying, stylistic bias, etc.) prevalent in existing methods. To realize AR-RAG, we propose two parallel frameworks: (1) Distribution-Augmentation in Decoding (DAiD), a training-free plug-and-use decoding strategy that directly merges the distribution of model-predicted patches with the distribution of retrieved patches, and (2) Feature-Augmentation in Decoding (FAiD), a parameter-efficient fine-tuning method that progressively smooths the features of retrieved patches via multi-scale convolution operations and leverages them to augment the image generation process. We validate the effectiveness of AR-RAG on widely adopted benchmarks, including Midjourney-30K, GenEval and DPG-Bench, demonstrating significant performance gains over state-of-the-art image generation models.",
-      "authors": [
-        "Jingyuan Qi",
-        "Zhiyang Xu",
-        "Qifan Wang",
-        "Lifu Huang"
-      ],
-      "date": "2025-06-08",
-      "tags": [
-        "cs.CV"
-      ],
-      "category": "rag"
-    },
-    {
-      "slug": "arxiv-intelligent-interaction-strategies-for-context-aware-cognitive-augmentation",
-      "title": "Intelligent Interaction Strategies for Context-Aware Cognitive Augmentation",
-      "description": "Human cognition is constrained by processing limitations, leading to cognitive overload and inefficiencies in knowledge synthesis and decision-making. Large Language Models (LLMs) present an...",
-      "source": "arxiv",
-      "sourceLabel": "arXiv",
-      "sourceColor": "#b31b1b",
-      "url": "https://arxiv.org/abs/2504.13684v1",
-      "content": "## Abstract\n\nHuman cognition is constrained by processing limitations, leading to cognitive overload and inefficiencies in knowledge synthesis and decision-making. Large Language Models (LLMs) present an opportunity for cognitive augmentation, but their current reactive nature limits their real-world applicability. This position paper explores the potential of context-aware cognitive augmentation, where LLMs dynamically adapt to users' cognitive states and task environments to provide appropriate support. Through a think-aloud study in an exhibition setting, we examine how individuals interact with multi-modal information and identify key cognitive challenges in structuring, retrieving, and applying knowledge. Our findings highlight the need for AI-driven cognitive support systems that integrate real-time contextual awareness, personalized reasoning assistance, and socially adaptive interactions. We propose a framework for AI augmentation that seamlessly transitions between real-time cognitive support and post-experience knowledge organization, contributing to the design of more effective human-centered AI systems.",
-      "authors": [
-        "Xiangrong",
-        "Zhu",
-        "Yuan Xu",
-        "Tianjian Liu",
-        "Jingwei Sun"
-      ],
-      "date": "2025-04-18",
-      "tags": [
-        "cs.HC"
-      ],
-      "category": "general"
-    },
-    {
       "slug": "openai-how-to-work-with-large-language-models",
       "title": "How to work with large language models",
       "description": "[Large language models][Large language models Blog Post] are functions that map text to text. Given an input string of text, a large language model predicts the text that should come next.",
@@ -524,7 +209,7 @@
     {
       "slug": "google-context-caching",
       "title": "Context Caching",
-      "description": "Aprende a usar el almacenamiento en caché de contexto en la API de Gemini",
+      "description": "Saiba como usar o armazenamento em cache de contexto na API Gemini",
       "source": "google",
       "sourceLabel": "Google AI",
       "sourceColor": "#4285f4",
@@ -588,7 +273,7 @@
     {
       "slug": "google-system-instructions",
       "title": "System Instructions",
-      "description": "Get started building chat and text generation apps with the Gemini API",
+      "description": "Gemini API ile sohbet ve metin oluşturma uygulamaları geliştirmeye başlayın",
       "source": "google",
       "sourceLabel": "Google AI",
       "sourceColor": "#4285f4",
@@ -604,7 +289,7 @@
     {
       "slug": "google-code-execution",
       "title": "Code Execution",
-      "description": "ดูวิธีใช้ฟีเจอร์การเรียกใช้โค้ด Gemini API",
+      "description": "Learn how to use the Gemini API code execution feature.",
       "source": "google",
       "sourceLabel": "Google AI",
       "sourceColor": "#4285f4",
@@ -916,24 +601,21 @@
       "category": "token-optimization"
     }
   ],
-  "fetchedAt": "2026-05-31T13:12:38.840Z",
+  "fetchedAt": "2026-06-05T04:10:08.241Z",
   "stats": {
-    "total": 52,
+    "total": 37,
     "bySource": {
-      "arxiv": 15,
       "openai": 5,
       "anthropic": 8,
       "google": 6,
       "builtin": 18
     },
     "byCategory": {
-      "general": 5,
-      "token-optimization": 8,
-      "tool-use": 2,
-      "caching": 3,
-      "prompt-engineering": 12,
-      "rag": 4,
+      "prompt-engineering": 11,
+      "token-optimization": 5,
+      "caching": 2,
       "context-management": 12,
+      "tool-use": 1,
       "architecture": 5,
       "token-economics": 1
     }

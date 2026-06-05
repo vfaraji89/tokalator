@@ -2,7 +2,7 @@ import Link from "next/link";
 import wikiData from "../../../content/wiki/articles.json";
 import type { Metadata } from "next";
 
-type WikiArticle = (typeof wikiData.articles)[number];
+type WikiArticle = (typeof wikiData.articles)[number] & { date?: string; authors?: string[] };
 
 export function generateStaticParams() {
   return wikiData.articles.map((a) => ({ slug: a.slug }));
