@@ -106,7 +106,7 @@ export default function HomePage() {
       {/* Hero */}
       <header className="hero">
         <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
-          <span className="update-dot" /> v3.1.7: Agentic Pixel Grid UI + dark mode
+          <span className="update-dot" /> v3.1.7: Context Engineering stats, auto-detected model, Generate Glossary
           <span className="update-arrow">&rarr;</span>
         </motion.a>
 
