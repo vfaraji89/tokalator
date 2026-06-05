@@ -2,13 +2,13 @@
 
 **Count your tokens like beads on an abacus.**
 
-Real-time context budget monitoring for VS Code. Shows where your AI context budget is going, scores tab relevance, and syncs to the active Copilot model automatically — so you always know how much room you have left.
+Real-time context budget monitoring for VS Code. Shows where your AI context budget is going, scores tab relevance, compares per-turn cost across models, and syncs to the active Copilot model automatically, so you always know how much room you have left.
 
 ## The Problem
 
-AI coding assistants have finite context windows. When you have 30 tabs open, your assistant's attention is diluted across irrelevant files — and you can't see what's happening. Context rot sets in silently: the model's performance degrades as conversation turns accumulate stale context.
+AI coding assistants have finite context windows. When you have 30 tabs open, your assistant's attention is diluted across irrelevant files, and you can't see what's happening. Context rot sets in silently: the model's performance degrades as conversation turns accumulate stale context.
 
-Tokalator makes this visible. Real BPE tokenizers (not guesses), per-file breakdowns, and automatic cleanup.
+Tokalator makes this visible. Real BPE tokenizers (not guesses), per-file breakdowns, measured per-turn growth, and automatic cleanup.
 
 ## Features
 
@@ -17,21 +17,37 @@ Tokalator makes this visible. Real BPE tokenizers (not guesses), per-file breakd
 Sidebar panel showing your context usage at a glance:
 
 - Budget level: LOW / MEDIUM / HIGH with token counts
-- Next turn preview — cost estimate before you send
+- Budget breakdown: files, system prompt, instructions, conversation, output reserve
 - Files ranked by relevance to your current task
 - One-click tab cleanup
 - Per-turn context growth chart
-- Budget breakdown: files, system prompt, instructions, conversation, output reserve
 - Session summary on activation (last model, turns, peak usage)
 - High Contrast theme support
 
-### 2. Model Auto-Sync
+### 2. Context Engineering Stats
 
-Tokalator detects the model active in the Copilot chat window and updates its context window, tokenizer, and rot threshold automatically. Switch models in Copilot and the budget numbers update on the next interaction.
+A dedicated panel that quantifies context rot from your actual session:
 
-### 3. Chat Commands (`@tokalator`)
+- Context-window percentage used
+- Turns-to-rot estimate
+- Measured tokens/turn growth (from real turn history, not defaults)
+- Estimated turns left before the rot threshold
 
-11 commands covering the full context management workflow:
+### 3. API Cost Simulation + Price Compare
+
+- Next-turn cost estimate before you send, computed from input tokens and the model's pricing rates
+- Collapsible price-comparison table across all models, sorted ascending by per-turn cost
+- "vs Current" column showing the savings delta against your active model
+- Dynamic pricing catalog: remote fetch with ETag caching and 24h TTL, bundled fallback so prices stay current without an extension update
+- `Tokalator: Refresh Pricing Catalog` command to fetch the latest rates on demand
+
+### 4. Model Auto-Sync
+
+Tokalator detects the model active in the Copilot chat window and updates its context window, tokenizer, and rot threshold automatically. Switch models in Copilot and the budget numbers update on the next interaction (no manual dropdown).
+
+### 5. Chat Commands (`@tokalator`)
+
+12 commands covering the full context management workflow:
 
 | Command | Description |
 | --- | --- |
@@ -44,10 +60,11 @@ Tokalator detects the model active in the Copilot chat window and updates its co
 | `@tokalator /model [name]` | Show or switch model |
 | `@tokalator /compaction` | Per-turn growth and compaction advice |
 | `@tokalator /preview` | Preview next turn cost |
+| `@tokalator /terminology-gen` | Scan terminology sources and show glossary compression potential |
 | `@tokalator /reset` | Reset session turn counter |
 | `@tokalator /exit` | End session and save summary |
 
-### 4. Tab Relevance Scoring
+### 6. Tab Relevance Scoring
 
 Each open tab is scored R ∈ [0, 1] based on:
 
@@ -61,13 +78,17 @@ Each open tab is scored R ∈ [0, 1] based on:
 
 Pinned and active files always score 1.0. Files below the threshold (default 0.3) are flagged as distractors.
 
-### 5. Instruction File Scanner (`/instructions`)
+### 7. Instruction File Scanner (`/instructions`)
 
 Detects files injected into every prompt and shows their real token cost:
 
 `.github/copilot-instructions.md` · `CLAUDE.md` · `AGENTS.md` · `.cursorrules` · `*.instructions.md`
 
-### 6. MCP Server + CLI
+### 8. Generate Glossary (`/terminology-gen`)
+
+Scans the workspace's Markdown docs for terminology sources, measures their real token cost, and estimates how much you could save by compressing them into a shared glossary. Free; Pro features (Secure Workspace, SKILL.md, AI Settings) are previewed in the dashboard and link to [tokalator.ai](https://tokalator.ai).
+
+### 9. MCP Server + CLI
 
 Brings Tokalator into Claude Code and terminal workflows. See the [MCP & CLI section](https://tokalator.wiki/extension#mcp).
 
@@ -75,60 +96,36 @@ Brings Tokalator into Claude Code and terminal workflows. See the [MCP & CLI sec
 
 | Provider | Models | Tokenizer |
 | --- | --- | --- |
-| Anthropic | Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Sonnet 4, Haiku 4.5 | Claude BPE (`@anthropic-ai/tokenizer`) |
-| OpenAI | GPT-5.4, GPT-5.4 Mini, GPT-5.2 Codex, GPT-5.1 Codex, GPT-4.1, o3, o4-mini | o200k_base (`js-tiktoken`) |
-| Google | Gemini 3.1 Pro, Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro | Heuristic (~4 chars/token) |
+| Anthropic | Opus 4.8, Opus 4.7, Opus 4.6, Sonnet 4.6, Haiku 4.5 | Claude BPE (`@anthropic-ai/tokenizer`) |
+| OpenAI | GPT-5.5, GPT-5.4, GPT-5.4 Mini, GPT-5.4 Nano, GPT-5.3 Codex, o4-mini | o200k_base (`js-tiktoken`) |
+| Google | Gemini 3.5 Flash, Gemini 3.1 Pro, Gemini 3.1 Flash-Lite, Gemini 2.5 Pro, Gemini 2.5 Flash, Gemini 2.5 Flash-Lite | Heuristic (~4 chars/token) |
 
-## Supported Models (17 profiles)
+## Supported Models
 
-Claude Opus 4.6 · Claude Opus 4.5 · Claude Sonnet 4.6 · Claude Sonnet 4.5 · Claude Sonnet 4 · Claude Haiku 4.5 · GPT-5.4 · GPT-5.4 Mini · GPT-5.2 Codex · GPT-5.1 Codex · GPT-4.1 · o3 · o4-mini · Gemini 3.1 Pro · Gemini 3 Pro · Gemini 3 Flash · Gemini 2.5 Pro
+Claude Opus 4.8 · Claude Opus 4.7 · Claude Opus 4.6 · Claude Sonnet 4.6 · Claude Haiku 4.5 · GPT-5.5 · GPT-5.4 · GPT-5.4 Mini · GPT-5.4 Nano · GPT-5.3 Codex · o4-mini · Gemini 3.5 Flash · Gemini 3.1 Pro · Gemini 3.1 Flash-Lite · Gemini 2.5 Pro · Gemini 2.5 Flash · Gemini 2.5 Flash-Lite
 
 ## Usage
 
-1. **Sidebar** — click the abacus icon in the Activity Bar
-2. **Chat** — type `@tokalator` in Copilot Chat
-3. **Status bar** — live token count in bottom-right (click to refresh)
+1. **Sidebar**: click the abacus icon in the Activity Bar
+2. **Chat**: type `@tokalator` in Copilot Chat
+3. **Status bar**: live token count in bottom-right (click to refresh)
 
 ## Settings
 
 | Setting | Default | Description |
 | --- | --- | --- |
-| `tokalator.model` | `claude-opus-4.6` | Active model (sets window, tokenizer, rot threshold) |
+| `tokalator.model` | `claude-opus-4.8` | Active model fallback (window, tokenizer, rot threshold). Auto-synced from Copilot when available |
 | `tokalator.relevanceThreshold` | `0.3` | Score below which tabs are flagged as distractors |
 | `tokalator.windowSize` | `1000000` | Context window override (leave at default to use model's) |
 | `tokalator.contextRotWarningTurns` | `20` | Warn after this many chat turns |
 | `tokalator.autoRefreshInterval` | `2000` | Dashboard refresh interval (ms) |
+| `tokalator.enableSessionLogging` | `false` | Opt-in anonymized session logging for research (aggregate counts only, no filenames) |
 
 ## Changelog
 
-### v3.1.3
+Latest: **3.1.7**: Context Engineering stats panel, Generate Glossary command, auto-detected model, collapsible price compare with "vs Current" savings, updated model catalog with May 2026 pricing.
 
-- Fix: session logger receiving wrong object shape — all logged fields were undefined
-- Fix: `logOptimize` called with wrong arguments (threshold passed as token count)
-- Fix: missing `await` on model switch caused stale token budget in response
-- Fix: dashboard listener memory leak — subscription now properly disposed
-- Model list updated to current models (Claude 4.5, GPT-4.1 family, Gemini 2.5)
-- Model auto-detection improved: `vscode.lm.onDidChangeChatModels` listener added
-- Unknown model warning when switching to a model not in profiles
-- Security: Next.js 16.2.1 (5 CVEs patched), hono, flatted
-
-### v3.1.2
-
-- Auto-sync model from Copilot chat window
-- Fix: stale token counts after rapid file switching
-- Fix: duplicate tab entries in multi-root workspaces
-- Fix: `CLAUDE.md` and `AGENTS.md` now counted in instruction scanner budget
-- Fix: pin/unpin event propagation in dashboard
-
-### v3.1.1
-
-- CLI terminal showcase, community session stats, MCP & CLI install section
-
-### v3.1.0
-
-- MCP server for Claude Code (stdio transport)
-- Standalone CLI: `tokalator count`, `budget`, `preview`, `models`
-- 11 model profiles across Anthropic, OpenAI, and Google
+See [CHANGELOG.md](CHANGELOG.md) for the full history.
 
 ## Requirements
 
