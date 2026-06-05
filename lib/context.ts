@@ -74,7 +74,7 @@ export function analyzeContextBudget(budget: ContextBudget): ContextAnalysis {
   const usagePercent = (totalUsed / totalAvailable) * 100;
 
   // Check for Sonnet extended pricing threshold
-  const isInExtendedPricing = budget.model === 'claude-sonnet-4.5' &&
+  const isInExtendedPricing = budget.model === 'claude-sonnet-4.6' &&
     (budget.systemPromptTokens + budget.userInputTokens) > 200_000;
 
   // Generate warnings

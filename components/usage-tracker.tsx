@@ -7,7 +7,7 @@ import {
 } from "recharts";
 import { calculateCost, formatCost } from "@/lib/pricing";
 
-type ModelId = "claude-opus-4.6" | "claude-sonnet-4.5" | "claude-haiku-4.5";
+type ModelId = "claude-opus-4.6" | "claude-sonnet-4.6" | "claude-haiku-4.5";
 
 const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
@@ -21,26 +21,26 @@ interface UsageRecord {
 const sampleUsage: UsageRecord[] = [
   { id: "1", date: "2026-01-31", model: "claude-haiku-4.5", project: "Default Project", inputTokens: 20000, outputTokens: 10000, cacheWriteTokens: 5000, cacheReadTokens: 10000, cost: 0.08 },
   { id: "2", date: "2026-01-30", model: "claude-opus-4.6", project: "Default Project", inputTokens: 20000, outputTokens: 25000, cacheWriteTokens: 2000, cacheReadTokens: 5000, cost: 0.68 },
-  { id: "3", date: "2026-01-29", model: "claude-sonnet-4.5", project: "Default Project", inputTokens: 80000, outputTokens: 35000, cacheWriteTokens: 20000, cacheReadTokens: 10000, cost: 1.34 },
-  { id: "4", date: "2026-01-28", model: "claude-sonnet-4.5", project: "Default Project", inputTokens: 250000, outputTokens: 60000, cacheWriteTokens: 50000, cacheReadTokens: 30000, cost: 3.68 },
+  { id: "3", date: "2026-01-29", model: "claude-sonnet-4.6", project: "Default Project", inputTokens: 80000, outputTokens: 35000, cacheWriteTokens: 20000, cacheReadTokens: 10000, cost: 1.34 },
+  { id: "4", date: "2026-01-28", model: "claude-sonnet-4.6", project: "Default Project", inputTokens: 250000, outputTokens: 60000, cacheWriteTokens: 50000, cacheReadTokens: 30000, cost: 3.68 },
 ];
 
 const MODEL_LABELS: Record<ModelId, string> = {
   "claude-opus-4.6": "Opus 4.6",
-  "claude-sonnet-4.5": "Sonnet 4.5",
+  "claude-sonnet-4.6": "Sonnet 4.6",
   "claude-haiku-4.5": "Haiku 4.5",
 };
 
 const MODEL_COLORS: Record<ModelId, string> = {
   "claude-opus-4.6": P.black,
-  "claude-sonnet-4.5": P.red,
+  "claude-sonnet-4.6": P.red,
   "claude-haiku-4.5": P.g5,
 };
 
 export function UsageTracker() {
   const [usage, setUsage] = useState<UsageRecord[]>(sampleUsage);
   const [showAddForm, setShowAddForm] = useState(false);
-  const [newRecord, setNewRecord] = useState({ model: "claude-sonnet-4.5" as ModelId, inputTokens: 0, outputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0 });
+  const [newRecord, setNewRecord] = useState({ model: "claude-sonnet-4.6" as ModelId, inputTokens: 0, outputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0 });
 
   const totalCost = usage.reduce((s, r) => s + r.cost, 0);
   const totalTokens = usage.reduce((s, r) => s + r.inputTokens + r.outputTokens + r.cacheWriteTokens + r.cacheReadTokens, 0);
@@ -72,7 +72,7 @@ export function UsageTracker() {
     const record: UsageRecord = { ...newRecord, id: Date.now().toString(), date: new Date().toISOString().split("T")[0], project: "Default Project", cost: costBreakdown.totalCost };
     setUsage([record, ...usage]);
     setShowAddForm(false);
-    setNewRecord({ model: "claude-sonnet-4.5", inputTokens: 0, outputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0 });
+    setNewRecord({ model: "claude-sonnet-4.6", inputTokens: 0, outputTokens: 0, cacheWriteTokens: 0, cacheReadTokens: 0 });
   };
 
   return (
@@ -103,7 +103,7 @@ export function UsageTracker() {
               <Tooltip {...tt} formatter={(v) => [`$${Number(v).toFixed(4)}`]} />
               <Bar dataKey="cost" radius={[3, 3, 0, 0]}>
                 {costByDate.map((entry, i) => {
-                  const m = usage.find(u => u.date.slice(5) === entry.date)?.model || "claude-sonnet-4.5";
+                  const m = usage.find(u => u.date.slice(5) === entry.date)?.model || "claude-sonnet-4.6";
                   return <Cell key={i} fill={MODEL_COLORS[m]} />;
                 })}
               </Bar>
@@ -158,7 +158,7 @@ export function UsageTracker() {
               <label style={{ display: "block", fontSize: "0.75rem", color: P.g7, marginBottom: "0.25rem" }}>Model</label>
               <select value={newRecord.model} onChange={(e) => setNewRecord({ ...newRecord, model: e.target.value as ModelId })} style={{ width: "100%", padding: "0.375rem", border: `1px solid ${P.g3}`, borderRadius: "4px" }}>
                 <option value="claude-opus-4.6">Opus 4.6</option>
-                <option value="claude-sonnet-4.5">Sonnet 4.5</option>
+                <option value="claude-sonnet-4.6">Sonnet 4.6</option>
                 <option value="claude-haiku-4.5">Haiku 4.5</option>
               </select>
             </div>

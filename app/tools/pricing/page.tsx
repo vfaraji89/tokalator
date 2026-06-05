@@ -11,7 +11,7 @@ const tt = { contentStyle: { background: P.white, border: "1px solid " + P.g3, b
 const models = [
   { name: "Claude Opus 4.6", tier: "Most Capable", input: "$5.00", output: "$25.00", cacheWrite: "$6.25", cacheRead: "$0.50", ratio: "5.0x", inputNum: 5, outputNum: 25 },
   {
-    name: "Claude Sonnet 4.5", tier: "Best Value", input: "$3.00", output: "$15.00", cacheWrite: "$3.75", cacheRead: "$0.30", ratio: "5.0x", inputNum: 3, outputNum: 15,
+    name: "Claude Sonnet 4.6", tier: "Best Value", input: "$3.00", output: "$15.00", cacheWrite: "$3.75", cacheRead: "$0.30", ratio: "5.0x", inputNum: 3, outputNum: 15,
     extended: { input: "$6.00", output: "$22.50", cacheWrite: "$7.50", cacheRead: "$0.60", ratio: "3.75x" },
   },
   { name: "Claude Haiku 4.5", tier: "Most Efficient", input: "$1.00", output: "$5.00", cacheWrite: "$1.25", cacheRead: "$0.10", ratio: "5.0x", inputNum: 1, outputNum: 5 },

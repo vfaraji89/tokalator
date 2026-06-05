@@ -21,12 +21,12 @@ import { formatTokenCount } from '@/lib/context';
 
 const models = [
   'claude-opus-4.6',
-  'claude-sonnet-4.5',
+  'claude-sonnet-4.6',
   'claude-haiku-4.5',
 ] as const;
 
 export function CachingCalculator() {
-  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-4.5');
+  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-4.6');
   const [cacheTokens, setCacheTokens] = useState<number>(50000);
   const [reuseCount, setReuseCount] = useState<number>(5);
 

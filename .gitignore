@@ -62,3 +62,8 @@ paper/
 # nested node_modules (subdirectory packages)
 tokalator-mcp/node_modules/
 tokalator-extension-vs/node_modules/
+
+# personal billing/usage exports (do not commit)
+github-token-analysis*.csv
+*-cost.csv
+*billing*.csv

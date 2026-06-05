@@ -29,7 +29,7 @@ interface UsageRecord {
 // ── Pricing for client-side cost estimation ──
 
 const PRICING: Record<string, [number, number]> = {
-  "claude-opus-4.6": [5.0, 25.0], "claude-sonnet-4.5": [3.0, 15.0], "claude-haiku-4.5": [1.0, 5.0],
+  "claude-opus-4.6": [5.0, 25.0], "claude-sonnet-4.6": [3.0, 15.0], "claude-haiku-4.5": [1.0, 5.0],
   "gpt-5.2": [1.75, 14.0], "gpt-5.2-codex": [0.50, 4.0], "gpt-5.1": [2.50, 10.0],
   "gpt-4.1": [3.0, 12.0], "gpt-4.1-mini": [0.80, 3.20], "gpt-4.1-nano": [0.20, 0.80],
   "gpt-5-mini": [0.25, 2.0], "o4-mini": [4.0, 16.0], "gpt-4o": [2.50, 10.0],
@@ -150,7 +150,7 @@ function parseCSVClientSide(text: string): { records: UsageRecord[]; warnings: s
 const sampleUsage: UsageRecord[] = [
   { id: "s1", date: "2026-01-31", model: "claude-haiku-4.5", provider: "anthropic", project: "Sample", inputTokens: 20000, outputTokens: 10000, cacheWriteTokens: 5000, cacheReadTokens: 10000, cost: 0.08 },
   { id: "s2", date: "2026-01-30", model: "claude-opus-4.6", provider: "anthropic", project: "Sample", inputTokens: 20000, outputTokens: 25000, cacheWriteTokens: 2000, cacheReadTokens: 5000, cost: 0.68 },
-  { id: "s3", date: "2026-01-29", model: "claude-sonnet-4.5", provider: "anthropic", project: "Sample", inputTokens: 80000, outputTokens: 35000, cacheWriteTokens: 20000, cacheReadTokens: 10000, cost: 1.34 },
+  { id: "s3", date: "2026-01-29", model: "claude-sonnet-4.6", provider: "anthropic", project: "Sample", inputTokens: 80000, outputTokens: 35000, cacheWriteTokens: 20000, cacheReadTokens: 10000, cost: 1.34 },
   { id: "s4", date: "2026-01-28", model: "gpt-5.2", provider: "openai", project: "Sample", inputTokens: 100000, outputTokens: 15000, cacheWriteTokens: 0, cacheReadTokens: 0, cost: 0.385 },
 ];
 

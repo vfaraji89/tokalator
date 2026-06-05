@@ -11,12 +11,12 @@ import {
 } from "@/lib/context";
 import { getModelInfo, formatCost, calculateCost } from "@/lib/pricing";
 
-const models = ["claude-opus-4.6", "claude-sonnet-4.5", "claude-haiku-4.5"] as const;
+const models = ["claude-opus-4.6", "claude-sonnet-4.6", "claude-haiku-4.5"] as const;
 const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 export function ContextOptimizer() {
-  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-4.5");
+  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-4.6");
   const [systemPrompt, setSystemPrompt] = useState<string>("");
   const [userMessage, setUserMessage] = useState<string>("");
   const [reservedOutput, setReservedOutput] = useState<number>(4000);
@@ -127,7 +127,7 @@ export function ContextOptimizer() {
             ["Remaining", formatTokenCount(analysis.remaining), "tokens available"],
             ["Est. Cost", formatCost(estimatedCost.totalCost), "per request"],
             ["More Turns", remainingTurns > 100 ? "100+" : String(remainingTurns), "before limit"],
-            ["Pricing Tier", analysis.isInExtendedPricing ? "Extended" : "Standard", selectedModel === "claude-sonnet-4.5" ? "(200K threshold)" : "N/A"],
+            ["Pricing Tier", analysis.isInExtendedPricing ? "Extended" : "Standard", selectedModel === "claude-sonnet-4.6" ? "(200K threshold)" : "N/A"],
           ].map(([label, value, sub]) => (
             <div key={label} className="feature-card" style={{ textAlign: "center", padding: "1rem" }}>
               <div style={{ fontSize: "0.8125rem", color: P.g5 }}>{label}</div>

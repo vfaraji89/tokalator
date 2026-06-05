@@ -103,40 +103,39 @@ export const MARKET_SNAPSHOTS: MarketSnapshot[] = [
 
 export interface PriceTrendPoint {
   date: string;
-  'claude-opus-4.6': number;
-  'claude-sonnet-4.5': number;
-  'gpt-5.2': number;
-  'gpt-4.1': number;
-  'gemini-3-pro': number;
+  'claude-opus-4.8': number;
+  'claude-sonnet-4.6': number;
+  'gpt-5.5': number;
+  'gpt-5.4': number;
+  'gemini-3.1-pro': number;
   'gemini-2.5-flash': number;
 }
 
 function generatePriceTrendData(): PriceTrendPoint[] {
   const data: PriceTrendPoint[] = [];
-  const months = ['Sep', 'Oct', 'Nov', 'Dec', 'Jan', 'Feb'];
-  
-  // Simulated price evolution (input cost $/MTok)
+  const months = ['Dec', 'Jan', 'Feb', 'Mar', 'Apr', 'May'];
+
   const trends = {
-    'claude-opus-4.6': [null, null, 5.0, 5.0, 5.0, 5.0],
-    'claude-sonnet-4.5': [3.5, 3.0, 3.0, 3.0, 3.0, 3.0],
-    'gpt-5.2': [null, null, null, null, 1.75, 1.75],
-    'gpt-4.1': [3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
-    'gemini-3-pro': [null, null, null, null, 2.0, 2.0],
+    'claude-opus-4.8': [null, null, null, null, null, 5.0],
+    'claude-sonnet-4.6': [3.0, 3.0, 3.0, 3.0, 3.0, 3.0],
+    'gpt-5.5': [null, null, null, null, null, 5.0],
+    'gpt-5.4': [null, null, null, 2.50, 2.50, 2.50],
+    'gemini-3.1-pro': [null, null, null, null, 2.0, 2.0],
     'gemini-2.5-flash': [0.30, 0.30, 0.30, 0.30, 0.30, 0.30],
   };
-  
+
   months.forEach((month, i) => {
     data.push({
       date: month,
-      'claude-opus-4.6': trends['claude-opus-4.6'][i] ?? 0,
-      'claude-sonnet-4.5': trends['claude-sonnet-4.5'][i],
-      'gpt-5.2': trends['gpt-5.2'][i] ?? 0,
-      'gpt-4.1': trends['gpt-4.1'][i],
-      'gemini-3-pro': trends['gemini-3-pro'][i] ?? 0,
+      'claude-opus-4.8': trends['claude-opus-4.8'][i] ?? 0,
+      'claude-sonnet-4.6': trends['claude-sonnet-4.6'][i],
+      'gpt-5.5': trends['gpt-5.5'][i] ?? 0,
+      'gpt-5.4': trends['gpt-5.4'][i] ?? 0,
+      'gemini-3.1-pro': trends['gemini-3.1-pro'][i] ?? 0,
       'gemini-2.5-flash': trends['gemini-2.5-flash'][i],
     });
   });
-  
+
   return data;
 }
 

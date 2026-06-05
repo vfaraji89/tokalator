@@ -6,6 +6,8 @@ import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
 import content from "../content/homepage.json";
 import { CommandTyper } from "../components/command-typer";
+import { HeroMorph } from "../components/hero-morph";
+import { StarCount } from "../components/star-count";
 
 const fadeUp = (delay = 0) => ({
   initial: { opacity: 0, y: 18 },
@@ -24,6 +26,18 @@ const inView = {
   transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] as const },
 };
 
+const features = [
+  { title: "BPE Tokenization", desc: "Real token counts with Claude BPE and OpenAI o200k_base encoders.", badge: "v3.1.7" },
+  { title: "Context Budget Meter", desc: "Live sidebar showing token usage vs model context window with Budget Level indicators.", badge: "v3.1.7" },
+  { title: "Tab Relevance Scoring", desc: "5-signal scoring: language match, import relationships, path similarity, edit recency, diagnostics.", badge: "v3.1.7" },
+  { title: "Cost-per-Turn Estimate", desc: "Know the dollar cost before you send. Per-MTok pricing for 17 models.", badge: "v3.1.7" },
+  { title: "17 Model Profiles", desc: "Claude Opus/Sonnet/Haiku 4.x, GPT-5.x, o4-mini, Gemini 3.x/2.5 with live pricing.", badge: "v3.1.7" },
+  { title: "Next Turn Preview", desc: "Project total tokens after your next turn to decide whether to send or restart.", badge: "v3.1.7" },
+  { title: "Workspace Security Scan", desc: "Detect Sensitive Files (.env, .pem, credentials) and generate deny rules for Claude and Copilot.", badge: "Pro" },
+  { title: "Smart Model Routing", desc: "Automatically select the most cost-effective model based on task complexity.", badge: "Pro" },
+  { title: "Team Analytics", desc: "Usage dashboards, audit logs, cost insights, and spend controls across your organization.", badge: "Enterprise" },
+];
+
 function LiveClock() {
   const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
@@ -31,13 +45,18 @@ function LiveClock() {
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
-  if (!now) return null;
-  const fmt = new Intl.DateTimeFormat("en-US", {
-    weekday: "short", month: "short", day: "numeric",
-    hour: "2-digit", minute: "2-digit", second: "2-digit",
-    hour12: false, timeZone: "Europe/Istanbul",
-  });
-  return <span className="footer-clock">{fmt.format(now)} IST</span>;
+  const fmt = now
+    ? new Intl.DateTimeFormat("en-US", {
+        weekday: "short", month: "short", day: "numeric",
+        hour: "2-digit", minute: "2-digit", second: "2-digit",
+        hour12: false, timeZone: "Europe/Istanbul",
+      })
+    : null;
+  return (
+    <span className="footer-clock" suppressHydrationWarning>
+      {fmt && now ? `${fmt.format(now)} IST` : " "}
+    </span>
+  );
 }
 
 function CopyButton({ text }: { text: string }) {
@@ -73,42 +92,28 @@ function FooterHeart() {
 
   return (
     <div className="footer-love" ref={ref}>
-      Made with <span className={`footer-love-icon${active ? " heart-active" : ""}`}>♥</span> from Istanbul
+      Made with <span className={`footer-love-icon${active ? " heart-active" : ""}`}>&#9829;</span> from Istanbul
     </div>
   );
 }
 
 export default function HomePage() {
   const { hero, quickStart, commands } = content;
-
-  // Split headline on newlines
   const headlineParts = hero.headline.split("\n");
 
   return (
     <article className="article">
-      {/* Hero — Agentation-inspired marker highlight */}
+      {/* Hero */}
       <header className="hero">
         <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
-          <span className="update-dot" /> v3.1.6: Live pricing catalog + price compare
-          <span className="update-arrow">→</span>
+          <span className="update-dot" /> v3.1.7: Agentic Pixel Grid UI + dark mode
+          <span className="update-arrow">&rarr;</span>
         </motion.a>
-        {/* Motionable outline icon */}
+
         <motion.div {...fadeIn(0.08)} className="hero-outline-icon" aria-hidden>
-          <svg width="48" height="48" viewBox="0 0 28 28" fill="none" className="hero-abacus">
-            <path d="M4 4 L4 24 L24 24 L24 4 Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
-            <line x1="4" y1="9" x2="24" y2="9" stroke="currentColor" strokeWidth="1" />
-            <line x1="4" y1="14" x2="24" y2="14" stroke="currentColor" strokeWidth="1" />
-            <line x1="4" y1="19" x2="24" y2="19" stroke="currentColor" strokeWidth="1" />
-            <circle className="hero-bead hero-bead-1" cx="8" cy="9" r="2" />
-            <circle className="hero-bead hero-bead-2" cx="13" cy="9" r="2" />
-            <circle className="hero-bead hero-bead-3" cx="9" cy="14" r="2" />
-            <circle className="hero-bead hero-bead-4" cx="14" cy="14" r="2" />
-            <circle className="hero-bead hero-bead-5" cx="19" cy="14" r="2" />
-            <circle className="hero-bead hero-bead-6" cx="8" cy="19" r="2" />
-            <circle className="hero-bead hero-bead-7" cx="13" cy="19" r="2" />
-            <circle className="hero-bead hero-bead-8" cx="18" cy="19" r="2" />
-          </svg>
+          <HeroMorph />
         </motion.div>
+
         <motion.h1 {...fadeUp(0.15)} className="hero-headline">
           {headlineParts.map((part, i) => (
             <span key={i} className={i === 0 ? "hero-marker" : "hero-underline"}>
@@ -133,6 +138,7 @@ export default function HomePage() {
           >
             <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
             Star on GitHub
+            <StarCount />
           </a>
         </motion.div>
 
@@ -147,11 +153,6 @@ export default function HomePage() {
             <Image src="/icons/vscode.svg" alt="VS Code" width={18} height={18} />
             VS Code
           </a>
-          <span className="ide-install-btn ide-install-btn--soon" title="Coming soon">
-            <Image src="/icons/cursor.svg" alt="Cursor" width={18} height={18} />
-            Cursor
-            <span className="ide-soon-tag">Soon</span>
-          </span>
           <Link href="/extension#mcp" className="ide-install-btn ide-install-btn--mcp" title="Use via MCP server">
             <Image src="/icons/claude.svg" alt="Claude Code" width={18} height={18} />
             Claude Code
@@ -163,8 +164,41 @@ export default function HomePage() {
           <CopyButton text={hero.installCmd} />
         </motion.div>
 
+        {/* Proof stats */}
+        <motion.div {...fadeUp(0.52)} className="hero-proof">
+          <a
+            href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hero-proof-item"
+          >
+            <span className="hero-proof-value">500+</span>
+            <span className="hero-proof-label">installs</span>
+          </a>
+          <span className="hero-proof-dot" />
+          <a
+            href="https://arxiv.org/abs/2604.08290"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="hero-proof-item"
+          >
+            <span className="hero-proof-value">arXiv</span>
+            <span className="hero-proof-label">2604.08290</span>
+          </a>
+          <span className="hero-proof-dot" />
+          <span className="hero-proof-item">
+            <span className="hero-proof-value">17</span>
+            <span className="hero-proof-label">models</span>
+          </span>
+          <span className="hero-proof-dot" />
+          <span className="hero-proof-item">
+            <span className="hero-proof-value">Open</span>
+            <span className="hero-proof-label">source</span>
+          </span>
+        </motion.div>
+
         {/* Command typing animation */}
-        <motion.div {...fadeIn(0.55)}>
+        <motion.div {...fadeIn(0.58)}>
           <CommandTyper />
         </motion.div>
 
@@ -172,7 +206,7 @@ export default function HomePage() {
         <motion.div
           initial={{ opacity: 0, y: 28, scale: 0.98 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.55, delay: 0.6, ease: [0.25, 0.1, 0.25, 1] as const }}
+          transition={{ duration: 0.55, delay: 0.65, ease: [0.25, 0.1, 0.25, 1] as const }}
           style={{ marginTop: "2rem", maxWidth: 420, width: "100%" }}
         >
           <Image
@@ -184,6 +218,33 @@ export default function HomePage() {
           />
         </motion.div>
       </header>
+
+      {/* Features with tier badges */}
+      <motion.section {...inView}>
+        <div className="section-divider" />
+        <h2 className="section-header">Features</h2>
+        <div className="feature-grid">
+          {features.map((f) => {
+            const isLocked = f.badge === "Pro" || f.badge === "Enterprise";
+            const badgeClass = f.badge === "Pro" ? "pro" : f.badge === "Enterprise" ? "enterprise" : "extension";
+            return (
+              <div key={f.title} className={`feature-item feature-item--extension${isLocked ? " feature-item--locked" : ""}`}>
+                <h3>{f.title}</h3>
+                <p>{f.desc}</p>
+                <span className={`feature-badge feature-badge--${badgeClass}`}>
+                  {f.badge}
+                </span>
+                {f.badge === "Pro" && (
+                  <a href="https://tokalator.ai" target="_blank" rel="noopener noreferrer" className="feature-lock-link">Upgrade to Pro &rarr;</a>
+                )}
+                {f.badge === "Enterprise" && (
+                  <a href="https://tokalator.ai/enterprise" target="_blank" rel="noopener noreferrer" className="feature-lock-link feature-lock-link--enterprise">Contact Sales &rarr;</a>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </motion.section>
 
       {/* Quick Start */}
       <motion.section {...inView}>
@@ -230,7 +291,7 @@ export default function HomePage() {
             rel="noopener noreferrer"
             className="cta-secondary"
           >
-            View on GitHub →
+            View on GitHub &rarr;
           </a>
         </div>
       </motion.section>
@@ -268,6 +329,52 @@ export default function HomePage() {
         </div>
       </motion.section>
 
+      {/* Pricing */}
+      <motion.section {...inView}>
+        <div className="section-divider" />
+        <h2 className="section-header">Pricing</h2>
+        <div className="pricing-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
+          <div className="pricing-card">
+            <div className="pricing-name">Free</div>
+            <div className="pricing-price">Free</div>
+            <p className="pricing-desc">VS Code extension. Token calculator.</p>
+            <div className="pricing-divider" />
+            <ul className="pricing-features">
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> BPE tokenization</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Budget meter</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> 17 model profiles</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Cost-per-turn</li>
+            </ul>
+            <a href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn--secondary">Get Extension</a>
+          </div>
+          <div className="pricing-card pricing-card--featured">
+            <span className="pricing-badge">Popular</span>
+            <div className="pricing-name">Pro</div>
+            <div className="pricing-price">$9<span className="pricing-price-unit"> once</span></div>
+            <p className="pricing-desc">Security scan, smart routing, budgets.</p>
+            <div className="pricing-divider" />
+            <ul className="pricing-features">
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Security scan</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Smart routing</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Budget alerts</li>
+            </ul>
+            <a href="https://tokalator.ai" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn--primary">Learn More</a>
+          </div>
+          <div className="pricing-card">
+            <div className="pricing-name">Enterprise</div>
+            <div className="pricing-price">Contact</div>
+            <p className="pricing-desc">Team analytics, SSO, audit logs.</p>
+            <div className="pricing-divider" />
+            <ul className="pricing-features">
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Team analytics</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> SSO / SAML</li>
+              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Unlimited seats</li>
+            </ul>
+            <a href="https://tokalator.ai/enterprise" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn--secondary">Contact Sales</a>
+          </div>
+        </div>
+      </motion.section>
+
       {/* Open Source */}
       <motion.section {...inView} className="community-section">
         <div className="community-glow" aria-hidden />
@@ -285,6 +392,7 @@ export default function HomePage() {
             >
               <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
               Star on GitHub
+              <StarCount />
             </a>
           </div>
         </div>
@@ -309,7 +417,35 @@ export default function HomePage() {
             <Link href="/about">About</Link>
             <Link href="/pro">Tokalator Pro</Link>
           </div>
+          <div className="footer-nav-col">
+            <h4 className="footer-nav-heading">Research</h4>
+            <a href="https://arxiv.org/abs/2604.08290" target="_blank" rel="noopener noreferrer" className="footer-paper-link">
+              <span className="footer-paper-badge">arXiv:2604.08290</span>
+              Tokalator: A Context Engineering Toolkit
+            </a>
+            <span className="footer-paper-authors">Farajijobehdar, Koseoğlu Sarı, Üre, Zeydan (2026)</span>
+          </div>
         </div>
+
+        <div className="footer-stats">
+          <div className="footer-stat">
+            <span className="footer-stat-value">500+</span>
+            <span className="footer-stat-label">Total Installs</span>
+          </div>
+          <div className="footer-stat">
+            <span className="footer-stat-value">17</span>
+            <span className="footer-stat-label">Model Profiles</span>
+          </div>
+          <div className="footer-stat">
+            <span className="footer-stat-value">124</span>
+            <span className="footer-stat-label">Unit Tests</span>
+          </div>
+          <div className="footer-stat">
+            <span className="footer-stat-value">37pp</span>
+            <span className="footer-stat-label">Research Paper</span>
+          </div>
+        </div>
+
         <div className="footer-main">
           <span className="footer-brand">&copy; 2026 @Tokalator.</span>
           <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="footer-author-link">Vahid Faraji</a>

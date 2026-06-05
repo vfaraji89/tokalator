@@ -197,7 +197,7 @@ export function PriceQualityChart() {
   // Quality scores based on latest benchmarks (Feb 2026)
   const data: PriceQualityData[] = [
     { name: 'Opus 4.6', pricePerToken: 5.0, qualityScore: 99, provider: 'anthropic' },
-    { name: 'Sonnet 4.5', pricePerToken: 3.0, qualityScore: 93, provider: 'anthropic' },
+    { name: 'Sonnet 4.6', pricePerToken: 3.0, qualityScore: 93, provider: 'anthropic' },
     { name: 'Haiku 4.5', pricePerToken: 1.0, qualityScore: 86, provider: 'anthropic' },
     { name: 'GPT-5.2', pricePerToken: 1.75, qualityScore: 97, provider: 'openai' },
     { name: 'GPT-4.1', pricePerToken: 3.0, qualityScore: 92, provider: 'openai' },

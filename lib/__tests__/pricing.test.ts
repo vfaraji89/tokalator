@@ -35,12 +35,12 @@ describe('getPricingTier', () => {
   });
 
   it('returns standard tier for Sonnet at ≤200K', () => {
-    const tier = getPricingTier('claude-sonnet-4.5', 150_000);
+    const tier = getPricingTier('claude-sonnet-4.6', 150_000);
     expect(tier.inputCostPerMTok).toBe(3.0);
   });
 
   it('returns extended tier for Sonnet at >200K', () => {
-    const tier = getPricingTier('claude-sonnet-4.5', 300_000);
+    const tier = getPricingTier('claude-sonnet-4.6', 300_000);
     expect(tier.inputCostPerMTok).toBe(6.0);
   });
 
