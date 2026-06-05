@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { track } from "@vercel/analytics";
 import { ThemeToggle } from "./theme-toggle";
 
 export function TopNav() {
@@ -68,7 +69,7 @@ export function TopNav() {
               target="_blank"
               rel="noopener noreferrer"
               className="topnav-cta"
-              onClick={() => setOpen(false)}
+              onClick={() => { setOpen(false); track("marketplace_click", { location: "top-nav" }); }}
             >
               Install Free <span aria-hidden>→</span>
             </a>

@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useState, useEffect, useRef } from "react";
 import { motion } from "motion/react";
+import { track } from "@vercel/analytics";
 import content from "../content/homepage.json";
 import { CommandTyper } from "../components/command-typer";
 import { HeroMorph } from "../components/hero-morph";
@@ -105,7 +106,7 @@ export default function HomePage() {
     <article className="article">
       {/* Hero */}
       <header className="hero">
-        <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill">
+        <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill" onClick={() => track("marketplace_click", { location: "home-hero-pill" })}>
           <span className="update-dot" /> v3.1.7: Context Engineering stats, auto-detected model, Generate Glossary
           <span className="update-arrow">&rarr;</span>
         </motion.a>
@@ -149,6 +150,7 @@ export default function HomePage() {
             target="_blank"
             rel="noopener noreferrer"
             className="ide-install-btn ide-install-btn--primary"
+            onClick={() => track("marketplace_click", { location: "home-install-button" })}
           >
             <Image src="/icons/vscode.svg" alt="VS Code" width={18} height={18} />
             VS Code
@@ -171,6 +173,7 @@ export default function HomePage() {
             target="_blank"
             rel="noopener noreferrer"
             className="hero-proof-item"
+            onClick={() => track("marketplace_click", { location: "home-proof-stat" })}
           >
             <span className="hero-proof-value">500+</span>
             <span className="hero-proof-label">installs</span>
