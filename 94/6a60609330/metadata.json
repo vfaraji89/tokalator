@@ -1,0 +1,28 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "946a60609330",
+  "strategy": "manual-commit",
+  "branch": "extension-3.1.7-polish",
+  "checkpoints_count": 4,
+  "files_touched": [
+    "tokalator-extension-vs/README.md",
+    "tokalator-extension-vs/media/icon.svg",
+    "tokalator-extension-vs/src/webview/contextDashboardProvider.ts"
+  ],
+  "sessions": [
+    {
+      "metadata": "/94/6a60609330/0/metadata.json",
+      "transcript": "/94/6a60609330/0/full.jsonl",
+      "context": "/94/6a60609330/0/context.md",
+      "content_hash": "/94/6a60609330/0/content_hash.txt",
+      "prompt": "/94/6a60609330/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 13681,
+    "cache_creation_tokens": 242597,
+    "cache_read_tokens": 5876270,
+    "output_tokens": 61213,
+    "api_call_count": 85
+  }
+}

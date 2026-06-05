@@ -1,0 +1,61 @@
+so lets publish the vs extension first locally and then publish on web
+
+---
+
+code --install-extension … --force
+
+---
+
+Continue from where you left off.
+
+---
+
+update marketplace icon with real icon of svg we have in website
+
+---
+
+update all detail page of tokalator
+
+---
+
+reinstall first
+
+---
+
+Continue from where you left off.
+
+---
+
+install from scratch locally
+
+---
+
+no need to say 17 models and remove em dash from detail
+
+---
+
+ok now lets publish on marketplace
+
+---
+
+can we replace the logo for marketplace first-- to exactly abacus we use in tokalator.wiki
+
+---
+
+tokalator free caption with animated calculator should be abacus too
+
+---
+
+any fast way to deploy on vs marketplace
+
+---
+
+ı have token-- where should ı put
+
+---
+
+put on terminal
+
+---
+
+ok just update snippet of tokalator.wiki to announce this
