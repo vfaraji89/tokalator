@@ -50,7 +50,7 @@ describe('analyzeCaching', () => {
     const result = analyzeCaching({
       cacheTokens: 50_000,
       reuseCount: 100,
-      model: 'claude-sonnet-4.5',
+      model: 'claude-sonnet-4.6',
     });
     // Paper claims 88.9% savings
     expect(result.savingsPercent).toBeGreaterThan(85);
@@ -75,7 +75,7 @@ describe('analyzeCaching', () => {
 describe('calculateBreakeven', () => {
   it('break-even is ~2 reuses for Anthropic models', () => {
     // Paper claims break-even of 2 reuses for all Anthropic models
-    for (const model of ['claude-opus-4.6', 'claude-sonnet-4.5', 'claude-haiku-4.5']) {
+    for (const model of ['claude-opus-4.6', 'claude-sonnet-4.6', 'claude-haiku-4.5']) {
       const result = calculateBreakeven(model);
       // Break-even should be between 1 and 3 (paper says ~2)
       expect(result.breakEvenReuses).toBeGreaterThanOrEqual(1);

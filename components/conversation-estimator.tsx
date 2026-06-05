@@ -21,14 +21,14 @@ import { formatTokenCount } from '@/lib/context';
 
 const models = [
   'claude-opus-4.6',
-  'claude-sonnet-4.5',
+  'claude-sonnet-4.6',
   'claude-haiku-4.5',
 ] as const;
 
 const strategies: ContextStrategy[] = ['full', 'sliding-window', 'summarize'];
 
 export function ConversationEstimator() {
-  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-4.5');
+  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-4.6');
   const [systemPromptTokens, setSystemPromptTokens] = useState<number>(5000);
   const [avgUserTokens, setAvgUserTokens] = useState<number>(500);
   const [avgAssistantTokens, setAvgAssistantTokens] = useState<number>(1500);

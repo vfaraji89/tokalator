@@ -5,7 +5,7 @@
     "markerLine": "Count your tokens.",
     "highlightPhrase": "Every token counts",
     "description": "— monitor budgets, estimate costs, optimize context, and cut AI spending before it adds up. A VS Code extension, MCP server, and CLI that makes the invisible visible.",
-    "installCmd": "ext install tokalator",
+    "installCmd": "ext install vfaraji89.tokalator",
     "primaryCta": {
       "label": "Install Extension",
       "href": "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
@@ -18,7 +18,7 @@
   "quickStart": {
     "title": "Quick Start",
     "steps": [
-      "Install from the VS Code Marketplace or run `ext install tokalator`",
+      "Install from the VS Code Marketplace or run `ext install vfaraji89.tokalator`",
       "Click the Tokalator icon in the Activity Bar — the sidebar dashboard opens",
       "Type `@tokalator /count` in Copilot or Claude Chat to see your token budget",
       "Pin important files with `/pin` so they always stay in context",
@@ -33,7 +33,7 @@
         },
         {
           "label": "Models",
-          "value": "17 profiles — Claude 4.x, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, GPT-4.1, o3, o4-mini, Gemini 3.x, Gemini 2.5"
+          "value": "17 profiles — Claude Opus/Sonnet/Haiku 4.x, GPT-5.5, GPT-5.4 family, GPT-5.3 Codex, o4-mini, Gemini 3.x, Gemini 2.5"
         },
         {
           "label": "Caching",
@@ -83,6 +83,10 @@
         "description": "List, count, and estimate tokens for instruction files in workspace"
       },
       {
+        "command": "/terminology-gen",
+        "description": "Scan terminology sources and show token compression potential"
+      },
+      {
         "command": "/model",
         "description": "Show or switch the active AI model"
       },
@@ -106,30 +110,30 @@
   },
   "shipped": {
     "title": "Recently Shipped",
-    "subtitle": "What landed in v3.1.5.",
+    "subtitle": "What landed in v3.1.7.",
     "items": [
       {
-        "name": "Price Estimation in Dashboard",
-        "description": "Live input/output cost breakdown in the sidebar. See estimated turn cost, per-token rates, and total spend before you send a single prompt. All 17 model prices built in.",
+        "name": "Tokalator 3.1.7 on the Marketplace",
+        "description": "Model now auto-detected from your Copilot chat, a Context Engineering stats panel (context-window used, turns-to-rot, measured per-turn growth), the Generate Glossary command, and a redesigned abacus-branded dashboard. Catalog refreshed with May 2026 pricing.",
         "badge": "New",
         "number": 1
       },
       {
-        "name": "Claude Code via MCP",
-        "description": "Real Claude BPE token counting inside Claude Code — count_tokens, estimate_budget, preview_turn, list_models via stdio MCP transport. Zero API calls.",
+        "name": "Price Estimation in Dashboard",
+        "description": "Live input/output cost breakdown in the sidebar. See estimated turn cost, per-token rates, and total spend before you send a single prompt.",
         "badge": "Live",
         "number": 2
       },
       {
-        "name": "17 Model Profiles with Pricing",
-        "description": "Claude Opus/Sonnet 4.6, GPT-5.4, GPT-5.4 Mini, GPT-5.x Codex, Gemini 3.x — each with per-MTok input/output prices. Auto-detected from VS Code Copilot chat.",
-        "badge": "Updated",
+        "name": "Claude Code via MCP",
+        "description": "Real Claude BPE token counting inside Claude Code: count_tokens, estimate_budget, preview_turn, list_models via stdio MCP transport. Zero API calls.",
+        "badge": "Live",
         "number": 3
       },
       {
-        "name": "Economist-Style Calculator",
-        "description": "Redesigned cost calculator with animated horizontal bar charts, cost-at-scale table, and stacked breakdown bars. No pie charts.",
-        "badge": "Live",
+        "name": "Model Profiles with Pricing",
+        "description": "Claude Opus/Sonnet 4.x, GPT-5.x, GPT-5.x Codex, and Gemini 3.x, each with per-MTok input/output prices. Auto-detected from VS Code Copilot chat.",
+        "badge": "Updated",
         "number": 4
       }
     ]
@@ -145,22 +149,16 @@
         "number": 1
       },
       {
-        "name": "Cursor Extension",
-        "description": "Full Tokalator experience inside Cursor. Same dashboard, scoring, and chat commands — native to your workflow.",
-        "badge": "Extension",
-        "number": 2
-      },
-      {
         "name": "Per-Turn Budget Indicator",
         "description": "Live IDE status-bar widget showing estimated turns remaining before the conversation exhausts the context budget — the top community-requested feature.",
         "badge": "Feedback",
-        "number": 3
+        "number": 2
       },
       {
         "name": "Secret Scanner (/secrets)",
         "description": "Detect and warn when API keys, tokens, or credentials appear in open tabs before they silently enter your AI context.",
         "badge": "Security",
-        "number": 4
+        "number": 3
       }
     ]
   }

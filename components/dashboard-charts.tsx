@@ -30,7 +30,7 @@ const dailyData = [
 
 const modelDistribution = [
   { name: 'Opus 4.5', value: 1.38, color: '#8B5CF6' },
-  { name: 'Sonnet 4.5', value: 6.16, color: '#3B82F6' },
+  { name: 'Sonnet 4.6', value: 6.16, color: '#3B82F6' },
   { name: 'Haiku 4.5', value: 1.66, color: '#10B981' },
 ];
 
@@ -174,7 +174,7 @@ export function DashboardCharts({
             />
             <Legend />
             <Bar dataKey="opus" name="Opus 4.5" fill={COLORS.opus} />
-            <Bar dataKey="sonnet" name="Sonnet 4.5" fill={COLORS.sonnet} />
+            <Bar dataKey="sonnet" name="Sonnet 4.6" fill={COLORS.sonnet} />
             <Bar dataKey="haiku" name="Haiku 4.5" fill={COLORS.haiku} />
           </BarChart>
         </ResponsiveContainer>
@@ -196,7 +196,7 @@ export function DashboardCharts({
             />
             <Legend />
             <Bar dataKey="opus" name="Opus 4.5" stackId="a" fill={COLORS.opus} />
-            <Bar dataKey="sonnet" name="Sonnet 4.5" stackId="a" fill={COLORS.sonnet} />
+            <Bar dataKey="sonnet" name="Sonnet 4.6" stackId="a" fill={COLORS.sonnet} />
             <Bar dataKey="haiku" name="Haiku 4.5" stackId="a" fill={COLORS.haiku} />
           </BarChart>
         </ResponsiveContainer>

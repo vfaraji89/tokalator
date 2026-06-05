@@ -30,11 +30,11 @@ async function main() {
     },
   });
 
-  // Claude Sonnet 4.5
+  // Claude Sonnet 4.6
   const sonnet = await prisma.model.create({
     data: {
-      name: 'claude-sonnet-4.5',
-      displayName: 'Claude Sonnet 4.5',
+      name: 'claude-sonnet-4.6',
+      displayName: 'Claude Sonnet 4.6',
       description: 'Best combination of speed and intelligence',
       baseQuality: 0.85,
       alphaParam: 0.25,
@@ -75,7 +75,7 @@ async function main() {
     },
   });
 
-  // Sonnet 4.5 - Two-tier pricing (≤200K and >200K)
+  // Sonnet 4.6 - Two-tier pricing (≤200K and >200K)
   // Tier 1: ≤200K tokens
   await prisma.pricingRule.create({
     data: {

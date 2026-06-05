@@ -4,7 +4,7 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Instructions",
-  description: "Browse custom instruction files for AI coding assistants — Copilot, Claude, Cursor, and more.",
+  description: "Browse custom instruction files for AI coding assistants — Copilot, Claude, and more.",
 };
 
 export default function InstructionsPage() {

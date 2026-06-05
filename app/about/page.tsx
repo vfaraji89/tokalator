@@ -79,7 +79,7 @@ export default function AboutPage() {
       <section>
         <h2>Project</h2>
         <p>
-          Tokalator is open source under the MIT License.{" "}
+          Tokalator&apos;s core is open source under the AGPL-3.0 License; the VS Code extension is distributed under the MIT License.{" "}
           <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>
             View on GitHub →
           </a>

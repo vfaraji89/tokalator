@@ -29,13 +29,15 @@ const PROVIDER_COLORS: Record<string, string> = { anthropic: P.black, openai: '#
 
 // Cache pricing data for break-even (input $/MTok, cache_write $/MTok, cache_read $/MTok)
 const CACHE_PRICING: Record<string, [number, number, number]> = {
+  'claude-opus-4.8': [5.0, 6.25, 0.50],
+  'claude-opus-4.7': [5.0, 6.25, 0.50],
   'claude-opus-4.6': [5.0, 6.25, 0.50],
-  'claude-sonnet-4.5': [3.0, 3.75, 0.30],
+  'claude-sonnet-4.6': [3.0, 3.75, 0.30],
   'claude-haiku-4.5': [1.0, 1.25, 0.10],
-  'gpt-5.2': [1.75, 1.75, 0.175],
-  'gpt-4.1': [3.0, 3.0, 0.75],
-  'gpt-4.1-mini': [0.80, 0.80, 0.20],
-  'gemini-3-pro': [2.0, 2.0, 0.50],
+  'gpt-5.5': [5.0, 5.0, 0.50],
+  'gpt-5.4': [2.50, 2.50, 0.25],
+  'gpt-5.3-codex': [1.75, 1.75, 0.175],
+  'gemini-3.1-pro': [2.0, 2.0, 0.50],
   'gemini-2.5-pro': [1.25, 1.25, 0.125],
   'gemini-2.5-flash': [0.30, 0.30, 0.03],
 };
@@ -55,7 +57,7 @@ export function EconomicsClient() {
   const bq = 1.0;
 
   // ── Caching state ──
-  const [cacheModel, setCacheModel] = useState('claude-sonnet-4.5');
+  const [cacheModel, setCacheModel] = useState('claude-sonnet-4.6');
   const [cacheInput, setCacheInput] = useState(50000);
   const [cachePortion, setCachePortion] = useState(20000);
   const [reuses, setReuses] = useState(10);

@@ -144,7 +144,7 @@ const tabAnim = {
 // ── Main component ─────────────────────────────────────────────────────────────
 export function CalculatorClient() {
   const [tab, setTab]                       = useState<Tab>('calculator');
-  const [selectedModel, setSelectedModel]   = useState('claude-sonnet-4.5');
+  const [selectedModel, setSelectedModel]   = useState('claude-sonnet-4.6');
   const [inputTokens, setInputTokens]       = useState(50_000);
   const [outputTokens, setOutputTokens]     = useState(10_000);
   const [cacheWriteTokens, setCacheWrite]   = useState(0);

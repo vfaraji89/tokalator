@@ -23,7 +23,7 @@ const features = [
   },
   {
     name: '14 Model Profiles',
-    description: 'Built-in profiles for Opus 4.6, Sonnet 4.5/4, Haiku 4.5, GPT-5.2, GPT-5.2 Codex, GPT-5.1, GPT-5 Mini, GPT-4.1, o3, o4-mini, Gemini 3 Pro/Flash, Gemini 2.5 Pro.',
+    description: 'Built-in profiles for Opus 4.6, Sonnet 4.6/4, Haiku 4.5, GPT-5.2, GPT-5.2 Codex, GPT-5.1, GPT-5 Mini, GPT-4.1, o3, o4-mini, Gemini 3 Pro/Flash, Gemini 2.5 Pro.',
     command: 'Settings: tokalator.model',
   },
   {

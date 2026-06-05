@@ -51,12 +51,13 @@ export default function TermsPage() {
         <section>
           <h2>Open source licence</h2>
           <p>
-            The source code for Tokalator is released under the{" "}
-            <a href="https://opensource.org/licenses/MIT" target="_blank" rel="noopener noreferrer">
-              MIT Licence
+            The Tokalator core is released under the{" "}
+            <a href="https://www.gnu.org/licenses/agpl-3.0.html" target="_blank" rel="noopener noreferrer">
+              GNU Affero General Public License v3.0 (AGPL-3.0)
             </a>
-            . You are free to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-            copies of the software, subject to the conditions of that licence.
+            . You are free to use, study, modify, and self-host it; if you modify it and make it
+            available to others over a network, you must release your modified source under the same
+            licence. The VS Code extension is distributed separately under the MIT Licence.
           </p>
           <p>
             The full source is available at{" "}

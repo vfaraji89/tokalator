@@ -42,7 +42,7 @@ Options:
 
 Examples:
   tokalator count src/main.ts
-  tokalator count --model claude-sonnet-4.5 src/**/*.ts
+  tokalator count --model claude-sonnet-4.6 src/**/*.ts
   tokalator count --text "Hello, world!"
   tokalator budget --turns 5 src/index.ts src/utils.ts
   tokalator preview 42000

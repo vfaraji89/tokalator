@@ -11,13 +11,13 @@ import {
   ANTHROPIC_PRICING, formatCost,
 } from "@/lib/pricing";
 
-type ModelId = "claude-opus-4.6" | "claude-sonnet-4.5" | "claude-haiku-4.5";
+type ModelId = "claude-opus-4.6" | "claude-sonnet-4.6" | "claude-haiku-4.5";
 
 const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 export function EconomicAnalysis() {
-  const [model, setModel] = useState<ModelId>("claude-sonnet-4.5");
+  const [model, setModel] = useState<ModelId>("claude-sonnet-4.6");
   const [inputTokens, setInputTokens] = useState(100000);
   const [outputTokens, setOutputTokens] = useState(50000);
   const [cacheTokens, setCacheTokens] = useState(20000);
@@ -65,7 +65,7 @@ export function EconomicAnalysis() {
   ];
 
   const modelCosts = useMemo(() => {
-    return (["claude-opus-4.6", "claude-sonnet-4.5", "claude-haiku-4.5"] as ModelId[]).map((m) => {
+    return (["claude-opus-4.6", "claude-sonnet-4.6", "claude-haiku-4.5"] as ModelId[]).map((m) => {
       const p = ANTHROPIC_PRICING[m].standard;
       return { name: m.replace("claude-", "").split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" "), cost: +((inputTokens * p.inputCostPerMTok + outputTokens * p.outputCostPerMTok) / 1_000_000).toFixed(4) };
     });
@@ -167,7 +167,7 @@ export function EconomicAnalysis() {
               <label style={ls}>Model</label>
               <select value={model} onChange={(e) => setModel(e.target.value as ModelId)} style={{ width: "100%", padding: "0.5rem", border: `1px solid ${P.g3}`, borderRadius: "4px", background: P.white }}>
                 <option value="claude-opus-4.6">Claude Opus 4.6</option>
-                <option value="claude-sonnet-4.5">Claude Sonnet 4.5</option>
+                <option value="claude-sonnet-4.6">Claude Sonnet 4.6</option>
                 <option value="claude-haiku-4.5">Claude Haiku 4.5</option>
               </select>
             </div>
@@ -229,7 +229,7 @@ export function EconomicAnalysis() {
             <PolarAngleAxis dataKey="metric" tick={{ fontSize: 11, fill: P.g7 }} />
             <PolarRadiusAxis angle={30} domain={[0, 100]} tick={{ fontSize: 9 }} stroke={P.g3} />
             <Radar name="Opus 4.6" dataKey="opus" stroke={P.black} fill={P.black} fillOpacity={0.15} strokeWidth={2} />
-            <Radar name="Sonnet 4.5" dataKey="sonnet" stroke={P.red} fill={P.red} fillOpacity={0.1} strokeWidth={2} />
+            <Radar name="Sonnet 4.6" dataKey="sonnet" stroke={P.red} fill={P.red} fillOpacity={0.1} strokeWidth={2} />
             <Radar name="Haiku 4.5" dataKey="haiku" stroke={P.g5} fill={P.g5} fillOpacity={0.08} strokeWidth={2} />
             <Legend wrapperStyle={{ fontSize: 11, paddingTop: 16 }} />
             <Tooltip {...tt} />
@@ -242,7 +242,7 @@ export function EconomicAnalysis() {
         <h2 className="section-header">Model Selection Guide</h2>
         <table className="settings-table">
           <thead>
-            <tr><th style={{ textAlign: "left" }}>Use Case</th><th style={{ textAlign: "center" }}>Opus 4.6</th><th style={{ textAlign: "center" }}>Sonnet 4.5</th><th style={{ textAlign: "center" }}>Haiku 4.5</th></tr>
+            <tr><th style={{ textAlign: "left" }}>Use Case</th><th style={{ textAlign: "center" }}>Opus 4.6</th><th style={{ textAlign: "center" }}>Sonnet 4.6</th><th style={{ textAlign: "center" }}>Haiku 4.5</th></tr>
           </thead>
           <tbody>
             {[["Complex reasoning","Best","Good","--"],["Code generation","Best","Great","Good"],["Content creation","Best","Great","Good"],["Data extraction","--","Good","Best"],["Classification","--","Good","Best"],["High-volume","--","Good","Best"],["Real-time chat","--","Best","Great"]].map(([u,o,s,h]) => (

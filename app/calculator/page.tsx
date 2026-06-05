@@ -22,7 +22,7 @@ export default function CalculatorPage() {
           <span className="hero-marker">Cost Calculator</span>
         </h1>
         <p className="hero-description">
-          Calculate API costs for Claude Opus 4.6, Sonnet 4.5, and Haiku 4.5
+          Calculate API costs for Claude Opus 4.6, Sonnet 4.6, and Haiku 4.5
           with Cobb-Douglas quality modeling.
         </p>
       </header>

@@ -48,16 +48,16 @@ describe('analyzeContextBudget', () => {
       model: 'claude-opus-4.6',
     });
     expect(result.totalUsed).toBe(17_000);
-    expect(result.totalAvailable).toBe(200_000);
-    expect(result.remaining).toBe(183_000);
-    expect(result.usagePercent).toBeCloseTo(8.5, 1);
+    expect(result.totalAvailable).toBe(1_000_000);
+    expect(result.remaining).toBe(983_000);
+    expect(result.usagePercent).toBeCloseTo(1.7, 1);
     expect(result.isOverLimit).toBe(false);
   });
 
   it('warns when usage > 90%', () => {
     const result = analyzeContextBudget({
-      systemPromptTokens: 100_000,
-      userInputTokens: 90_000,
+      systemPromptTokens: 500_000,
+      userInputTokens: 450_000,
       reservedOutputTokens: 5_000,
       model: 'claude-opus-4.6',
     });
@@ -66,9 +66,9 @@ describe('analyzeContextBudget', () => {
 
   it('detects over-limit condition', () => {
     const result = analyzeContextBudget({
-      systemPromptTokens: 100_000,
-      userInputTokens: 100_000,
-      reservedOutputTokens: 50_000,
+      systemPromptTokens: 500_000,
+      userInputTokens: 400_000,
+      reservedOutputTokens: 200_000,
       model: 'claude-opus-4.6',
     });
     expect(result.isOverLimit).toBe(true);
@@ -80,7 +80,7 @@ describe('analyzeContextBudget', () => {
       systemPromptTokens: 150_000,
       userInputTokens: 60_000,
       reservedOutputTokens: 10_000,
-      model: 'claude-sonnet-4.5',
+      model: 'claude-sonnet-4.6',
     });
     expect(result.isInExtendedPricing).toBe(true);
     expect(result.warnings.some((w) => w.includes('Extended'))).toBe(true);
@@ -124,7 +124,7 @@ describe('calculateRemainingTurns', () => {
   });
 
   it('returns 0 when context is full', () => {
-    const turns = calculateRemainingTurns(200_000, 2_000, 'claude-opus-4.6');
+    const turns = calculateRemainingTurns(1_000_000, 2_000, 'claude-opus-4.6');
     expect(turns).toBe(0);
   });
 
@@ -147,7 +147,7 @@ describe('getModelLimits', () => {
   it('returns limits for known model', () => {
     const limits = getModelLimits('claude-opus-4.6');
     expect(limits).not.toBeNull();
-    expect(limits!.contextWindow).toBe(200_000);
+    expect(limits!.contextWindow).toBe(1_000_000);
     expect(limits!.maxOutput).toBe(128_000);
   });
 

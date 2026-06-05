@@ -21,7 +21,7 @@ const offerings = [
       "Custom model profiles — plug in your internal/fine-tuned models",
       "Priority support & onboarding",
     ],
-    pricing: "Free core stays MIT open-source. Pro is a paid license.",
+    pricing: "Free core stays AGPL-3.0 open-source (extension MIT). Pro is a paid commercial license.",
     number: 1,
   },
   {
@@ -110,7 +110,7 @@ export default function ProPage() {
             <span className="why-stat-label">New offerings</span>
           </div>
           <div className="why-stat-card">
-            <span className="why-stat-number">MIT</span>
+            <span className="why-stat-number">AGPL</span>
             <span className="why-stat-label">Core stays open-source</span>
           </div>
           <div className="why-stat-card">

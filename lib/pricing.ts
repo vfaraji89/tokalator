@@ -61,24 +61,26 @@ export interface QualityMetrics {
 }
 
 // ============================================
-// CONSTANTS - Anthropic Pricing (February 2026)
+// CONSTANTS - Anthropic Pricing (May 2026)
 // ============================================
 
 export const MODEL_LIMITS = {
-  'claude-opus-4.6': { contextWindow: 200_000, maxOutput: 128_000, contextWindowBeta: 1_000_000 },
-  'claude-sonnet-4.5': { contextWindow: 200_000, maxOutput: 64_000, contextWindowBeta: 1_000_000 },
+  'claude-opus-4.8': { contextWindow: 1_000_000, maxOutput: 128_000 },
+  'claude-opus-4.7': { contextWindow: 1_000_000, maxOutput: 128_000 },
+  'claude-opus-4.6': { contextWindow: 1_000_000, maxOutput: 128_000 },
+  'claude-sonnet-4.6': { contextWindow: 1_000_000, maxOutput: 64_000 },
   'claude-haiku-4.5': { contextWindow: 200_000, maxOutput: 64_000 },
 } as const;
 
 export const ANTHROPIC_PRICING = {
-  'claude-opus-4.6': {
+  'claude-opus-4.8': {
     standard: {
       inputCostPerMTok: 5.0,
       outputCostPerMTok: 25.0,
       cacheWriteCostPerMTok: 6.25,
       cacheReadCostPerMTok: 0.50,
     },
-    extended: { // >200K tokens (1M beta)
+    extended: {
       inputCostPerMTok: 10.0,
       outputCostPerMTok: 37.50,
       cacheWriteCostPerMTok: 12.50,
@@ -86,14 +88,44 @@ export const ANTHROPIC_PRICING = {
     },
     threshold: 200000,
   },
-  'claude-sonnet-4.5': {
+  'claude-opus-4.7': {
+    standard: {
+      inputCostPerMTok: 5.0,
+      outputCostPerMTok: 25.0,
+      cacheWriteCostPerMTok: 6.25,
+      cacheReadCostPerMTok: 0.50,
+    },
+    extended: {
+      inputCostPerMTok: 10.0,
+      outputCostPerMTok: 37.50,
+      cacheWriteCostPerMTok: 12.50,
+      cacheReadCostPerMTok: 1.00,
+    },
+    threshold: 200000,
+  },
+  'claude-opus-4.6': {
+    standard: {
+      inputCostPerMTok: 5.0,
+      outputCostPerMTok: 25.0,
+      cacheWriteCostPerMTok: 6.25,
+      cacheReadCostPerMTok: 0.50,
+    },
+    extended: {
+      inputCostPerMTok: 10.0,
+      outputCostPerMTok: 37.50,
+      cacheWriteCostPerMTok: 12.50,
+      cacheReadCostPerMTok: 1.00,
+    },
+    threshold: 200000,
+  },
+  'claude-sonnet-4.6': {
     standard: {
       inputCostPerMTok: 3.0,
       outputCostPerMTok: 15.0,
       cacheWriteCostPerMTok: 3.75,
       cacheReadCostPerMTok: 0.30,
     },
-    extended: { // >200K tokens (1M beta)
+    extended: {
       inputCostPerMTok: 6.0,
       outputCostPerMTok: 22.50,
       cacheWriteCostPerMTok: 7.50,
@@ -122,13 +154,25 @@ export const SERVICE_PRICING = {
 } as const;
 
 export const MODEL_PARAMS: Record<string, ModelParams> = {
+  'claude-opus-4.8': {
+    baseQuality: 1.0,
+    alphaParam: 0.30,
+    betaParam: 0.35,
+    gammaParam: 0.20,
+  },
+  'claude-opus-4.7': {
+    baseQuality: 1.0,
+    alphaParam: 0.30,
+    betaParam: 0.35,
+    gammaParam: 0.20,
+  },
   'claude-opus-4.6': {
     baseQuality: 1.0,
     alphaParam: 0.30,
     betaParam: 0.35,
     gammaParam: 0.20,
   },
-  'claude-sonnet-4.5': {
+  'claude-sonnet-4.6': {
     baseQuality: 0.85,
     alphaParam: 0.25,
     betaParam: 0.30,
@@ -479,20 +523,30 @@ export function formatTokens(tokens: number): string {
  */
 export function getModelInfo(modelName: string) {
   const info = {
+    'claude-opus-4.8': {
+      displayName: 'Claude Opus 4.8',
+      description: 'Most capable model for complex reasoning and agentic coding',
+      color: '#8B5CF6',
+    },
+    'claude-opus-4.7': {
+      displayName: 'Claude Opus 4.7',
+      description: 'Flagship model with adaptive thinking and 128K output',
+      color: '#7C3AED',
+    },
     'claude-opus-4.6': {
       displayName: 'Claude Opus 4.6',
-      description: 'Most intelligent model with 128K output & adaptive thinking',
-      color: '#8B5CF6', // Purple
+      description: 'Extended thinking model with 128K output',
+      color: '#6D28D9',
     },
-    'claude-sonnet-4.5': {
-      displayName: 'Claude Sonnet 4.5',
+    'claude-sonnet-4.6': {
+      displayName: 'Claude Sonnet 4.6',
       description: 'Best combination of speed and intelligence',
-      color: '#3B82F6', // Blue
+      color: '#3B82F6',
     },
     'claude-haiku-4.5': {
       displayName: 'Claude Haiku 4.5',
       description: 'Fastest model with near-frontier intelligence',
-      color: '#10B981', // Green
+      color: '#10B981',
     },
   };
 

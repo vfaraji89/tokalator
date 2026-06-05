@@ -12,6 +12,8 @@ module.exports = {
         skipLibCheck: true,
         resolveJsonModule: true,
         jsx: 'react-jsx',
+        rootDir: '.',
+        ignoreDeprecations: '6.0',
       },
     }],
   },

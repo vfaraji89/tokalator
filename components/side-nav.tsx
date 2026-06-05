@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import siteContent from "../content/site.json";
+import { ThemeToggle } from "./theme-toggle";
 
 type NavItem = { href: string; label: string; badge?: string };
 type NavSection = { section: string; items: NavItem[]; collapsible?: boolean };
@@ -185,6 +186,7 @@ export function SideNav() {
             <span className="sidebar-at">@</span>
             <span className="sidebar-logo-text text-motion">{siteContent.name.replace("@", "")}</span>
           </Link>
+          <ThemeToggle />
         </div>
 
         {nav.map((section) => {
