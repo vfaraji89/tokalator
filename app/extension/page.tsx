@@ -164,37 +164,25 @@ export default function ExtensionPage() {
           <motion.figure {...scrollReveal(0)} style={{ margin: 0 }}>
             <Image
               src="/screenshots/tokalator-ui.png"
-              alt="Tokalator sidebar dashboard showing token budget, next turn preview, and budget breakdown"
-              width={800}
-              height={600}
+              alt="Tokalator sidebar dashboard showing Context Engineering stats, API Cost Simulation, and budget breakdown"
+              width={474}
+              height={952}
               style={{ width: "100%", height: "auto", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
             />
             <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              Sidebar dashboard — live token budget, next turn preview, and budget breakdown
+              Sidebar dashboard — Context Engineering stats, API Cost Simulation, and budget breakdown
             </figcaption>
           </motion.figure>
           <motion.figure {...scrollReveal(0.1)} style={{ margin: 0 }}>
             <Image
-              src="/screenshots/tokalator-breakdown.png"
-              alt="Tokalator /breakdown command in chat showing file token counts and relevance scores"
-              width={800}
-              height={600}
+              src="/screenshots/tokalator-ide.png"
+              alt="Tokalator running in VS Code — token budget sidebar alongside the editor"
+              width={1454}
+              height={959}
               style={{ width: "100%", height: "auto", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
             />
             <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              @tokalator /breakdown — per-file token counts and relevance scores in chat
-            </figcaption>
-          </motion.figure>
-          <motion.figure {...scrollReveal(0.2)} style={{ margin: 0 }}>
-            <Image
-              src="/screenshots/tokalator-commands.png"
-              alt="Tokalator chat command autocomplete showing all @tokalator slash commands"
-              width={800}
-              height={600}
-              style={{ width: "100%", height: "auto", borderRadius: "6px", border: "1px solid var(--border)", display: "block" }}
-            />
-            <figcaption style={{ marginTop: "0.5rem", fontSize: "0.75rem", color: "var(--text-muted)" }}>
-              12 chat commands via @tokalator — full context management workflow
+              Tokalator in VS Code — context budget sidebar alongside your editor
             </figcaption>
           </motion.figure>
         </div>

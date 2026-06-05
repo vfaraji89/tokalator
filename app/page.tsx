@@ -211,9 +211,9 @@ export default function HomePage() {
         >
           <Image
             src="/screenshots/tokalator-ui.png"
-            alt="Tokalator token budget dashboard in VS Code — LOW budget, next turn preview, budget breakdown"
-            width={840}
-            height={560}
+            alt="Tokalator token budget dashboard in VS Code — LOW budget, Context Engineering stats, budget breakdown"
+            width={474}
+            height={952}
             style={{ width: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--border)", display: "block" }}
           />
         </motion.div>
