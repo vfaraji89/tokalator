@@ -329,49 +329,35 @@ export default function HomePage() {
         </div>
       </motion.section>
 
-      {/* Pricing */}
+      {/* Tokalator Pro */}
       <motion.section {...inView}>
         <div className="section-divider" />
-        <h2 className="section-header">Pricing</h2>
-        <div className="pricing-grid" style={{ gridTemplateColumns: "repeat(3, 1fr)" }}>
-          <div className="pricing-card">
-            <div className="pricing-name">Free</div>
-            <div className="pricing-price">Free</div>
-            <p className="pricing-desc">VS Code extension. Token calculator.</p>
-            <div className="pricing-divider" />
-            <ul className="pricing-features">
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> BPE tokenization</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Budget meter</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> 17 model profiles</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Cost-per-turn</li>
-            </ul>
-            <a href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn--secondary">Get Extension</a>
+        <span className="feature-badge feature-badge--pro" style={{ position: "static", marginBottom: "0.75rem" }}>Pro</span>
+        <h2 className="section-header">Built for teams that ship with AI</h2>
+        <p style={{ maxWidth: "46rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
+          The free extension keeps your own context in check. Tokalator Pro takes that across your team,
+          your pipeline, and your sensitive code, so context stays a managed budget instead of a surprise.
+        </p>
+        <div className="feature-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginTop: "1.25rem" }}>
+          <div className="feature-item feature-item--extension">
+            <h3>See it across the team</h3>
+            <p>Shared context budgets and a team dashboard, so the whole org sees what is filling the window, not just the person who opened the file.</p>
           </div>
-          <div className="pricing-card pricing-card--featured">
-            <span className="pricing-badge">Popular</span>
-            <div className="pricing-name">Pro</div>
-            <div className="pricing-price">$9<span className="pricing-price-unit"> once</span></div>
-            <p className="pricing-desc">Security scan, smart routing, budgets.</p>
-            <div className="pricing-divider" />
-            <ul className="pricing-features">
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Security scan</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Smart routing</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Budget alerts</li>
-            </ul>
-            <a href="https://tokalator.ai" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn--primary">Learn More</a>
+          <div className="feature-item feature-item--extension">
+            <h3>Catch regressions early</h3>
+            <p>Historical token analytics across days, sprints, and models. Spot context spend creeping up long before it shows on the invoice.</p>
           </div>
-          <div className="pricing-card">
-            <div className="pricing-name">Enterprise</div>
-            <div className="pricing-price">Contact</div>
-            <p className="pricing-desc">Team analytics, SSO, audit logs.</p>
-            <div className="pricing-divider" />
-            <ul className="pricing-features">
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Team analytics</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> SSO / SAML</li>
-              <li className="pricing-feature"><span className="pricing-check">&#10003;</span> Unlimited seats</li>
-            </ul>
-            <a href="https://tokalator.ai/enterprise" target="_blank" rel="noopener noreferrer" className="pricing-btn pricing-btn--secondary">Contact Sales</a>
+          <div className="feature-item feature-item--extension">
+            <h3>Guardrails in CI</h3>
+            <p>Budget gates fail the build when context blows past your threshold, keeping AI agents honest inside the pipeline.</p>
           </div>
+          <div className="feature-item feature-item--extension">
+            <h3>Keep secrets out of context</h3>
+            <p>Secure Workspace shields sensitive files from the model, and custom model profiles plug in your internal or fine-tuned models.</p>
+          </div>
+        </div>
+        <div className="section-cta" style={{ marginTop: "1.5rem" }}>
+          <Link href="/pro" className="cta-primary">See what is in Pro &rarr;</Link>
         </div>
       </motion.section>
 
