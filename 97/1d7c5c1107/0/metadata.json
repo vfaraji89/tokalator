@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "971d7c5c1107",
+  "session_id": "36cccd59-fa6f-49b1-ac90-84b1fcd1c9f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-22T07:38:01.939205Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/_components/web-vitals.tsx",
+    "app/layout.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "d28470ab-07e6-449b-82f6-3147fd544e41",
+  "checkpoint_transcript_start": 2196,
+  "transcript_lines_at_start": 2196,
+  "token_usage": {
+    "input_tokens": 16,
+    "cache_creation_tokens": 4865,
+    "cache_read_tokens": 1154801,
+    "output_tokens": 2731,
+    "api_call_count": 10
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-22T07:38:01.704243Z",
+    "agent_lines": 0,
+    "human_added": 105,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 105,
+    "agent_percentage": 0
+  }
+}

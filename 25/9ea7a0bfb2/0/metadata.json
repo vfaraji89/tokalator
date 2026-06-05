@@ -1,0 +1,32 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "259ea7a0bfb2",
+  "session_id": "02032fcb-8a49-4df4-ad11-95a09320f254",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T09:24:47.297651Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "tokalator-extension-vs/README.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "178effaa-15ad-463a-a1e4-a6425f9cfbda",
+  "checkpoint_transcript_start": 750,
+  "transcript_lines_at_start": 750,
+  "token_usage": {
+    "input_tokens": 15,
+    "cache_creation_tokens": 14816,
+    "cache_read_tokens": 1220869,
+    "output_tokens": 4455,
+    "api_call_count": 9
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T09:24:47.165396Z",
+    "agent_lines": 88,
+    "human_added": 26,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 114,
+    "agent_percentage": 77.19298245614034
+  }
+}

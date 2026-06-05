@@ -1,0 +1,49 @@
+want to understand how much energy used to generate a token --Here are some solid academic and quasi-academic starting points on energy‑per‑token and carbon footprint of LLM inference. [euromlsys](https://euromlsys.eu/pdf/euromlsys25-27.pdf)
+
+## Core “energy per token” papers
+
+- **Advocating Energy‑per‑Token in LLM Inference** – ACM, 2025. [dl.acm](https://dl.acm.org/doi/10.1145/3721146.3721953)
+  Defines “Energy per Token” formally, shows how to measure it from power traces, and demonstrates that models with similar size can have different energy efficiency.  
+- **Profiling Energy Use in Large Language Models Inference** – arXiv, 2026. [arxiv](https://arxiv.org/html/2407.16893v2)
+  Analyzes datasets of LLM runs; quantifies energy per token and per response, and shows strong correlation with token length and duration, with a baseline coefficient ≈ \(5.28 \times 10^{-7}\) kWh/token. [arxiv](https://arxiv.org/html/2407.16893v2)
+- **An Analytical Model for Predicting Energy Efficiency of LLM Inference** – arXiv, 2025. [arxiv](https://arxiv.org/html/2602.05695v2)
+  Builds a predictive model linking FLOPs, input/output length, and measured energy; defines \(E_{\text{tok}} = E_{\text{tot}} / n_{\text{out}}\) as joules per output token. [arxiv](https://arxiv.org/html/2602.05695v2)
+
+## Carbon‑efficient inference and “green” LLMs
+
+- **SPROUT: Green Generative AI with Carbon‑Efficient LLM Inference** – EMNLP 2024. [aclanthology](https://aclanthology.org/2024.emnlp-main.1215.pdf)
+  Proposes a framework for reducing carbon footprint at inference, and empirically shows a strong linear relation between total emissions and number of tokens generated for LLaMA‑2 7B and 13B. [aclanthology](https://aclanthology.org/2024.emnlp-main.1215.pdf)
+- **Energy‑Aware Prompt Optimization for Large Language Models** – TechRxiv preprint, 2025. [techrxiv](https://www.techrxiv.org/users/954699/articles/1323739-energy-aware-prompt-optimization-for-large-language-models-balancing-accuracy-cost-and-sustainability)
+  Introduces a taxonomy of “energy‑sensitive” prompt elements and a Tokens‑per‑Joule metric, aiming to keep accuracy while reducing energy use. [techrxiv](https://www.techrxiv.org/users/954699/articles/1323739-energy-aware-prompt-optimization-for-large-language-models-balancing-accuracy-cost-and-sustainability)
+
+## Broader carbon‑footprint / lifecycle work
+
+- **LLMCarbon: Modeling the End‑to‑End Carbon Footprint of Large Language Models** – arXiv, 2023. [arxiv](https://arxiv.org/abs/2309.14393)
+  Models carbon emissions across training, inference, experimentation, and storage, and introduces an improved projection model (\carb) that covers both dense and MoE LLMs. [arxiv](https://arxiv.org/abs/2309.14393)
+- **Sustainability in Large Language Model Supply Chains – Insights and Challenges** – 2025. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC12480639/)
+  Discusses environmental sustainability of LLMs, including the high energy demand for training models like PaLM and the implications for carbon emissions. [pmc.ncbi.nlm.nih](https://pmc.ncbi.nlm.nih.gov/articles/PMC12480639/)
+
+## Practical/measurement‑focused resources
+
+- **Tokens per Joule: How to Quantify and Reduce the Energy Footprint of Clinical LLM Inference** – John Snow Labs, 2026. [johnsnowlabs](https://www.johnsnowlabs.com/tokens-per-joule-how-to-quantify-and-reduce-the-energy-footprint-of-clinical-llm-inference/)
+  Not a formal paper, but gives empirical measurements (e.g., ~3–4 J per token for a 65B LLaMA on older GPUs) and a practical methodology for computing tokens/J, tokens/Wh, and comparing hardware and configurations. [johnsnowlabs](https://www.johnsnowlabs.com/tokens-per-joule-how-to-quantify-and-reduce-the-energy-footprint-of-clinical-llm-inference/)
+
+If you tell me whether you have access to ACM/IEEE, arXiv, or only open‑access PDFs, I can suggest exact BibTeX entries and a minimal reading list (e.g., 3–4 must‑reads) tailored to that.-- you can add to related work first--- Flagship, high–impact journal paper
+Liu et al., “Lost in the Middle: How Language Models Use Long Context” – Transactions of the ACL (TACL)
+
+Published by MIT Press/TACL, a top NLP journal with an impact factor in the ~7–10 range in recent years.
+​
+
+Widely cited (thousands of citations already), effectively the canonical paper on how LLMs fail to robustly use long contexts: shows the U‑shaped performance curve where models do well when relevant info is at the beginning or end, and perform poorly when it is in the middle.
+​
+
+Gives a clean experimental framework for evaluating long‑context usage across open and closed models (e.g., GPT‑3.5, Claude, MPT‑30B, LongChat).
+​
+
+---
+
+avoid saying tokalator is only or first-- we should be modest in paper as there is update on vs code -- check release note and add the gap as there is no details or managing friendly for user: https://code.visualstudio.com/updates/v1_110
+
+---
+
+check all risky claims too and add as comment

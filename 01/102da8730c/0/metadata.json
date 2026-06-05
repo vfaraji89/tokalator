@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "01102da8730c",
+  "session_id": "36cccd59-fa6f-49b1-ac90-84b1fcd1c9f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-21T20:52:02.659566Z",
+  "branch": "main",
+  "checkpoints_count": 2,
+  "files_touched": [
+    "app/extension/page.tsx",
+    "tokalator-extension-vs/CHANGELOG.md"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "73b85cd6-972c-41fc-8c0d-fca91b3390fb",
+  "checkpoint_transcript_start": 972,
+  "transcript_lines_at_start": 972,
+  "token_usage": {
+    "input_tokens": 33,
+    "cache_creation_tokens": 69111,
+    "cache_read_tokens": 1739190,
+    "output_tokens": 11727,
+    "api_call_count": 25
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-21T20:52:02.538174Z",
+    "agent_lines": 47,
+    "human_added": 66,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 113,
+    "agent_percentage": 41.5929203539823
+  }
+}

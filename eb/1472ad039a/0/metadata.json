@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "eb1472ad039a",
+  "session_id": "36cccd59-fa6f-49b1-ac90-84b1fcd1c9f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-22T07:34:10.760871Z",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/globals.css",
+    "app/tools/calculator/CalculatorClient.tsx"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "88527663-b4db-4139-a512-0adf3f38f09c",
+  "checkpoint_transcript_start": 1865,
+  "transcript_lines_at_start": 1865,
+  "token_usage": {
+    "input_tokens": 51,
+    "cache_creation_tokens": 334965,
+    "cache_read_tokens": 4556451,
+    "output_tokens": 17250,
+    "api_call_count": 43
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-22T07:34:10.52839Z",
+    "agent_lines": 0,
+    "human_added": 535,
+    "human_modified": 27,
+    "human_removed": 0,
+    "total_committed": 535,
+    "agent_percentage": 0
+  }
+}

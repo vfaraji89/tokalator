@@ -1,0 +1,42 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "fb4285c1be6d",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 17,
+  "files_touched": [
+    "paper/paper-titlepage.tex",
+    "paper/paper.txt",
+    "paper/references.bib"
+  ],
+  "sessions": [
+    {
+      "metadata": "/fb/4285c1be6d/0/metadata.json",
+      "transcript": "/fb/4285c1be6d/0/full.jsonl",
+      "context": "/fb/4285c1be6d/0/context.md",
+      "content_hash": "/fb/4285c1be6d/0/content_hash.txt",
+      "prompt": "/fb/4285c1be6d/0/prompt.txt"
+    },
+    {
+      "metadata": "/fb/4285c1be6d/1/metadata.json",
+      "transcript": "/fb/4285c1be6d/1/full.jsonl",
+      "context": "/fb/4285c1be6d/1/context.md",
+      "content_hash": "/fb/4285c1be6d/1/content_hash.txt",
+      "prompt": "/fb/4285c1be6d/1/prompt.txt"
+    },
+    {
+      "metadata": "/fb/4285c1be6d/2/metadata.json",
+      "transcript": "/fb/4285c1be6d/2/full.jsonl",
+      "context": "/fb/4285c1be6d/2/context.md",
+      "content_hash": "/fb/4285c1be6d/2/content_hash.txt",
+      "prompt": "/fb/4285c1be6d/2/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 7740,
+    "cache_creation_tokens": 523233,
+    "cache_read_tokens": 21981202,
+    "output_tokens": 74820,
+    "api_call_count": 249
+  }
+}

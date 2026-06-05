@@ -1,0 +1,27 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "eb1472ad039a",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "app/globals.css",
+    "app/tools/calculator/CalculatorClient.tsx"
+  ],
+  "sessions": [
+    {
+      "metadata": "/eb/1472ad039a/0/metadata.json",
+      "transcript": "/eb/1472ad039a/0/full.jsonl",
+      "context": "/eb/1472ad039a/0/context.md",
+      "content_hash": "/eb/1472ad039a/0/content_hash.txt",
+      "prompt": "/eb/1472ad039a/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 51,
+    "cache_creation_tokens": 334965,
+    "cache_read_tokens": 4556451,
+    "output_tokens": 17250,
+    "api_call_count": 43
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "27bc91541cd6",
+  "session_id": "02032fcb-8a49-4df4-ad11-95a09320f254",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-07T09:15:50.603132Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    "app/extension/page.tsx",
+    "app/globals.css",
+    "content/extension.json",
+    "skills/context-management/SKILL.md",
+    "tokalator-extension-vs/src/chat/contextChatParticipant.ts",
+    "tokalator-extension-vs/src/core/contextMonitor.ts"
+  ],
+  "agent": "Claude Code",
+  "transcript_identifier_at_start": "3a486df7-835b-407c-93b0-90f8663695f7",
+  "checkpoint_transcript_start": 345,
+  "transcript_lines_at_start": 345,
+  "token_usage": {
+    "input_tokens": 5114,
+    "cache_creation_tokens": 196049,
+    "cache_read_tokens": 5892039,
+    "output_tokens": 25313,
+    "api_call_count": 65
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-07T09:15:50.487688Z",
+    "agent_lines": 237,
+    "human_added": 1158,
+    "human_modified": 16,
+    "human_removed": 0,
+    "total_committed": 1411,
+    "agent_percentage": 16.796598157335225
+  }
+}

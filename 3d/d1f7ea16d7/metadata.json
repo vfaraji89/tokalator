@@ -1,0 +1,26 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "3dd1f7ea16d7",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    "tokalator-extension-vs/.vscodeignore"
+  ],
+  "sessions": [
+    {
+      "metadata": "/3d/d1f7ea16d7/0/metadata.json",
+      "transcript": "/3d/d1f7ea16d7/0/full.jsonl",
+      "context": "/3d/d1f7ea16d7/0/context.md",
+      "content_hash": "/3d/d1f7ea16d7/0/content_hash.txt",
+      "prompt": "/3d/d1f7ea16d7/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 12,
+    "cache_creation_tokens": 5804,
+    "cache_read_tokens": 828305,
+    "output_tokens": 1596,
+    "api_call_count": 10
+  }
+}

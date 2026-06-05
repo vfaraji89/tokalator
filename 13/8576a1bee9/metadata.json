@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "138576a1bee9",
+  "strategy": "manual-commit",
+  "branch": "main",
+  "checkpoints_count": 1,
+  "files_touched": [
+    ".github/workflows/fetch-wiki.yml",
+    ".gitignore",
+    "CLAUDE.md",
+    "eslint.config.mjs",
+    "tokalator-extension-vs/src/chat/contextChatParticipant.ts",
+    "tokalator-extension-vs/src/core/contextMonitor.ts",
+    "tokalator-extension-vs/src/webview/contextDashboardProvider.ts",
+    "vercel.json"
+  ],
+  "sessions": [
+    {
+      "metadata": "/13/8576a1bee9/0/metadata.json",
+      "transcript": "/13/8576a1bee9/0/full.jsonl",
+      "context": "/13/8576a1bee9/0/context.md",
+      "content_hash": "/13/8576a1bee9/0/content_hash.txt",
+      "prompt": "/13/8576a1bee9/0/prompt.txt"
+    }
+  ],
+  "token_usage": {
+    "input_tokens": 36,
+    "cache_creation_tokens": 32800,
+    "cache_read_tokens": 1597210,
+    "output_tokens": 12310,
+    "api_call_count": 26
+  }
+}

@@ -1,0 +1,33 @@
+{
+  "cli_version": "0.4.2",
+  "checkpoint_id": "0edd97106c64",
+  "session_id": "36cccd59-fa6f-49b1-ac90-84b1fcd1c9f3",
+  "strategy": "manual-commit",
+  "created_at": "2026-03-21T19:49:36.332496Z",
+  "branch": "main",
+  "checkpoints_count": 3,
+  "files_touched": [
+    ".github/workflows/fetch-wiki.yml",
+    ".gitignore",
+    "CLAUDE.md",
+    "eslint.config.mjs",
+    "vercel.json"
+  ],
+  "agent": "Claude Code",
+  "token_usage": {
+    "input_tokens": 285,
+    "cache_creation_tokens": 38416,
+    "cache_read_tokens": 967093,
+    "output_tokens": 11670,
+    "api_call_count": 30
+  },
+  "initial_attribution": {
+    "calculated_at": "2026-03-21T19:49:36.308034Z",
+    "agent_lines": 98,
+    "human_added": 93,
+    "human_modified": 0,
+    "human_removed": 0,
+    "total_committed": 191,
+    "agent_percentage": 51.30890052356021
+  }
+}
