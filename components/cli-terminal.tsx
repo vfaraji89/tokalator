@@ -1,14 +1,5 @@
 import { motion } from "motion/react";
 
-// ASCII block art: TOKALATOR (5 rows × 5-wide letters, single-space separated)
-const LOGO_LINES = [
-  "█████  ███  █   █   █   █       █   █████  ███  ████ ",
-  "  █   █   █ █  █   █ █  █     █ █    █   █   █ █   █",
-  "  █   █   █ ███   █████ █     █████   █   █   █ ████ ",
-  "  █   █   █ █  █  █   █ █     █   █   █   █   █ █ █  ",
-  "  █    ███  █   █ █   █ █████ █   █   █    ███  █  █ ",
-];
-
 // Pixel art red abacus mascot — 56×80 viewBox, each "pixel" ≈ 6–7px
 // Beads are wrapped in <g> groups so CSS can translateY them along the rods.
 //
@@ -100,34 +91,28 @@ export function CliTerminal() {
       <div className="cli-body">
         {/* Shell prompt line */}
         <div className="cli-shell-line">
-          <span className="cli-shell-symbol">○</span>
           <span className="cli-shell-user">user@machine</span>
           <span className="cli-shell-sep"> ~/my-repo</span>
           <span className="cli-shell-cmd"> $ tokalator</span>
         </div>
 
-        {/* Welcome text */}
-        <div className="cli-welcome">Welcome to Tokalator</div>
-
-        {/* Logo + mascot row */}
-        <div className="cli-logo-row">
-          <div className="cli-logo-col">
-            <pre className="cli-logo">{LOGO_LINES.join("\n")}</pre>
-            <div className="cli-version-tag">CLI Version</div>
-          </div>
-          <PixelAbacus />
+        {/* Brand row */}
+        <div className="cli-brand">
+          <PixelAbacus width={26} height={37} />
+          <span className="cli-wordmark">tokalator</span>
+          <span className="cli-badge">v3.1.7</span>
         </div>
 
         {/* ── Status bar ── */}
         <div className="cli-status-bar">
           <span className="cli-status-path">~/my-repo</span>
-          <span className="cli-status-model cli-status-model--red">claude-opus-4.6 (3×)</span>
+          <span className="cli-status-model cli-status-model--red">claude-opus-4.8</span>
         </div>
 
         {/* ── Prompt ── */}
         <div className="cli-prompt-row">
           <span className="cli-prompt-caret">&gt;</span>
-          <span className="cli-cursor" aria-hidden="true">█</span>
+          <span className="cli-cursor" aria-hidden="true">▌</span>
           <span className="cli-prompt-hint">
             Type @ to mention files, / for commands, or ? for shortcuts
           </span>

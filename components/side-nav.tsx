@@ -182,10 +182,20 @@ export function SideNav() {
       {/* Sidebar */}
       <nav className="sidebar">
         <div className="sidebar-header">
-          <Link href="/" className="sidebar-logo">
-            <span className="sidebar-at">@</span>
-            <span className="sidebar-logo-text text-motion">{siteContent.name.replace("@", "")}</span>
-          </Link>
+          <div className="sidebar-brand">
+            <Link href="/" className="sidebar-logo">
+              <span className="sidebar-at">@</span>
+              <span className="sidebar-logo-text text-motion">{siteContent.name.replace("@", "")}</span>
+            </Link>
+            <a
+              href="https://github.com/vfaraji89/tokalator"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="sidebar-oss-badge"
+            >
+              open source
+            </a>
+          </div>
           <ThemeToggle />
         </div>
 

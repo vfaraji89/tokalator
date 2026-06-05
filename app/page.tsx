@@ -60,22 +60,6 @@ function LiveClock() {
   );
 }
 
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false);
-  return (
-    <button
-      className="copy-btn"
-      onClick={() => {
-        navigator.clipboard.writeText(text);
-        setCopied(true);
-        setTimeout(() => setCopied(false), 2000);
-      }}
-    >
-      {copied ? "Copied!" : "Copy"}
-    </button>
-  );
-}
-
 function FooterHeart() {
   const ref = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(false);
@@ -160,10 +144,6 @@ export default function HomePage() {
             Claude Code
             <span className="ide-mcp-tag">MCP</span>
           </Link>
-        </motion.div>
-        <motion.div {...fadeUp(0.48)} className="install-cmd">
-          <code>{hero.installCmd}</code>
-          <CopyButton text={hero.installCmd} />
         </motion.div>
 
         {/* Proof stats */}
