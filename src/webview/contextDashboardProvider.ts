@@ -213,26 +213,25 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
     .hdr-icon svg { width: 100%; height: 100%; }
     .hdr-title { font-weight: 700; font-size: 13px; }
     .hdr-badge { background: var(--free-green); color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 8px; letter-spacing: 1px; }
-    @keyframes btnPress {
-      0%, 100% { opacity: 0.25; }
-      50% { opacity: 0.75; }
+    @keyframes beadSlide1 {
+      0%, 22% { transform: translateX(0); }
+      30%, 48% { transform: translateX(2px); }
+      56%, 100% { transform: translateX(0); }
     }
-    @keyframes screenGlow {
-      0%, 80% { opacity: 0.35; }
-      90% { opacity: 0.7; }
-      100% { opacity: 0.35; }
+    @keyframes beadSlide2 {
+      0%, 38% { transform: translateX(0); }
+      46%, 64% { transform: translateX(-1.5px); }
+      72%, 100% { transform: translateX(0); }
     }
-    .hdr-icon .calc-btn { animation: btnPress 0.35s ease both; }
-    .hdr-icon .btn-1 { animation-delay: 0.3s; }
-    .hdr-icon .btn-2 { animation-delay: 0.55s; }
-    .hdr-icon .btn-3 { animation-delay: 0.8s; }
-    .hdr-icon .btn-4 { animation-delay: 1.05s; }
-    .hdr-icon .btn-5 { animation-delay: 1.3s; }
-    .hdr-icon .btn-6 { animation-delay: 1.55s; }
-    .hdr-icon .btn-7 { animation-delay: 1.8s; }
-    .hdr-icon .btn-8 { animation-delay: 2.05s; }
-    .hdr-icon .btn-eq { animation-delay: 2.3s; animation-duration: 0.5s; }
-    .hdr-icon .calc-screen { animation: screenGlow 3s ease 2.5s both; }
+    @keyframes beadSlide3 {
+      0%, 54% { transform: translateX(0); }
+      62%, 80% { transform: translateX(2.5px); }
+      88%, 100% { transform: translateX(0); }
+    }
+    .hdr-icon .bead-row { animation: 4s ease-in-out infinite; }
+    .hdr-icon .bead-row-1 { animation-name: beadSlide1; }
+    .hdr-icon .bead-row-2 { animation-name: beadSlide2; }
+    .hdr-icon .bead-row-3 { animation-name: beadSlide3; }
 
     .model-active { display: flex; align-items: center; gap: 6px; margin-bottom: 8px; padding: 4px 8px; background: var(--card-bg); border: 1px solid var(--border); border-radius: 4px; font-size: 11px; }
     .model-active-label { font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); }
@@ -387,17 +386,19 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         // Header with animated calc icon and FREE badge
         var html = '<div class="hdr"><span class="hdr-icon">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="var(--fg)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-          '<rect x="3" y="2" width="18" height="20" rx="2"/>' +
-          '<rect class="calc-screen" x="5.5" y="4.5" width="13" height="4" rx="1" fill="var(--accent)" opacity="0.35" stroke="none"/>' +
-          '<rect class="calc-btn btn-1" x="5.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-2" x="9.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-3" x="13.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-4" x="5.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-5" x="9.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-6" x="13.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-7" x="5.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-8" x="9.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-eq" x="13.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--free-green)" opacity="0.45" stroke="none"/>' +
+          '<rect x="3" y="3" width="18" height="18" rx="2"/>' +
+          '<line x1="4.5" y1="8" x2="19.5" y2="8" stroke-width="1" opacity="0.4"/>' +
+          '<line x1="4.5" y1="12" x2="19.5" y2="12" stroke-width="1" opacity="0.4"/>' +
+          '<line x1="4.5" y1="16" x2="19.5" y2="16" stroke-width="1" opacity="0.4"/>' +
+          '<g class="bead-row bead-row-1" fill="#e3120b" stroke="none">' +
+          '<circle cx="8" cy="8" r="1.7"/><circle cx="12" cy="8" r="1.7"/><circle cx="16" cy="8" r="1.7" fill="var(--fg)" opacity="0.3"/>' +
+          '</g>' +
+          '<g class="bead-row bead-row-2" fill="#e3120b" stroke="none">' +
+          '<circle cx="8" cy="12" r="1.7"/><circle cx="12" cy="12" r="1.7" fill="var(--fg)" opacity="0.3"/><circle cx="16" cy="12" r="1.7" fill="var(--fg)" opacity="0.3"/>' +
+          '</g>' +
+          '<g class="bead-row bead-row-3" fill="#e3120b" stroke="none">' +
+          '<circle cx="8" cy="16" r="1.7" fill="var(--fg)" opacity="0.3"/><circle cx="12" cy="16" r="1.7"/><circle cx="16" cy="16" r="1.7"/>' +
+          '</g>' +
           '</svg></span><span class="hdr-title">Tokalator</span><span class="hdr-badge">FREE</span></div>';
 
         // Last session
@@ -617,7 +618,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
     });
 
     setTimeout(function() {
-      document.querySelectorAll('.calc-btn, .calc-screen').forEach(function(el) {
+      document.querySelectorAll('.bead-row').forEach(function(el) {
         el.style.animation = 'none';
         el.offsetHeight;
         el.style.animation = '';
