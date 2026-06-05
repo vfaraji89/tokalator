@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import { track } from "@vercel/analytics";
 import ext from "../../content/extension.json";
 import { CliTerminal } from "../../components/cli-terminal";
 
@@ -77,6 +78,7 @@ export default function ExtensionPage() {
             target="_blank"
             rel="noopener noreferrer"
             className="cta-primary"
+            onClick={() => track("marketplace_click", { location: "extension-page-hero" })}
           >
             Install from Marketplace
           </a>
