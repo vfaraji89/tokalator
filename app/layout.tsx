@@ -7,6 +7,45 @@ import { WebVitals } from "./_components/web-vitals";
 
 const siteUrl = "https://tokalator.wiki";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "Person",
+      "@id": `${siteUrl}/#author`,
+      name: "vfaraji89",
+      url: "https://vfaraji89.github.io",
+      sameAs: [
+        "https://vfaraji89.github.io",
+        "https://github.com/vfaraji89",
+      ],
+    },
+    {
+      "@type": "Organization",
+      "@id": `${siteUrl}/#organization`,
+      name: "Tokalator",
+      url: siteUrl,
+      logo: `${siteUrl}/favicon.svg`,
+      founder: { "@id": `${siteUrl}/#author` },
+      sameAs: [
+        "https://vfaraji89.github.io",
+        "https://github.com/vfaraji89/tokalator",
+        "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator",
+      ],
+    },
+    {
+      "@type": "WebSite",
+      "@id": `${siteUrl}/#website`,
+      url: siteUrl,
+      name: "Tokalator",
+      description:
+        "Real-time context budget calculator for AI coding assistants. Token calculator, context optimizer, and VS Code extension.",
+      publisher: { "@id": `${siteUrl}/#organization` },
+      author: { "@id": `${siteUrl}/#author` },
+    },
+  ],
+};
+
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
@@ -32,9 +71,12 @@ export const metadata: Metadata = {
     "context window",
     "token budget",
   ],
-  authors: [{ name: "vfaraji89", url: "https://github.com/vfaraji89" }],
+  authors: [{ name: "vfaraji89", url: "https://vfaraji89.github.io" }],
   creator: "vfaraji89",
   metadataBase: new URL(siteUrl),
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -45,7 +87,7 @@ export const metadata: Metadata = {
       "Count your tokens like beads on an abacus. Token calculator, context optimizer, and VS Code extension for AI coding assistants.",
   },
   twitter: {
-    card: "summary",
+    card: "summary_large_image",
     title: "Tokalator — Count Your Tokens",
     description:
       "Token calculator, context optimizer, and VS Code extension for AI coding assistants.",
@@ -72,6 +114,10 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <link
           rel="stylesheet"
           href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap"
