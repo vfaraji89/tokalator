@@ -1,7 +1,5 @@
 # Tokalator
 
-**Count your tokens like beads on an abacus.**
-
 Real-time context budget monitoring for VS Code. Shows where your AI context budget is going, scores tab relevance, compares per-turn cost across models, and syncs to the active Copilot model automatically, so you always know how much room you have left.
 
 ## The Problem
