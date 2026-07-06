@@ -6,7 +6,7 @@ import {
   RemoteCatalogPayload,
 } from './catalogStore';
 
-const CATALOG_URL = 'https://raw.githubusercontent.com/vfaraji89/tokalator/main/tokalator-extension-vs/models.json';
+const CATALOG_URL = 'https://raw.githubusercontent.com/vfaraji89/tokalator/main/models.json';
 const CACHE_KEY = 'tokalator.pricingCatalog.v1';
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const FETCH_TIMEOUT_MS = 5000;
