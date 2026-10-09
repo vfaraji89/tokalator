@@ -106,7 +106,7 @@ export function scoreAllPure(
     if (tab.isPinned) {
       score = 1.0;
       reasons.length = 0;
-      reasons.push('📌 pinned');
+      reasons.push('pinned');
     }
 
     // 7. Active file — always maximum

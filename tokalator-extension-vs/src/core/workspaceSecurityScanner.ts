@@ -176,7 +176,9 @@ export class WorkspaceSecurityScanner {
     if (fs.existsSync(settingsPath)) {
       try {
         existing = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      } catch { /* empty */ }
+      } catch {
+        throw new Error('.claude/settings.json could not be parsed, so it was left unchanged');
+      }
     }
 
     if (!existing.permissions) existing.permissions = { deny: [] };
@@ -236,7 +238,9 @@ export class WorkspaceSecurityScanner {
         // Strip single-line comments but not // inside strings (e.g. URLs)
         const stripped = raw.replace(/^(\s*)(\/\/.*)$/gm, '$1').replace(/,\s*([}\]])/g, '$1');
         existing = JSON.parse(stripped);
-      } catch { /* empty */ }
+      } catch {
+        throw new Error('.vscode/settings.json could not be parsed (block comments or other JSONC), so it was left unchanged');
+      }
     }
 
     const excludes: Record<string, boolean> = (existing['files.exclude'] as Record<string, boolean>) || {};
@@ -270,11 +274,13 @@ export class WorkspaceSecurityScanner {
   async applyAll(): Promise<string[]> {
     if (!this.root) return [];
     const applied: string[] = [];
+    const claudeSettings = this.generateClaudeSettings();
+    const vscodeSettings = this.generateVSCodeSettings();
 
     // Claude settings
     const claudeDir = path.join(this.root, '.claude');
     if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
-    fs.writeFileSync(path.join(claudeDir, 'settings.json'), this.generateClaudeSettings(), 'utf-8');
+    fs.writeFileSync(path.join(claudeDir, 'settings.json'), claudeSettings, 'utf-8');
     applied.push('.claude/settings.json');
 
     // Copilot instructions
@@ -286,7 +292,7 @@ export class WorkspaceSecurityScanner {
     // VS Code settings
     const vscodeDir = path.join(this.root, '.vscode');
     if (!fs.existsSync(vscodeDir)) fs.mkdirSync(vscodeDir, { recursive: true });
-    fs.writeFileSync(path.join(vscodeDir, 'settings.json'), this.generateVSCodeSettings(), 'utf-8');
+    fs.writeFileSync(path.join(vscodeDir, 'settings.json'), vscodeSettings, 'utf-8');
     applied.push('.vscode/settings.json');
 
     // Gitignore
