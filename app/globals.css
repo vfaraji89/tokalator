@@ -145,7 +145,7 @@ body {
   background: var(--bg);
   color: var(--text-primary);
   font-family: var(--font-primary);
-  font-size: .875rem;
+  font-size: .9375rem;
   font-weight: 400;
   line-height: 1.6;
   transition: background .3s, color .3s;
@@ -4904,7 +4904,26 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .feature-item, .install-method-card) { padding: 20px; }
 }
 
-.brand-stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.brand-stack { display: flex; flex-direction: column; gap: 0; min-width: 0; }
+.home-nav .brand-byline { padding-left: 43px; margin-top: -6px; }
+.sidebar-brand .brand-byline { padding-left: 20px; margin-top: -2px; }
+@media (max-width: 600px) { .home-nav .brand-byline { padding-left: 36px; margin-top: -4px; } }
 .brand-byline { font-size: 11px; letter-spacing: 0.02em; color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
 .brand-byline:hover { color: var(--accent); }
 .natural-footer .brand-byline { display: block; margin-top: 6px; }
+
+/* Inner pages: fill the space beside the sidebar and center a readable column. */
+.main-content:not(:has(.natural-home)) {
+  max-width: none;
+  padding: 2.5rem clamp(1.25rem, 4vw, 4.5rem) 0;
+}
+.main-content:not(:has(.natural-home)) > * {
+  max-width: 1080px;
+  margin-left: auto;
+  margin-right: auto;
+}
+@media (max-width: 768px) {
+  .main-content:not(:has(.natural-home)) { padding: 76px 20px 0; width: 100%; }
+}
+
+.sidebar-logo-text { padding-right: 0.12em; white-space: nowrap; }
