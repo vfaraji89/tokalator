@@ -1,3 +1,4 @@
+import { randomBytes } from 'crypto';
 import * as vscode from 'vscode';
 import { ContextMonitor } from '../core/contextMonitor';
 import type { ContextSnapshot } from '../core/types';
@@ -246,7 +247,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 <head>
   <meta charset="UTF-8">
   <meta http-equiv="Content-Security-Policy"
-        content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}';">
+        content="default-src 'none'; style-src 'unsafe-inline'; script-src 'nonce-${nonce}'; form-action 'none'; base-uri 'none';">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tokalator Pro</title>
   <style>
@@ -373,6 +374,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
   <div id="app"><div class="empty">Loading...</div></div>
   <script nonce="${nonce}">
     var vscode = acquireVsCodeApi();
+    function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
     var app = document.getElementById('app');
     function fmt(n) { if (n >= 1000000) return (n/1000000).toFixed(1)+'M'; if (n >= 1000) return (n/1000).toFixed(1)+'K'; return ''+n; }
     function fmtC(n) { if (n < 0.001) return '<$0.001'; if (n < 0.01) return '$'+n.toFixed(4); if (n < 1) return '$'+n.toFixed(3); return '$'+n.toFixed(2); }
@@ -424,7 +426,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         var providerLabel = mProvider === 'anthropic' ? 'Anthropic' : mProvider === 'openai' ? 'OpenAI' : mProvider === 'google' ? 'Google' : mProvider || 'Unknown';
         html += '<div class="card" style="border-color:color-mix(in srgb, var(--accent) 50%, var(--border))">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-        html += '<div><div style="font-size:13px;font-weight:700">'+(mLabel||mid)+'</div>';
+        html += '<div><div style="font-size:13px;font-weight:700">'+esc(mLabel||mid)+'</div>';
         html += '<div style="font-size:10px;color:var(--desc-fg)">'+providerLabel+' &middot; '+fmt(cap)+' context</div></div>';
         html += '<div style="text-align:right"><div style="font-size:10px;color:'+sourceColor+'">'+sourceLabel+'</div>';
         if (ce) html += '<div style="font-size:10px;color:var(--desc-fg)">$'+ce.inputCostPerMTok+' / $'+ce.outputCostPerMTok+' per MTok</div>';
@@ -432,13 +434,15 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 
         // Available models detected via LM API (tap to switch)
         if (detected.length > 0) {
-          var otherModels = detected.filter(function(d){ return d.id !== mid; });
+          var otherModels = detected.filter(function(d){ return d !== mid; });
           if (otherModels.length > 0) {
             html += '<div style="margin-top:4px;border-top:1px solid var(--border);padding-top:4px">';
             html += '<div style="font-size:9px;color:var(--desc-fg);margin-bottom:3px">Also available (tap to switch):</div>';
             html += '<div style="display:flex;gap:4px;flex-wrap:wrap">';
             for (var oi = 0; oi < otherModels.length; oi++) {
-              html += '<span class="detect-chip" data-action="switchModel" data-model="'+otherModels[oi].id+'">'+otherModels[oi].label+'</span>';
+              var om = otherModels[oi], omLabel = om;
+              for (var mj = 0; mj < models.length; mj++) { if (models[mj].id === om) { omLabel = models[mj].label; break; } }
+              html += '<span class="detect-chip" data-action="switchModel" data-model="'+esc(om)+'">'+esc(omLabel)+'</span>';
             }
             html += '</div></div>';
           }
@@ -544,10 +548,10 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         // 6. Pro panel
         html += '<div class="pro-panel">';
         html += '<div class="pro-hdr"><span style="color:var(--pro-red)">&#x2B21;</span><span class="pro-hdr-label">Pro Features</span></div>';
-        html += '<div class="pro-btn" data-action="secure"><span class="pro-btn-icon">&#x1F6E1;&#xFE0F;</span><div class="pro-btn-info"><div class="pro-btn-name">Secure Workspace</div><div class="pro-btn-desc">Protect secrets from AI agents</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
-        html += '<div class="pro-btn" data-action="terminologyGen"><span class="pro-btn-icon">&#x1F4D6;</span><div class="pro-btn-info"><div class="pro-btn-name">Generate Glossary</div><div class="pro-btn-desc">Compress terminology, save ~74% tokens</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
-        html += '<div class="pro-btn" data-action="skillGen"><span class="pro-btn-icon">&#x1F9E0;</span><div class="pro-btn-info"><div class="pro-btn-name">Generate SKILL.md</div><div class="pro-btn-desc">Package domain expertise for agents</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
-        html += '<div class="pro-btn" data-action="settingsGen"><span class="pro-btn-icon">&#x2699;&#xFE0F;</span><div class="pro-btn-info"><div class="pro-btn-name">Generate AI Settings</div><div class="pro-btn-desc">GitHub + VS Code agent configs</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+        html += '<div class="pro-btn" data-action="secure"><div class="pro-btn-info"><div class="pro-btn-name">Secure Workspace</div><div class="pro-btn-desc">Protect secrets from AI agents</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+        html += '<div class="pro-btn" data-action="terminologyGen"><div class="pro-btn-info"><div class="pro-btn-name">Generate Glossary</div><div class="pro-btn-desc">Compress terminology, save ~74% tokens</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+        html += '<div class="pro-btn" data-action="skillGen"><div class="pro-btn-info"><div class="pro-btn-name">Generate SKILL.md</div><div class="pro-btn-desc">Package domain expertise for agents</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+        html += '<div class="pro-btn" data-action="settingsGen"><div class="pro-btn-info"><div class="pro-btn-name">Generate AI Settings</div><div class="pro-btn-desc">GitHub + VS Code agent configs</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
         html += '</div>';
 
         // 7. Budget breakdown
@@ -598,7 +602,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           html += '<div class="usage-highlight">'+fmtC(ses.currentSessionCredits)+'</div>';
           html += '<span style="font-size:10px;color:var(--desc-fg)">~'+sesDur+' min</span>';
           html += '</div>';
-          html += '<div class="usage-sub">'+ses.currentSessionTurns+' turns using '+(mLabel||mid)+'</div>';
+          html += '<div class="usage-sub">'+ses.currentSessionTurns+' turns using '+esc(mLabel||mid)+'</div>';
 
           html += '<div class="cost-grid">';
           html += '<span class="cost-label">Avg cost/turn</span><span class="cost-tok">~'+fmt(avgTokensPerTurn)+' tok</span><span class="cost-val">'+fmtC(avgCostPerTurn)+'</span>';
@@ -608,7 +612,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           html += '<div class="cost-sep"></div>';
           html += '<span class="cost-label">Context used</span><span class="cost-tok">'+pctUsed+'% of '+fmt(cap)+'</span><span class="cost-val">~'+fmt(tot)+'</span>';
           if (cacheSavings > 0) html += '<span class="cost-label">Cache savings</span><span class="cost-tok"></span><span class="cost-val" style="color:var(--low)">'+cacheSavings+'%</span>';
-          html += '<span class="cost-label">Input rate</span><span class="cost-tok">'+(mLabel||mid)+'</span><span class="cost-val">$'+(ce?ce.inputCostPerMTok:0)+'/MTok</span>';
+          html += '<span class="cost-label">Input rate</span><span class="cost-tok">'+esc(mLabel||mid)+'</span><span class="cost-val">$'+(ce?ce.inputCostPerMTok:0)+'/MTok</span>';
           html += '</div>';
 
           if (th.length >= 2) {
@@ -674,7 +678,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
               for (var bmi = 0; bmi < ui.byModel.length; bmi++) {
                 var bm = ui.byModel[bmi];
                 var bpct = Math.max(bm.percentOfTokens || bm.percentOfSpend, 2).toFixed(1);
-                html += '<div style="width:'+bpct+'%;height:100%;background:'+barColors[bmi % barColors.length]+'" title="'+bm.label+': '+bpct+'% of tokens"></div>';
+                html += '<div style="width:'+bpct+'%;height:100%;background:'+barColors[bmi % barColors.length]+'" title="'+esc(bm.label)+': '+bpct+'% of tokens"></div>';
               }
               html += '</div></div>';
             }
@@ -685,7 +689,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
               var bcolor = ui.byModel.length > 1 ? barColors[bmi % barColors.length] : 'var(--accent)';
               html += '<div style="padding:4px 0;'+(bmi<ui.byModel.length-1?'border-bottom:1px solid var(--border);':'')+'">';
               html += '<div style="display:flex;justify-content:space-between;align-items:center">';
-              html += '<span style="font-size:11px;font-weight:600"><span style="color:'+bcolor+';margin-right:4px">&#9632;</span>'+bm.label+'</span>';
+              html += '<span style="font-size:11px;font-weight:600"><span style="color:'+bcolor+';margin-right:4px">&#9632;</span>'+esc(bm.label)+'</span>';
               html += '<span style="font-size:11px;font-weight:700">'+fmtC(bm.totalCost)+'</span>';
               html += '</div>';
               html += '<div class="cost-grid" style="margin-top:2px">';
@@ -717,7 +721,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
                 var swSrc = sw.source === 'chat-api' ? 'auto' : sw.source === 'detected' ? 'detected' : 'manual';
                 html += '<div style="font-size:10px;color:var(--fg);margin-bottom:2px">';
                 html += '<span style="color:var(--desc-fg)">'+swAgoStr+'</span> ';
-                html += sw.from+' &rarr; '+sw.to;
+                html += esc(sw.from)+' &rarr; '+esc(sw.to);
                 html += ' <span style="color:var(--desc-fg)">('+swSrc+')</span>';
                 html += '</div>';
               }
@@ -732,7 +736,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
             for (var ti = 0; ti < Math.min(ui.tips.length, 3); ti++) {
               var tip = ui.tips[ti];
               html += '<div style="font-size:10px;color:var(--fg);margin-bottom:4px;padding:3px 0">';
-              html += '<span style="color:var(--low);font-weight:600">&#x25B6;</span> '+tip.message;
+              html += '<span style="color:var(--low);font-weight:600">&#x25B6;</span> '+esc(tip.message);
               if (tip.savingsEstimate > 0) html += ' <span style="color:var(--low);font-weight:600">Save ~'+fmtC(tip.savingsEstimate)+'</span>';
               html += '</div>';
             }
@@ -789,7 +793,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
               var pc = inputCh[pwi];
               var pdir = pc.pctChange > 0 ? '+' : '';
               var pcolor = pc.pctChange > 0 ? 'var(--high)' : 'var(--low)';
-              html += '<span>'+pc.label+'</span>';
+              html += '<span>'+esc(pc.label)+'</span>';
               html += '<span style="text-align:right;color:var(--desc-fg)">$'+pc.oldRate.toFixed(2)+' &rarr; $'+pc.newRate.toFixed(2)+'</span>';
               html += '<span style="text-align:right;font-weight:600;color:'+pcolor+'">'+pdir+pc.pctChange.toFixed(1)+'%</span>';
             }
@@ -817,14 +821,14 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
             html += '</div>';
           }
 
-          html += '<div class="pro-btn" data-action="pricewatch" style="margin-top:6px"><span class="pro-btn-icon">&#x1F4CA;</span><div class="pro-btn-info"><div class="pro-btn-name">Full Analysis</div><div class="pro-btn-desc">Open /pricewatch in chat</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+          html += '<div class="pro-btn" data-action="pricewatch" style="margin-top:6px"><div class="pro-btn-info"><div class="pro-btn-name">Full Analysis</div><div class="pro-btn-desc">Open /pricewatch in chat</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
           html += '</div>';
         }
 
         // 11. Last session
         if (ls && ls.totalTurns > 0) {
           html += '<div class="card"><div class="card-title">Last Session <span style="float:right;font-weight:400">'+ago(ls.endedAt)+'</span></div>';
-          html += '<span>'+ls.modelLabel+'</span> &middot; <span>'+ls.totalTurns+' turns</span> &middot; <span>peak '+fmt(ls.peakTokens)+'</span></div>';
+          html += '<span>'+esc(ls.modelLabel)+'</span> &middot; <span>'+ls.totalTurns+' turns</span> &middot; <span>peak '+fmt(ls.peakTokens)+'</span></div>';
         }
 
         // 12. Health notes
@@ -853,9 +857,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         if (s.tierLabel === 'ENTERPRISE') {
           html += '<div class="pro-panel" style="border-color:#6366f1">';
           html += '<div class="pro-hdr"><span style="color:#6366f1">&#x2B21;</span><span class="pro-hdr-label">Enterprise</span></div>';
-          html += '<div class="pro-btn" data-action="teamDashboard"><span class="pro-btn-icon">&#x1F4CA;</span><div class="pro-btn-info"><div class="pro-btn-name">Team Insights</div><div class="pro-btn-desc">Usage analytics and cost trends</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
-          html += '<div class="pro-btn" data-action="skillsCatalog"><span class="pro-btn-icon">&#x1F4DA;</span><div class="pro-btn-info"><div class="pro-btn-name">Skills Catalog</div><div class="pro-btn-desc">Browse and publish shared skills</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
-          html += '<div class="pro-btn" data-action="auditLog"><span class="pro-btn-icon">&#x1F4CB;</span><div class="pro-btn-info"><div class="pro-btn-name">Audit Trail</div><div class="pro-btn-desc">Team compliance and activity log</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+          html += '<div class="pro-btn" data-action="teamDashboard"><div class="pro-btn-info"><div class="pro-btn-name">Team Insights</div><div class="pro-btn-desc">Usage analytics and cost trends</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+          html += '<div class="pro-btn" data-action="skillsCatalog"><div class="pro-btn-info"><div class="pro-btn-name">Skills Catalog</div><div class="pro-btn-desc">Browse and publish shared skills</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
+          html += '<div class="pro-btn" data-action="auditLog"><div class="pro-btn-info"><div class="pro-btn-name">Audit Trail</div><div class="pro-btn-desc">Team compliance and activity log</div></div><span class="pro-btn-arrow">&#8594;</span></div>';
           html += '</div>';
         }
 
@@ -863,17 +867,17 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 
         app.innerHTML = html;
       } catch (e) {
-        app.innerHTML = '<div class="err">Render error: ' + e.message + '</div>';
+        app.innerHTML = '<div class="err">Render error: ' + esc(e.message) + '</div>';
       }
     }
 
     function tabHtml(t) {
       var u = encodeURIComponent(t.uri);
       var pin = t.isPinned
-        ? '<button title="Unpin" data-action="unpin" data-uri="'+u+'">&#x1F4CC;</button>'
-        : '<button title="Pin" data-action="pin" data-uri="'+u+'">&#x1F4CD;</button>';
+        ? '<button title="Unpin" data-action="unpin" data-uri="'+u+'">&#9679;</button>'
+        : '<button title="Pin" data-action="pin" data-uri="'+u+'">&#9675;</button>';
       var cls = !t.isActive ? '<button title="Close" data-action="closeTab" data-uri="'+u+'">&#x2715;</button>' : '';
-      return '<li class="tab-item" data-action="openFile" data-uri="'+u+'"><div class="tab-dot '+rc(t.relevanceScore)+'"></div><span class="tab-name'+(t.isActive?' active':'')+'">'+t.label+(t.isDirty?' &bull;':'')+'</span><span class="tab-tok">~'+fmt(t.estimatedTokens)+'</span><div class="tab-btns">'+pin+cls+'</div></li>';
+      return '<li class="tab-item" data-action="openFile" data-uri="'+u+'"><div class="tab-dot '+rc(t.relevanceScore)+'"></div><span class="tab-name'+(t.isActive?' active':'')+'">'+esc(t.label)+(t.isDirty?' &bull;':'')+'</span><span class="tab-tok">~'+fmt(t.estimatedTokens)+'</span><div class="tab-btns">'+pin+cls+'</div></li>';
     }
 
     document.addEventListener('click', function(e) {
@@ -932,10 +936,5 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 }
 
 function getNonce(): string {
-  let text = '';
-  const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-  for (let i = 0; i < 32; i++) {
-    text += chars.charAt(Math.floor(Math.random() * chars.length));
-  }
-  return text;
+  return randomBytes(16).toString('hex');
 }

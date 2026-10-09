@@ -175,8 +175,12 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
         'Preview in Chat',
       );
       if (choice === 'Apply All') {
-        const applied = await scanner.applyAll();
-        vscode.window.showInformationMessage(`Tokalator: Generated ${applied.length} security config(s)`);
+        try {
+          const applied = await scanner.applyAll();
+          vscode.window.showInformationMessage(`Tokalator: Generated ${applied.length} security config(s)`);
+        } catch (err) {
+          vscode.window.showWarningMessage(`Tokalator: nothing was written. ${err instanceof Error ? err.message : String(err)}.`);
+        }
       } else if (choice === 'Preview in Chat') {
         vscode.commands.executeCommand('workbench.action.chat.open', { query: '@tokalator /secure' });
       }

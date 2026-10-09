@@ -157,10 +157,7 @@ export class ContextChatParticipant implements vscode.Disposable {
       return {};
     }
 
-    const levelEmoji = snapshot.budgetLevel === 'low' ? '🟢'
-      : snapshot.budgetLevel === 'medium' ? '🟡' : '🔴';
-
-    stream.markdown(`## ${levelEmoji} Token Budget: ${snapshot.budgetLevel.toUpperCase()}\n\n`);
+    stream.markdown(`## Token Budget: ${snapshot.budgetLevel.toUpperCase()}\n\n`);
 
     // Simple summary
     stream.markdown(`| Metric | Tokalator Estimate |\n|---|---|\n`);
@@ -218,9 +215,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     const cs = this.creditsTracker.getSnapshot();
     const plan = cs.plan;
 
-    const emoji = cs.isOverage ? '🔴' : cs.percentUsed > 75 ? '🟡' : '🟢';
-
-    stream.markdown(`## ${emoji} GitHub AI Credits — ${plan.label}\n\n`);
+    stream.markdown(`## GitHub AI Credits — ${plan.label}\n\n`);
 
     stream.markdown(`| | |\n|---|---|\n`);
     stream.markdown(`| **Plan** | ${plan.label} (${this.fmtCost(plan.monthlyPrice)}/mo) |\n`);
@@ -400,7 +395,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     const preview = await this.monitor.previewNextTurn();
     const model = this.monitor.getActiveModel();
 
-    stream.markdown(`## 🔮 Next Turn Preview\n\n`);
+    stream.markdown(`## Next Turn Preview\n\n`);
 
     // Current state
     const barLen = 20;
@@ -425,9 +420,9 @@ export class ContextChatParticipant implements vscode.Disposable {
     }
 
     if (preview.warning) {
-      stream.markdown(`> ⚠️ **${preview.warning}**\n\n`);
+      stream.markdown(`> **${preview.warning}**\n\n`);
     } else {
-      stream.markdown(`> ✅ You have room for ~**${Math.floor(preview.remainingCapacity / 800)}** more turns at current rate\n\n`);
+      stream.markdown(`> You have room for ~**${Math.floor(preview.remainingCapacity / 800)}** more turns at current rate\n\n`);
     }
 
     stream.markdown(`*Model: ${model.label} · Window: ${this.fmtTokens(model.contextWindow)}*\n`);
@@ -637,21 +632,18 @@ export class ContextChatParticipant implements vscode.Disposable {
     const scanner = new WorkspaceSecurityScanner();
     const audit = await scanner.audit();
 
-    const levelEmoji = audit.level === 'protected' ? '🟢'
-      : audit.level === 'partial' ? '🟡' : '🔴';
-
-    stream.markdown(`## ${levelEmoji} Workspace Security: ${audit.level.toUpperCase()} (${audit.score}/100)\n\n`);
+    stream.markdown(`## Workspace Security: ${audit.level.toUpperCase()} (${audit.score}/100)\n\n`);
 
     // Status table
     stream.markdown(`| Config | Status |\n|---|---|\n`);
-    stream.markdown(`| \`.claude/settings.json\` deny rules | ${audit.hasClaudeSettings ? '✅' : '❌ Missing'} |\n`);
-    stream.markdown(`| \`.github/instructions/secret-files.instructions.md\` | ${audit.hasCopilotGuard ? '✅' : '❌ Missing'} |\n`);
-    stream.markdown(`| \`.vscode/settings.json\` excludes | ${audit.hasVSCodeExcludes ? '✅' : '❌ Missing'} |\n`);
-    stream.markdown(`| \`.gitignore\` secret patterns | ${audit.missingGitignore.length === 0 ? '✅' : '❌ ' + audit.missingGitignore.length + ' missing'} |\n\n`);
+    stream.markdown(`| \`.claude/settings.json\` deny rules | ${audit.hasClaudeSettings ? 'Yes' : 'Missing'} |\n`);
+    stream.markdown(`| \`.github/instructions/secret-files.instructions.md\` | ${audit.hasCopilotGuard ? 'Yes' : 'Missing'} |\n`);
+    stream.markdown(`| \`.vscode/settings.json\` excludes | ${audit.hasVSCodeExcludes ? 'Yes' : 'Missing'} |\n`);
+    stream.markdown(`| \`.gitignore\` secret patterns | ${audit.missingGitignore.length === 0 ? 'Yes' : audit.missingGitignore.length + ' missing'} |\n\n`);
 
     // Secret files found
     if (audit.foundSecrets.length > 0) {
-      stream.markdown(`### ⚠️ Secret Files Detected\n\n`);
+      stream.markdown(`### Secret Files Detected\n\n`);
       for (const f of audit.foundSecrets.slice(0, 10)) {
         stream.markdown(`- \`${f}\`\n`);
       }
@@ -683,8 +675,14 @@ export class ContextChatParticipant implements vscode.Disposable {
     const applyArg = request.prompt.trim().toLowerCase();
     if (applyArg === 'apply' || applyArg === 'fix' || applyArg === 'generate') {
       stream.progress('Generating security settings...');
-      const applied = await scanner.applyAll();
-      stream.markdown(`\n### ✅ Applied!\n\n`);
+      let applied: string[];
+      try {
+        applied = await scanner.applyAll();
+      } catch (err) {
+        stream.markdown(`\nNothing was written. ${err instanceof Error ? err.message : String(err)}.\n`);
+        return {};
+      }
+      stream.markdown(`\n### Applied\n\n`);
       for (const f of applied) {
         stream.markdown(`- Generated: \`${f}\`\n`);
       }
@@ -723,8 +721,8 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`## Terminology Generator (Pro)\n\n`);
     stream.markdown(`### Sources Found\n\n`);
     stream.markdown(`| Source | Status |\n|---|---|\n`);
-    stream.markdown(`| \`dictionary.json\` | ${dictFiles.length > 0 ? '✅ ' + dictFiles.length + ' file(s)' : '❌ Not found'} |\n`);
-    stream.markdown(`| \`terminologies.md\` | ${termFiles.length > 0 ? '✅ ' + termFiles.length + ' file(s)' : '❌ Not found'} |\n\n`);
+    stream.markdown(`| \`dictionary.json\` | ${dictFiles.length > 0 ? dictFiles.length + ' file(s)' : 'Not found'} |\n`);
+    stream.markdown(`| \`terminologies.md\` | ${termFiles.length > 0 ? termFiles.length + ' file(s)' : 'Not found'} |\n\n`);
 
     if (dictFiles.length === 0 && termFiles.length === 0) {
       stream.markdown(`No terminology sources found. Create a \`content/dictionary.json\` with:\n\n`);
@@ -758,7 +756,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| 25-turn savings | ~56% terminology overhead |\n\n`);
 
     if (instrFiles.length > 0) {
-      stream.markdown(`> ✅ Glossary already exists: \`${vscode.workspace.asRelativePath(instrFiles[0])}\`\n\n`);
+      stream.markdown(`> Glossary already exists: \`${vscode.workspace.asRelativePath(instrFiles[0])}\`\n\n`);
       stream.markdown(`To regenerate, run in terminal:\n`);
     } else {
       stream.markdown(`### Generate\n\n`);
@@ -922,12 +920,12 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`## AI Settings Generator (Pro)\n\n`);
     stream.markdown(`### Current Configuration\n\n`);
     stream.markdown(`| Config File | Status |\n|---|---|\n`);
-    stream.markdown(`| \`.github/copilot-instructions.md\` | ${copilotInstr.length > 0 ? '✅ Exists' : '❌ Missing'} |\n`);
-    stream.markdown(`| \`.vscode/settings.json\` | ${vscodeSettings.length > 0 ? '✅ Exists' : '❌ Missing'} |\n`);
-    stream.markdown(`| \`.github/instructions/*.instructions.md\` | ${instrFiles.length > 0 ? '✅ ' + instrFiles.length + ' file(s)' : '❌ None'} |\n`);
-    stream.markdown(`| \`*.agent.md\` | ${agentFiles.length > 0 ? '✅ ' + agentFiles.length + ' file(s)' : '❌ None'} |\n`);
-    stream.markdown(`| \`CLAUDE.md\` | ${claudeFile.length > 0 ? '✅ Exists' : '❌ Missing'} |\n`);
-    stream.markdown(`| \`.cursorrules\` | ${cursorRules.length > 0 ? '✅ Exists' : '❌ Missing'} |\n\n`);
+    stream.markdown(`| \`.github/copilot-instructions.md\` | ${copilotInstr.length > 0 ? 'Exists' : 'Missing'} |\n`);
+    stream.markdown(`| \`.vscode/settings.json\` | ${vscodeSettings.length > 0 ? 'Exists' : 'Missing'} |\n`);
+    stream.markdown(`| \`.github/instructions/*.instructions.md\` | ${instrFiles.length > 0 ? instrFiles.length + ' file(s)' : 'None'} |\n`);
+    stream.markdown(`| \`*.agent.md\` | ${agentFiles.length > 0 ? agentFiles.length + ' file(s)' : 'None'} |\n`);
+    stream.markdown(`| \`CLAUDE.md\` | ${claudeFile.length > 0 ? 'Exists' : 'Missing'} |\n`);
+    stream.markdown(`| \`.cursorrules\` | ${cursorRules.length > 0 ? 'Exists' : 'Missing'} |\n\n`);
 
     // Detect project info for generated content
     let projectName = folders[0].name;
@@ -1224,9 +1222,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| \`@tokalator /audit\` | Team audit trail (Enterprise) |\n\n`);
 
     if (snapshot) {
-      const levelEmoji = snapshot.budgetLevel === 'low' ? '🟢'
-        : snapshot.budgetLevel === 'medium' ? '🟡' : '🔴';
-      stream.markdown(`**Current:** ${levelEmoji} ${snapshot.tabs.length} tabs, budget ${snapshot.budgetLevel}\n`);
+      stream.markdown(`**Current:** ${snapshot.tabs.length} tabs, budget ${snapshot.budgetLevel}\n`);
     }
 
     return {};

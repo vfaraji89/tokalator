@@ -451,9 +451,8 @@ export class ContextMonitor implements vscode.Disposable {
    */
   private async buildSnapshot(): Promise<ContextSnapshot> {
     const config = vscode.workspace.getConfiguration('tokalator');
-    // Use windowSize setting as override only when it differs from the default (1,000,000)
-    const configWindowSize = config.get<number>('windowSize', 1000000);
-    const windowCapacity = configWindowSize !== 1000000 ? configWindowSize : this.activeModel.contextWindow;
+    const configWindowSize = config.get<number>('windowSize', 0);
+    const windowCapacity = configWindowSize > 0 ? configWindowSize : this.activeModel.contextWindow;
     const rotWarning = this.activeModel.rotThreshold;
 
     // 1. Gather all open tabs
