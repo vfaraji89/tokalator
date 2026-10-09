@@ -15,6 +15,12 @@ import * as path from 'path';
 
 type PriceSource = 'verified' | 'pending' | 'stale';
 
+interface LongContext {
+  threshold: number;
+  inputMultiplier: number;
+  outputMultiplier: number;
+}
+
 interface ModelEntry {
   id: string;
   label: string;
@@ -25,6 +31,7 @@ interface ModelEntry {
   inputCostPerMTok: number;
   outputCostPerMTok: number;
   cachedInputCostPerMTok?: number;
+  longContext?: LongContext;
   featured?: boolean;
   priceSource?: PriceSource;
   verifiedAt?: string;
@@ -107,8 +114,11 @@ for (const provider of providerOrder) {
     const cache = m.cachedInputCostPerMTok !== undefined
       ? `, cachedInputCostPerMTok: ${fmtPrice(m.cachedInputCostPerMTok)}`
       : '';
+    const lc    = m.longContext
+      ? `, longContext: { threshold: ${m.longContext.threshold}, inputMultiplier: ${m.longContext.inputMultiplier}, outputMultiplier: ${m.longContext.outputMultiplier} }`
+      : '';
     const feat  = m.featured ? ', featured: true' : '';
-    profileLines += `  { id: ${id}, label: ${label}, provider: ${prov}, contextWindow: ${cw}, maxOutput: ${mo}, rotThreshold: ${rot}, inputCostPerMTok: ${inC}, outputCostPerMTok: ${outC}${cache}, priceSource: '${ps}', verifiedAt: '${va}'${feat} },\n`;
+    profileLines += `  { id: ${id}, label: ${label}, provider: ${prov}, contextWindow: ${cw}, maxOutput: ${mo}, rotThreshold: ${rot}, inputCostPerMTok: ${inC}, outputCostPerMTok: ${outC}${cache}${lc}, priceSource: '${ps}', verifiedAt: '${va}'${feat} },\n`;
   }
 }
 
@@ -123,6 +133,12 @@ const tsContent = `/**
 
 export type PriceSource = 'verified' | 'pending' | 'stale';
 
+export interface LongContext {
+  threshold: number;
+  inputMultiplier: number;
+  outputMultiplier: number;
+}
+
 export interface ModelProfile {
   id: string;
   label: string;
@@ -133,6 +149,7 @@ export interface ModelProfile {
   inputCostPerMTok: number;
   outputCostPerMTok: number;
   cachedInputCostPerMTok?: number;
+  longContext?: LongContext;
   priceSource: PriceSource;
   verifiedAt: string;
   featured?: boolean;
@@ -209,7 +226,7 @@ console.log(`Wrote ${path.relative(root, profilesTsPath)} (${models.length} mode
 // ─── Update package.json enum ────────────────────────────────────────────────
 
 function fmtWindowShort(n: number): string {
-  if (n >= 900000) return `${Math.round(n / 100000) / 10}M`;
+  if (n >= 900000) return `${+(n / 1_000_000).toFixed(2)}M`;
   if (n >= 1000)   return `${Math.round(n / 1000)}K`;
   return `${n}`;
 }

@@ -1,19 +1,27 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
+import * as os from 'os';
+import { execFile } from 'child_process';
 
 /**
- * Tokalator Pro: Workspace Security Scanner
+ * Workspace Security Scanner
  *
- * Detects missing AI agent security configurations and generates them.
- * Integrates with the dashboard (button), chat participant (/secure),
- * and activation (auto-notification).
+ * Finds secret files and checks, file by file, whether Claude Code deny rules,
+ * VS Code search exclusion, and git ignore rules actually cover them.
  */
 
 export interface SecretPattern {
   glob: string;
   description: string;
   severity: 'critical' | 'high' | 'medium';
+}
+
+export interface SecretCoverage {
+  file: string;
+  claude: boolean;
+  search: boolean;
+  gitignored: boolean;
 }
 
 export interface SecurityAuditResult {
@@ -25,6 +33,8 @@ export interface SecurityAuditResult {
   hasClaudeSettings: boolean;
   hasCopilotGuard: boolean;
   hasVSCodeExcludes: boolean;
+  coverage: SecretCoverage[];
+  uncovered: number;
 }
 
 export const SECRET_FILE_PATTERNS: SecretPattern[] = [
@@ -55,7 +65,42 @@ const BLOCKED_FILENAMES = ['.env', '.pem', '.key', 'id_rsa', '.p12', '.pfx',
   '.htpasswd', '.netrc', 'secrets.yml', 'secrets.yaml', '.jks', 'token.json'];
 
 export function isSecretFile(filename: string): boolean {
+  if (filename === '.env.example' || filename === '.env.sample' || filename === '.env.template') return false;
   return BLOCKED_FILENAMES.some(p => filename === p || filename.startsWith(p) || filename.endsWith(p));
+}
+
+/** Gitignore-style glob to RegExp: a pattern without a slash matches the name at any depth. */
+export function globToRegExp(glob: string): RegExp {
+  let g = glob.trim().replace(/^\.\//, '');
+  if (!g.includes('/')) g = '**/' + g;
+  if (g.startsWith('/')) g = g.slice(1);
+  let re = '';
+  for (let i = 0; i < g.length; i++) {
+    const c = g[i];
+    if (c === '*' && g[i + 1] === '*') {
+      if (g[i + 2] === '/') { re += '(?:.*/)?'; i += 2; } else { re += '.*'; i += 1; }
+    } else if (c === '*') {
+      re += '[^/]*';
+    } else if (c === '?') {
+      re += '[^/]';
+    } else {
+      re += c.replace(/[.+^${}()|[\]\\]/g, '\\$&');
+    }
+  }
+  return new RegExp('^' + re + '$');
+}
+
+export function matchesAny(file: string, globs: string[]): boolean {
+  const rel = file.split(path.sep).join('/');
+  return globs.some(g => globToRegExp(g).test(rel));
+}
+
+/** Paths from Read(...) deny rules, e.g. Read(**\/.env) or Read(./secrets/**). */
+export function claudeReadDenyGlobs(deny: unknown): string[] {
+  if (!Array.isArray(deny)) return [];
+  return deny
+    .map(r => (typeof r === 'string' ? /^Read\((.+)\)$/.exec(r.trim())?.[1] : undefined))
+    .filter((g): g is string => !!g);
 }
 
 export class WorkspaceSecurityScanner {
@@ -68,42 +113,80 @@ export class WorkspaceSecurityScanner {
 
   async audit(): Promise<SecurityAuditResult> {
     if (!this.root) {
-      return { score: 0, level: 'unprotected', missingConfigs: ['No workspace open'], foundSecrets: [], missingGitignore: [], hasClaudeSettings: false, hasCopilotGuard: false, hasVSCodeExcludes: false };
+      return { score: 0, level: 'unprotected', missingConfigs: ['No workspace open'], foundSecrets: [], missingGitignore: [], hasClaudeSettings: false, hasCopilotGuard: false, hasVSCodeExcludes: false, coverage: [], uncovered: 0 };
     }
 
-    const hasClaudeSettings = this.checkClaudeSettings();
-    const hasCopilotGuard = this.checkCopilotGuard();
-    const hasVSCodeExcludes = this.checkVSCodeExcludes();
     const foundSecrets = await this.scanForSecretFiles();
-    const missingGitignore = this.checkGitignore();
+    const claudeGlobs = this.claudeDenyGlobs();
+    const searchGlobs = this.searchExcludeGlobs();
+    const ignored = await this.gitIgnored(foundSecrets);
+    const hasCopilotGuard = this.checkCopilotGuard();
+
+    const coverage: SecretCoverage[] = foundSecrets.map(file => ({
+      file,
+      claude: matchesAny(file, claudeGlobs),
+      search: matchesAny(file, searchGlobs),
+      gitignored: ignored.has(file),
+    }));
+    const uncovered = coverage.filter(c => !(c.claude && c.search && c.gitignored)).length;
+    const hasClaudeSettings = coverage.every(c => c.claude) && claudeGlobs.length > 0;
+    const hasVSCodeExcludes = coverage.every(c => c.search) && searchGlobs.length > 0;
+    const missingGitignore = coverage.filter(c => !c.gitignored).map(c => c.file);
+
+    if (foundSecrets.length === 0) {
+      return { score: 100, level: 'protected', missingConfigs: [], foundSecrets, missingGitignore: [], hasClaudeSettings, hasCopilotGuard, hasVSCodeExcludes, coverage, uncovered: 0 };
+    }
+
+    const share = (pick: (c: SecretCoverage) => boolean) => coverage.filter(pick).length / coverage.length;
+    const score = Math.round(share(c => c.claude) * 40 + share(c => c.search) * 20 + share(c => c.gitignored) * 30 + (hasCopilotGuard ? 10 : 0));
 
     const missingConfigs: string[] = [];
-    if (!hasClaudeSettings) missingConfigs.push('.claude/settings.json (Read/Grep deny rules)');
+    if (!coverage.every(c => c.claude)) missingConfigs.push('.claude/settings.json (Read deny rules)');
     if (!hasCopilotGuard) missingConfigs.push('.github/instructions/secret-files.instructions.md');
-    if (!hasVSCodeExcludes) missingConfigs.push('.vscode/settings.json (chat.excludeFilePatterns)');
+    if (!coverage.every(c => c.search)) missingConfigs.push('.vscode/settings.json (search.exclude)');
+    if (missingGitignore.length) missingConfigs.push('.gitignore');
 
-    let score = 0;
-    if (hasClaudeSettings) score += 35;
-    if (hasCopilotGuard) score += 35;
-    if (hasVSCodeExcludes) score += 15;
-    if (missingGitignore.length === 0) score += 15;
-
-    const level = score >= 85 ? 'protected' : score >= 50 ? 'partial' : 'unprotected';
-
-    return { score, level, missingConfigs, foundSecrets, missingGitignore, hasClaudeSettings, hasCopilotGuard, hasVSCodeExcludes };
+    const level = uncovered === 0 && hasCopilotGuard ? 'protected' : score >= 50 ? 'partial' : 'unprotected';
+    return { score, level, missingConfigs, foundSecrets, missingGitignore, hasClaudeSettings, hasCopilotGuard, hasVSCodeExcludes, coverage, uncovered };
   }
 
-  private checkClaudeSettings(): boolean {
-    if (!this.root) return false;
-    const settingsPath = path.join(this.root, '.claude', 'settings.json');
-    if (!fs.existsSync(settingsPath)) return false;
-    try {
-      const content = JSON.parse(fs.readFileSync(settingsPath, 'utf-8'));
-      const deny: string[] = content?.permissions?.deny || [];
-      return deny.some(r => r.startsWith('Read(**/.env'));
-    } catch {
-      return false;
-    }
+  /** Deny rules apply from project, local project, and user settings, so all three count. */
+  private claudeDenyGlobs(): string[] {
+    const files = [
+      path.join(this.root!, '.claude', 'settings.json'),
+      path.join(this.root!, '.claude', 'settings.local.json'),
+      path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'settings.json'),
+    ];
+    return files.flatMap(f => {
+      try {
+        return claudeReadDenyGlobs(JSON.parse(fs.readFileSync(f, 'utf-8'))?.permissions?.deny);
+      } catch {
+        return [];
+      }
+    });
+  }
+
+  private searchExcludeGlobs(): string[] {
+    const config = vscode.workspace.getConfiguration(undefined, vscode.Uri.file(this.root!));
+    const enabled = (o: Record<string, unknown> | undefined) => Object.entries(o ?? {}).filter(([, v]) => v === true).map(([k]) => k);
+    return [...enabled(config.get('search.exclude')), ...enabled(config.get('files.exclude'))];
+  }
+
+  /** Uses git itself so nested .gitignore files, negations, and global excludes all apply. */
+  private gitIgnored(files: string[]): Promise<Set<string>> {
+    if (!files.length) return Promise.resolve(new Set());
+    return new Promise(resolve => {
+      execFile('git', ['check-ignore', '--', ...files], { cwd: this.root, timeout: 5000 }, (err, stdout) => {
+        const code = (err as { code?: number } | null)?.code;
+        if (err && code !== 1) {
+          const lines = (fs.existsSync(path.join(this.root!, '.gitignore')) ? fs.readFileSync(path.join(this.root!, '.gitignore'), 'utf-8') : '')
+            .split('\n').map(l => l.trim()).filter(l => l && !l.startsWith('#') && !l.startsWith('!'));
+          resolve(new Set(files.filter(f => matchesAny(f, lines))));
+          return;
+        }
+        resolve(new Set(stdout.split('\n').map(l => l.trim()).filter(Boolean)));
+      });
+    });
   }
 
   private checkCopilotGuard(): boolean {
@@ -113,18 +196,6 @@ export class WorkspaceSecurityScanner {
     try {
       const content = fs.readFileSync(instrPath, 'utf-8');
       return content.includes('applyTo') && content.includes('.env');
-    } catch {
-      return false;
-    }
-  }
-
-  private checkVSCodeExcludes(): boolean {
-    if (!this.root) return false;
-    const settingsPath = path.join(this.root, '.vscode', 'settings.json');
-    if (!fs.existsSync(settingsPath)) return false;
-    try {
-      const raw = fs.readFileSync(settingsPath, 'utf-8');
-      return raw.includes('chat.excludeFilePatterns') || raw.includes('files.exclude');
     } catch {
       return false;
     }
@@ -158,14 +229,6 @@ export class WorkspaceSecurityScanner {
     return found;
   }
 
-  private checkGitignore(): string[] {
-    if (!this.root) return [];
-    const gitignorePath = path.join(this.root, '.gitignore');
-    const content = fs.existsSync(gitignorePath) ? fs.readFileSync(gitignorePath, 'utf-8') : '';
-    const required = ['.env*', '*.pem', '*.key', 'id_rsa*', '*.p12', 'credentials.json'];
-    return required.filter(p => !content.includes(p));
-  }
-
   // ─── Generators ─────────────────────────────────────────────────────────────
 
   generateClaudeSettings(): string {
@@ -185,11 +248,11 @@ export class WorkspaceSecurityScanner {
     const perms = existing.permissions as { deny: string[] };
     if (!perms.deny) perms.deny = [];
 
+    const legacy = new Set(SECRET_FILE_PATTERNS.map(p => `Grep(${p.glob})`));
+    perms.deny = perms.deny.filter(r => !legacy.has(r));
     for (const pat of SECRET_FILE_PATTERNS) {
       const readRule = `Read(${pat.glob})`;
-      const grepRule = `Grep(${pat.glob})`;
       if (!perms.deny.includes(readRule)) perms.deny.push(readRule);
-      if (!perms.deny.includes(grepRule)) perms.deny.push(grepRule);
     }
 
     perms.deny = [...new Set(perms.deny)];
@@ -207,7 +270,7 @@ export class WorkspaceSecurityScanner {
       `applyTo: "${applyTo}"`,
       '---',
       '',
-      '# Secret File Guard (Auto-Generated by Tokalator Pro)',
+      '# Secret File Guard (generated by Tokalator)',
       '',
       'Files matching this pattern MUST NOT be read into agent context.',
       '',
@@ -223,7 +286,7 @@ export class WorkspaceSecurityScanner {
       'on non-actionable content, and risks persistence in conversation history.',
       '',
       '---',
-      '*Auto-generated by Tokalator Pro*',
+      '*Generated by Tokalator*',
     ].join('\n');
   }
 
@@ -243,19 +306,9 @@ export class WorkspaceSecurityScanner {
       }
     }
 
-    const excludes: Record<string, boolean> = (existing['files.exclude'] as Record<string, boolean>) || {};
-    excludes['**/.env'] = true;
-    excludes['**/.env.*'] = true;
-    excludes['**/*.pem'] = true;
-    excludes['**/*.key'] = true;
-    excludes['**/id_rsa*'] = true;
-    existing['files.exclude'] = excludes;
-
-    const chatExcludes: string[] = (existing['chat.excludeFilePatterns'] as string[]) || [];
-    for (const pat of SECRET_FILE_PATTERNS) {
-      if (!chatExcludes.includes(pat.glob)) chatExcludes.push(pat.glob);
-    }
-    existing['chat.excludeFilePatterns'] = chatExcludes;
+    const searchExclude: Record<string, boolean> = (existing['search.exclude'] as Record<string, boolean>) || {};
+    for (const pat of SECRET_FILE_PATTERNS) searchExclude[pat.glob] = true;
+    existing['search.exclude'] = searchExclude;
 
     return JSON.stringify(existing, null, 2);
   }
@@ -268,7 +321,7 @@ export class WorkspaceSecurityScanner {
       'credentials.json', 'service-account*.json', '.npmrc', '.pypirc', 'token.json'];
     const missing = required.filter(p => !content.includes(p));
     if (missing.length === 0) return null;
-    return '\n# Secret files (auto-added by Tokalator Pro)\n' + missing.join('\n') + '\n';
+    return '\n# Secret files (added by Tokalator)\n' + missing.join('\n') + '\n';
   }
 
   async applyAll(): Promise<string[]> {

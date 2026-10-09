@@ -6,5 +6,7 @@ tsconfig.json
 **/*.map
 __tests__/**
 scripts/**
+e2e/**
 jest.config.js
 evaluation/**
+eslint.config.mjs

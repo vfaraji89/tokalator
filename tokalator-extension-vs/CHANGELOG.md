@@ -1,5 +1,35 @@
 # Changelog
 
+## 4.1.1 (2026-10-10)
+
+### Added
+
+- Claude Code tracking. Reads Claude Code session logs (CLI and VS Code extension) for the open workspace and shows today's turns, requests, cache hit rate, last-session tokens, the CLI and VS Code split, and API-equivalent cost. Refreshes every 15 seconds while the sidebar is visible; no chat mention needed. Setting: `tokalator.claudeCode.enabled`.
+- Turn Analytics and Context Growth fall back to Claude Code turns when there are no `@tokalator` turns.
+- Models: Claude Opus 5.5, Sonnet 5.5, Haiku 5.5, Mythos 5.1, Mythos 5, Opus 4.5; GPT-6 Astra, GPT-6.1 Sol, GPT-6 Luna; Gemini 3.8 Flash. The default model is Claude Opus 5.5.
+- Long-context pricing: input rates switch above provider thresholds (Claude Haiku 5.5 above 100K, GPT-5.4 and later above 272K, Gemini 3.1 Pro and 2.5 Pro above 200K).
+- Opt-in telemetry, off by default and gated by VS Code's telemetry setting, with Show, Export, and Delete commands. See tokalator.ai/privacy.
+- Code maps: `Tokalator: Generate Code Maps`, `/codemap`, and a dashboard button write `GLOSSARY.md` (declarations with source links) and `SITE-MAP.md` (packages, modules, routes, imports) locally, with no model calls.
+- `Tokalator: Send Feedback` and an occasional, dismissible feedback question.
+- Price Watch button and a pricing catalog footer with refresh in the dashboard.
+- Secure Workspace checks each secret file against Claude Code deny rules (project, local, and user settings), VS Code search exclusion, and git ignore rules (via `git check-ignore`), shows the result in the dashboard, explains gaps in a dialog, and verifies again after applying. It stays quiet when a workspace has no secret files.
+
+### Changed
+
+- Dashboard: sections update in place without flicker, values animate, sections collapse and remember their state, toasts confirm actions, single click opens a file, every action works from the keyboard, and motion respects reduced-motion settings.
+- Prices corrected against provider pages: GPT-5.6 Sol, Terra, and Luna; Gemini 3.6 Flash; context windows for GPT-5.5, GPT-5.4, GPT-5.4 mini and nano, and GPT-5.3-Codex.
+- Gemini 3.1 Pro and Gemini 3 Flash use their official preview IDs. Gemini 3.7 Flash is removed; Google routes it to Gemini 3.8 Flash.
+- Remote catalog sync keeps the featured model list.
+- `/skill-gen` writes a valid Agent Skill (lowercase name, what-and-when description, real commands) to `.claude/skills/<name>/SKILL.md`, or `.agents/skills/` with `apply agents`.
+- `/settings-gen` generates `AGENTS.md`, a `CLAUDE.md` that imports it, and `.github/copilot-instructions.md`, and reports skills, custom agents, prompt files, Cursor rules, GEMINI.md, and MCP configs.
+- `/instructions` recognizes `CLAUDE.local.md`, `AGENTS.override.md`, `GEMINI.md`, `.claude/rules`, and `.cursor/rules/*.mdc`.
+- Secure Workspace writes `search.exclude` (documented, keeps files visible in the Explorer) instead of `chat.excludeFilePatterns`, and only `Read()` deny rules; earlier `Grep()` rules are removed.
+
+### Fixed
+
+- Turns remaining and next-turn estimates now use context growth per turn instead of the full input of each turn.
+- Health notes and the tokenizer label are escaped in the dashboard.
+
 ## 4.1.0
 
 ### Changed

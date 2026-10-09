@@ -68,8 +68,10 @@ export function applyRemotePayload(payload: RemoteCatalogPayload): void {
       inputCostPerMTok: r.inputCostPerMTok ?? base?.inputCostPerMTok ?? 0,
       outputCostPerMTok: r.outputCostPerMTok ?? base?.outputCostPerMTok ?? 0,
       cachedInputCostPerMTok: r.cachedInputCostPerMTok ?? base?.cachedInputCostPerMTok,
+      longContext: r.longContext ?? base?.longContext,
       priceSource: r.priceSource ?? base?.priceSource ?? 'verified',
       verifiedAt: r.verifiedAt ?? base?.verifiedAt ?? payload.updatedAt,
+      featured: r.featured ?? base?.featured,
     };
     byId.set(r.id, merged);
   }
@@ -122,6 +124,8 @@ export interface RemoteModelEntry {
   inputCostPerMTok?: number;
   outputCostPerMTok?: number;
   cachedInputCostPerMTok?: number;
+  longContext?: ModelProfile['longContext'];
   priceSource?: ModelProfile['priceSource'];
   verifiedAt?: string;
+  featured?: boolean;
 }

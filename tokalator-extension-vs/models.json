@@ -1,8 +1,8 @@
 {
   "schemaVersion": 2,
-  "updatedAt": "2026-09-02T00:00:00Z",
+  "updatedAt": "2026-10-10T00:00:00Z",
   "source": "tokalator",
-  "defaultModelId": "claude-opus-5",
+  "defaultModelId": "claude-opus-5-5",
   "models": [
     {
       "id": "claude-fable-5-1",
@@ -11,12 +11,28 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 52,
-      "inputCostPerMTok": 10.0,
-      "outputCostPerMTok": 50.0,
+      "inputCostPerMTok": 10,
+      "outputCostPerMTok": 50,
       "cachedInputCostPerMTok": 0.25,
+      "cacheWriteCostPerMTok": 12.5,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02",
+      "verifiedAt": "2026-10-10",
       "featured": true
+    },
+    {
+      "id": "claude-mythos-5-1",
+      "label": "Claude Mythos 5.1",
+      "provider": "anthropic",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "rotThreshold": 52,
+      "inputCostPerMTok": 10,
+      "outputCostPerMTok": 50,
+      "cachedInputCostPerMTok": 0.25,
+      "cacheWriteCostPerMTok": 12.5,
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
+      "notes": "Limited availability (Project Glasswing)."
     },
     {
       "id": "claude-fable-5",
@@ -25,11 +41,41 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 50,
-      "inputCostPerMTok": 10.0,
-      "outputCostPerMTok": 50.0,
+      "inputCostPerMTok": 10,
+      "outputCostPerMTok": 50,
       "cachedInputCostPerMTok": 1.0,
+      "cacheWriteCostPerMTok": 12.5,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02",
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "claude-mythos-5",
+      "label": "Claude Mythos 5",
+      "provider": "anthropic",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "rotThreshold": 50,
+      "inputCostPerMTok": 10,
+      "outputCostPerMTok": 50,
+      "cachedInputCostPerMTok": 1.0,
+      "cacheWriteCostPerMTok": 12.5,
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
+      "notes": "Limited availability (Project Glasswing)."
+    },
+    {
+      "id": "claude-opus-5-5",
+      "label": "Claude Opus 5.5",
+      "provider": "anthropic",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "rotThreshold": 50,
+      "inputCostPerMTok": 4,
+      "outputCostPerMTok": 20,
+      "cachedInputCostPerMTok": 0.2,
+      "cacheWriteCostPerMTok": 5,
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
       "featured": true
     },
     {
@@ -39,11 +85,12 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 48,
-      "inputCostPerMTok": 5.0,
-      "outputCostPerMTok": 25.0,
+      "inputCostPerMTok": 5,
+      "outputCostPerMTok": 25,
       "cachedInputCostPerMTok": 0.5,
+      "cacheWriteCostPerMTok": 6.25,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02",
+      "verifiedAt": "2026-10-10",
       "featured": true
     },
     {
@@ -53,12 +100,12 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 45,
-      "inputCostPerMTok": 5.0,
-      "outputCostPerMTok": 25.0,
+      "inputCostPerMTok": 5,
+      "outputCostPerMTok": 25,
       "cachedInputCostPerMTok": 0.5,
+      "cacheWriteCostPerMTok": 6.25,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02",
-      "featured": true
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "claude-opus-4.7",
@@ -67,11 +114,12 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 43,
-      "inputCostPerMTok": 5.0,
-      "outputCostPerMTok": 25.0,
+      "inputCostPerMTok": 5,
+      "outputCostPerMTok": 25,
       "cachedInputCostPerMTok": 0.5,
+      "cacheWriteCostPerMTok": 6.25,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02"
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "claude-opus-4.6",
@@ -80,11 +128,41 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 42,
-      "inputCostPerMTok": 5.0,
-      "outputCostPerMTok": 25.0,
+      "inputCostPerMTok": 5,
+      "outputCostPerMTok": 25,
       "cachedInputCostPerMTok": 0.5,
+      "cacheWriteCostPerMTok": 6.25,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02"
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "claude-opus-4.5",
+      "label": "Claude Opus 4.5",
+      "provider": "anthropic",
+      "contextWindow": 200000,
+      "maxOutput": 64000,
+      "rotThreshold": 40,
+      "inputCostPerMTok": 5,
+      "outputCostPerMTok": 25,
+      "cachedInputCostPerMTok": 0.5,
+      "cacheWriteCostPerMTok": 6.25,
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "claude-sonnet-5-5",
+      "label": "Claude Sonnet 5.5",
+      "provider": "anthropic",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "rotThreshold": 38,
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 10,
+      "cachedInputCostPerMTok": 0.1,
+      "cacheWriteCostPerMTok": 2.5,
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
+      "featured": true
     },
     {
       "id": "claude-sonnet-5",
@@ -93,12 +171,12 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 35,
-      "inputCostPerMTok": 2.0,
-      "outputCostPerMTok": 10.0,
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 10,
       "cachedInputCostPerMTok": 0.2,
+      "cacheWriteCostPerMTok": 2.5,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02",
-      "featured": true
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "claude-sonnet-4.6",
@@ -107,11 +185,32 @@
       "contextWindow": 1000000,
       "maxOutput": 128000,
       "rotThreshold": 30,
-      "inputCostPerMTok": 3.0,
-      "outputCostPerMTok": 15.0,
+      "inputCostPerMTok": 3,
+      "outputCostPerMTok": 15,
       "cachedInputCostPerMTok": 0.3,
+      "cacheWriteCostPerMTok": 3.75,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02"
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "claude-haiku-5-5",
+      "label": "Claude Haiku 5.5",
+      "provider": "anthropic",
+      "contextWindow": 1000000,
+      "maxOutput": 128000,
+      "rotThreshold": 30,
+      "inputCostPerMTok": 0.1,
+      "outputCostPerMTok": 0.5,
+      "cachedInputCostPerMTok": 0.01,
+      "cacheWriteCostPerMTok": 0.125,
+      "longContext": {
+        "threshold": 100000,
+        "inputMultiplier": 5,
+        "outputMultiplier": 5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
+      "featured": true
     },
     {
       "id": "claude-haiku-4.5",
@@ -120,134 +219,219 @@
       "contextWindow": 200000,
       "maxOutput": 64000,
       "rotThreshold": 25,
-      "inputCostPerMTok": 1.0,
-      "outputCostPerMTok": 5.0,
+      "inputCostPerMTok": 1,
+      "outputCostPerMTok": 5,
       "cachedInputCostPerMTok": 0.1,
+      "cacheWriteCostPerMTok": 1.25,
       "priceSource": "verified",
-      "verifiedAt": "2026-09-02",
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "gpt-6-astra",
+      "label": "GPT-6 Astra",
+      "provider": "openai",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "rotThreshold": 45,
+      "inputCostPerMTok": 10,
+      "outputCostPerMTok": 50,
+      "cachedInputCostPerMTok": 1.0,
+      "cacheWriteCostPerMTok": 12.5,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
       "featured": true
+    },
+    {
+      "id": "gpt-6.1-sol",
+      "label": "GPT-6.1 Sol",
+      "provider": "openai",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "rotThreshold": 40,
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 10,
+      "cachedInputCostPerMTok": 0.1,
+      "cacheWriteCostPerMTok": 2.5,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10",
+      "featured": true
+    },
+    {
+      "id": "gpt-6-luna",
+      "label": "GPT-6 Luna",
+      "provider": "openai",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "rotThreshold": 30,
+      "inputCostPerMTok": 0.1,
+      "outputCostPerMTok": 0.5,
+      "cachedInputCostPerMTok": 0.01,
+      "cacheWriteCostPerMTok": 0.125,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "gpt-5.6-sol",
+      "label": "GPT-5.6 Sol",
+      "provider": "openai",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "rotThreshold": 40,
+      "inputCostPerMTok": 4,
+      "outputCostPerMTok": 20,
+      "cachedInputCostPerMTok": 0.4,
+      "cacheWriteCostPerMTok": 5,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "gpt-5.6-terra",
+      "label": "GPT-5.6 Terra",
+      "provider": "openai",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "rotThreshold": 45,
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 12,
+      "cachedInputCostPerMTok": 0.2,
+      "cacheWriteCostPerMTok": 2.5,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10"
+    },
+    {
+      "id": "gpt-5.6-luna",
+      "label": "GPT-5.6 Luna",
+      "provider": "openai",
+      "contextWindow": 1050000,
+      "maxOutput": 128000,
+      "rotThreshold": 35,
+      "inputCostPerMTok": 0.2,
+      "outputCostPerMTok": 1.2,
+      "cachedInputCostPerMTok": 0.02,
+      "cacheWriteCostPerMTok": 0.25,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
+      "priceSource": "verified",
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "gpt-5.5",
       "label": "GPT-5.5",
       "provider": "openai",
-      "contextWindow": 272000,
+      "contextWindow": 1050000,
       "maxOutput": 128000,
       "rotThreshold": 40,
-      "inputCostPerMTok": 5.0,
-      "outputCostPerMTok": 30.0,
+      "inputCostPerMTok": 5,
+      "outputCostPerMTok": 30,
       "cachedInputCostPerMTok": 0.5,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17",
+      "verifiedAt": "2026-10-10",
       "featured": true
     },
     {
       "id": "gpt-5.4",
       "label": "GPT-5.4",
       "provider": "openai",
-      "contextWindow": 272000,
+      "contextWindow": 1050000,
       "maxOutput": 128000,
       "rotThreshold": 35,
       "inputCostPerMTok": 2.5,
-      "outputCostPerMTok": 15.0,
+      "outputCostPerMTok": 15,
       "cachedInputCostPerMTok": 0.25,
+      "longContext": {
+        "threshold": 272000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17",
-      "featured": true
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "gpt-5.4-mini",
       "label": "GPT-5.4 mini",
       "provider": "openai",
-      "contextWindow": 128000,
-      "maxOutput": 64000,
+      "contextWindow": 400000,
+      "maxOutput": 128000,
       "rotThreshold": 30,
       "inputCostPerMTok": 0.75,
       "outputCostPerMTok": 4.5,
       "cachedInputCostPerMTok": 0.075,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "gpt-5.4-nano",
       "label": "GPT-5.4 nano",
       "provider": "openai",
-      "contextWindow": 128000,
-      "maxOutput": 16000,
+      "contextWindow": 400000,
+      "maxOutput": 128000,
       "rotThreshold": 25,
       "inputCostPerMTok": 0.2,
       "outputCostPerMTok": 1.25,
       "cachedInputCostPerMTok": 0.02,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
-    },
-    {
-      "id": "gpt-5.6-luna",
-      "label": "GPT-5.6 Luna",
-      "provider": "openai",
-      "contextWindow": 272000,
-      "maxOutput": 128000,
-      "rotThreshold": 35,
-      "inputCostPerMTok": 3.0,
-      "outputCostPerMTok": 18.0,
-      "cachedInputCostPerMTok": 0.3,
-      "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
-    },
-    {
-      "id": "gpt-5.6-sol",
-      "label": "GPT-5.6 Sol",
-      "provider": "openai",
-      "contextWindow": 272000,
-      "maxOutput": 128000,
-      "rotThreshold": 40,
-      "inputCostPerMTok": 5.0,
-      "outputCostPerMTok": 30.0,
-      "cachedInputCostPerMTok": 0.5,
-      "priceSource": "verified",
-      "verifiedAt": "2026-08-17",
-      "featured": true
-    },
-    {
-      "id": "gpt-5.6-terra",
-      "label": "GPT-5.6 Terra",
-      "provider": "openai",
-      "contextWindow": 272000,
-      "maxOutput": 128000,
-      "rotThreshold": 45,
-      "inputCostPerMTok": 8.0,
-      "outputCostPerMTok": 40.0,
-      "cachedInputCostPerMTok": 0.8,
-      "priceSource": "verified",
-      "verifiedAt": "2026-08-17",
-      "featured": true
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "gpt-5.3-codex",
       "label": "GPT-5.3-Codex",
       "provider": "openai",
-      "contextWindow": 256000,
-      "maxOutput": 32000,
+      "contextWindow": 400000,
+      "maxOutput": 128000,
       "rotThreshold": 35,
       "inputCostPerMTok": 1.75,
-      "outputCostPerMTok": 14.0,
+      "outputCostPerMTok": 14,
       "cachedInputCostPerMTok": 0.175,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
+      "verifiedAt": "2026-10-10"
     },
     {
-      "id": "gemini-3.7-flash",
-      "label": "Gemini 3.7 Flash",
+      "id": "gemini-3.8-flash",
+      "label": "Gemini 3.8 Flash",
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
       "rotThreshold": 32,
-      "inputCostPerMTok": 2.0,
-      "outputCostPerMTok": 12.0,
-      "cachedInputCostPerMTok": 0.2,
+      "inputCostPerMTok": 0.75,
+      "outputCostPerMTok": 3.75,
+      "cachedInputCostPerMTok": 0.075,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17",
-      "featured": true
+      "verifiedAt": "2026-10-10",
+      "featured": true,
+      "notes": "Promotional rate through 2026-12-31; $1.50 input / $7.50 output per MTok from 2027-01-01."
     },
     {
       "id": "gemini-3.6-flash",
@@ -256,11 +440,12 @@
       "contextWindow": 1048576,
       "maxOutput": 65536,
       "rotThreshold": 30,
-      "inputCostPerMTok": 1.75,
-      "outputCostPerMTok": 10.5,
-      "cachedInputCostPerMTok": 0.175,
+      "inputCostPerMTok": 0.75,
+      "outputCostPerMTok": 3.75,
+      "cachedInputCostPerMTok": 0.075,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
+      "verifiedAt": "2026-10-10",
+      "notes": "Promotional rate through 2026-12-31; $1.50 input / $7.50 output per MTok from 2027-01-01."
     },
     {
       "id": "gemini-3.5-flash",
@@ -270,37 +455,42 @@
       "maxOutput": 65536,
       "rotThreshold": 30,
       "inputCostPerMTok": 1.5,
-      "outputCostPerMTok": 9.0,
+      "outputCostPerMTok": 9,
       "cachedInputCostPerMTok": 0.15,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
+      "verifiedAt": "2026-10-10"
     },
     {
-      "id": "gemini-3.1-pro",
+      "id": "gemini-3.1-pro-preview",
       "label": "Gemini 3.1 Pro",
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
       "rotThreshold": 32,
-      "inputCostPerMTok": 2.0,
-      "outputCostPerMTok": 12.0,
+      "inputCostPerMTok": 2,
+      "outputCostPerMTok": 12,
       "cachedInputCostPerMTok": 0.2,
+      "longContext": {
+        "threshold": 200000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17",
+      "verifiedAt": "2026-10-10",
       "featured": true
     },
     {
-      "id": "gemini-3-flash",
+      "id": "gemini-3-flash-preview",
       "label": "Gemini 3 Flash",
       "provider": "google",
       "contextWindow": 1048576,
       "maxOutput": 65536,
       "rotThreshold": 28,
       "inputCostPerMTok": 0.5,
-      "outputCostPerMTok": 3.0,
+      "outputCostPerMTok": 3,
       "cachedInputCostPerMTok": 0.05,
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
+      "verifiedAt": "2026-10-10"
     },
     {
       "id": "gemini-2.5-pro",
@@ -310,10 +500,15 @@
       "maxOutput": 65536,
       "rotThreshold": 30,
       "inputCostPerMTok": 1.25,
-      "outputCostPerMTok": 10.0,
+      "outputCostPerMTok": 10,
       "cachedInputCostPerMTok": 0.125,
+      "longContext": {
+        "threshold": 200000,
+        "inputMultiplier": 2,
+        "outputMultiplier": 1.5
+      },
       "priceSource": "verified",
-      "verifiedAt": "2026-08-17"
+      "verifiedAt": "2026-10-10"
     }
   ]
 }

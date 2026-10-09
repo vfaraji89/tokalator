@@ -73,6 +73,8 @@ describe('ContextDashboardProvider', () => {
     );
   });
 
+  afterEach(() => provider.dispose());
+
   describe('Message handling', () => {
     test('pin command calls monitor.pinFile with correct URI', async () => {
       const uri = 'file:///Users/test/foo.ts';
@@ -135,7 +137,7 @@ describe('ContextDashboardProvider', () => {
     test('contains event delegation listeners', () => {
       const html = mockView.webview.html;
       expect(html).toContain("document.addEventListener('click'");
-      expect(html).toContain("document.addEventListener('dblclick'");
+      expect(html).toContain("document.addEventListener('keydown'");
     });
 
     test('switches model by delegated action, never an inline handler', () => {

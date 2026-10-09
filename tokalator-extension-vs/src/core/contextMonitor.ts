@@ -531,7 +531,12 @@ export class ContextMonitor implements vscode.Disposable {
 
     // 10. Estimate cost (input only: output tokens and cache hits are not observable from the editor)
     const inputTokens = budget.used;
-    const inputCost = (inputTokens / 1_000_000) * this.activeModel.inputCostPerMTok;
+    const lc = this.activeModel.longContext;
+    const longRequest = lc !== undefined && inputTokens > lc.threshold;
+    const inputRate = this.activeModel.inputCostPerMTok * (longRequest ? lc.inputMultiplier : 1);
+    const outputRate = this.activeModel.outputCostPerMTok * (longRequest ? lc.outputMultiplier : 1);
+    const cachedRate = (this.activeModel.cachedInputCostPerMTok ?? this.activeModel.inputCostPerMTok) * (longRequest ? lc.inputMultiplier : 1);
+    const inputCost = (inputTokens / 1_000_000) * inputRate;
     const costEstimate: CostEstimate = {
       inputTokens,
       outputTokens: 0,
@@ -539,9 +544,9 @@ export class ContextMonitor implements vscode.Disposable {
       outputCost: 0,
       totalCost: inputCost,
       effectiveCost: inputCost,
-      inputCostPerMTok: this.activeModel.inputCostPerMTok,
-      outputCostPerMTok: this.activeModel.outputCostPerMTok,
-      cachedInputCostPerMTok: this.activeModel.cachedInputCostPerMTok ?? this.activeModel.inputCostPerMTok,
+      inputCostPerMTok: inputRate,
+      outputCostPerMTok: outputRate,
+      cachedInputCostPerMTok: cachedRate,
     };
 
     return {
@@ -655,14 +660,14 @@ export class ContextMonitor implements vscode.Disposable {
   private async countInstructionFiles(): Promise<number> {
     try {
       const exclude = '**/node_modules/**';
-      const [instrFiles, copilotInstr, claudeMd, agentsMd, cursorRules] = await Promise.all([
+      const counts = await Promise.all([
         vscode.workspace.findFiles('**/*.instructions.md', exclude, 20),
         vscode.workspace.findFiles('.github/copilot-instructions.md', undefined, 1),
-        vscode.workspace.findFiles('**/CLAUDE.md', exclude, 5),
-        vscode.workspace.findFiles('**/AGENTS.md', exclude, 5),
-        vscode.workspace.findFiles('**/.cursorrules', exclude, 5),
+        vscode.workspace.findFiles('**/{CLAUDE,CLAUDE.local,AGENTS,AGENTS.override,GEMINI}.md', exclude, 10),
+        vscode.workspace.findFiles('**/.claude/rules/*.md', exclude, 10),
+        vscode.workspace.findFiles('**/{.cursorrules,.cursor/rules/*.mdc}', exclude, 10),
       ]);
-      return instrFiles.length + copilotInstr.length + claudeMd.length + agentsMd.length + cursorRules.length;
+      return counts.reduce((n, files) => n + files.length, 0);
     } catch {
       return 0;
     }

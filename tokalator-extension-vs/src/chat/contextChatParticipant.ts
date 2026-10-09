@@ -1,3 +1,5 @@
+import type { Telemetry } from '../core/telemetry';
+import { writeCodeMaps } from '../core/codeMaps';
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
@@ -39,6 +41,9 @@ export class ContextChatParticipant implements vscode.Disposable {
 
   setPriceWatch(pw: PriceWatchService): void { this.priceWatch = pw; }
 
+  private telemetry: Telemetry | null = null;
+  setTelemetry(t: Telemetry): void { this.telemetry = t; }
+
   // Cached history length from the last request for context comparison
   private lastHistoryLength = 0;
 
@@ -48,6 +53,8 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream: vscode.ChatResponseStream,
     _token: vscode.CancellationToken,
   ): Promise<vscode.ChatResult> {
+
+    this.telemetry?.count('chat:' + (request.command ?? 'prompt'));
 
     // Auto-sync Tokalator's model to match the active Copilot model
     await this.syncModelFromRequest(request);
@@ -109,6 +116,8 @@ export class ContextChatParticipant implements vscode.Disposable {
       case 'exit':
         return this.handleExit(stream);
 
+      case 'codemap':
+        return this.handleCodeMap(stream);
       case 'pricewatch':
         return this.handlePriceWatch(stream);
 
@@ -375,41 +384,36 @@ export class ContextChatParticipant implements vscode.Disposable {
 
     stream.markdown(`## Workspace Security: ${audit.level.toUpperCase()} (${audit.score}/100)\n\n`);
 
-    // Status table
-    stream.markdown(`| Config | Status |\n|---|---|\n`);
-    stream.markdown(`| \`.claude/settings.json\` deny rules | ${audit.hasClaudeSettings ? 'Yes' : 'Missing'} |\n`);
-    stream.markdown(`| \`.github/instructions/secret-files.instructions.md\` | ${audit.hasCopilotGuard ? 'Yes' : 'Missing'} |\n`);
-    stream.markdown(`| \`.vscode/settings.json\` excludes | ${audit.hasVSCodeExcludes ? 'Yes' : 'Missing'} |\n`);
-    stream.markdown(`| \`.gitignore\` secret patterns | ${audit.missingGitignore.length === 0 ? 'Yes' : audit.missingGitignore.length + ' missing'} |\n\n`);
-
-    // Secret files found
-    if (audit.foundSecrets.length > 0) {
-      stream.markdown(`### Secret Files Detected\n\n`);
-      for (const f of audit.foundSecrets.slice(0, 10)) {
-        stream.markdown(`- \`${f}\`\n`);
-      }
-      stream.markdown('\n');
-    }
-
-    // If already protected
-    if (audit.level === 'protected') {
-      stream.markdown(`> Your workspace is fully protected. All AI agents (Claude Code, GitHub Copilot, Cursor) are blocked from reading secret files.\n`);
+    if (audit.foundSecrets.length === 0) {
+      stream.markdown(`No secret files found in this workspace, so there is nothing to protect.\n`);
       return {};
     }
 
-    // What it will do
-    stream.markdown(`### What Tokalator Pro will generate:\n\n`);
-    if (!audit.hasClaudeSettings) {
-      stream.markdown(`1. **\`.claude/settings.json\`** — \`Read()\` and \`Grep()\` deny rules for 20 secret patterns\n`);
+    const yes = (v: boolean) => (v ? 'covered' : '**not covered**');
+    stream.markdown(`| Secret file | Claude Code deny rule | VS Code search exclusion | Git ignored |\n|---|---|---|---|\n`);
+    for (const c of audit.coverage.slice(0, 15)) {
+      stream.markdown(`| \`${c.file}\` | ${yes(c.claude)} | ${yes(c.search)} | ${yes(c.gitignored)} |\n`);
+    }
+    if (audit.coverage.length > 15) stream.markdown(`\n${audit.coverage.length - 15} more not shown.\n`);
+    stream.markdown(`\nCopilot instruction guard: ${audit.hasCopilotGuard ? 'present' : 'missing'} (advisory; Copilot agent mode can still open files directly).\n\n`);
+
+    if (audit.level === 'protected') {
+      stream.markdown(`> Every secret file is covered: Claude Code is denied reads, VS Code search and agent grep skip it, and git ignores it.\n`);
+      return {};
+    }
+
+    stream.markdown(`### What Secure Workspace will add\n\n`);
+    if (!audit.coverage.every(c => c.claude)) {
+      stream.markdown(`- **\`.claude/settings.json\`**: \`Read()\` deny rules for ${SECRET_FILE_PATTERNS.length} secret patterns\n`);
     }
     if (!audit.hasCopilotGuard) {
-      stream.markdown(`2. **\`.github/instructions/secret-files.instructions.md\`** — Copilot \`applyTo\` guard\n`);
+      stream.markdown(`- **\`.github/instructions/secret-files.instructions.md\`**: an \`applyTo\` instruction asking Copilot not to read them\n`);
     }
-    if (!audit.hasVSCodeExcludes) {
-      stream.markdown(`3. **\`.vscode/settings.json\`** — \`files.exclude\` + \`chat.excludeFilePatterns\`\n`);
+    if (!audit.coverage.every(c => c.search)) {
+      stream.markdown(`- **\`.vscode/settings.json\`**: \`search.exclude\` entries, so text search and agent grep skip them\n`);
     }
     if (audit.missingGitignore.length > 0) {
-      stream.markdown(`4. **\`.gitignore\`** — append missing patterns\n`);
+      stream.markdown(`- **\`.gitignore\`**: patterns for ${audit.missingGitignore.length} file(s) git does not ignore yet\n`);
     }
 
     // Apply action
@@ -493,49 +497,31 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| Instruction files | ${instrFiles.length + claudeFiles.length} |\n`);
     stream.markdown(`| Existing SKILL.md | ${existingSkills.length > 0 ? existingSkills.map(f => '`' + vscode.workspace.asRelativePath(f) + '`').join(', ') : 'None'} |\n\n`);
 
-    // Read package.json for project name/description
-    let projectName = rootPath;
-    let projectDesc = '';
-    if (pkgFiles.length > 0) {
-      try {
-        const doc = await vscode.workspace.openTextDocument(pkgFiles[0]);
-        const pkg = JSON.parse(doc.getText());
-        if (pkg.name) projectName = pkg.name;
-        if (pkg.description) projectDesc = pkg.description;
-      } catch { /* skip */ }
-    }
+    const { name: projectName, description: projectDesc, scripts } = await this.readPackageInfo(pkgFiles[0], rootPath);
+    const skillName = projectName.toLowerCase().replace(/^@/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64) || 'project';
 
-    // Generate SKILL.md content
-    const toolsList = instrFiles.length > 0 ? 'file system tools (read/write), workspace search' : 'file system tools (read/write)';
+    // Agent Skills format: name (lowercase, hyphens) and a description saying what it does and when to use it.
     const skillContent = [
       '---',
-      `name: ${projectName}`,
-      `description: Domain expertise for ${projectName}${projectDesc ? ' - ' + projectDesc : ''}`,
-      `applyTo: "**"`,
+      `name: ${skillName}`,
+      `description: Conventions, commands, and structure for the ${projectName} codebase${projectDesc ? ` (${projectDesc.replace(/[\r\n]+/g, ' ').slice(0, 200)})` : ''}. Use when changing, testing, or reviewing code in this repository.`,
       '---',
       '',
-      `# ${projectName} Skill`,
+      `# ${projectName}`,
       '',
       projectDesc ? projectDesc + '\n' : '',
-      '## When to Use',
+      '## Project',
       '',
-      `Use this skill when working on the ${projectName} codebase or related tasks.`,
+      `- Languages: ${langs.join(', ')}`,
+      `- Source files: about ${allSrc.length}`,
+      existingSkills.length > 0 ? `- Related skills: ${existingSkills.map(f => vscode.workspace.asRelativePath(f)).join(', ')}` : '',
       '',
-      '## Project Structure',
+      scripts.length ? '## Commands\n\n' + scripts.map(([k, v]) => `- \`npm run ${k}\`: ${v}`).join('\n') + '\n' : '',
+      '## Conventions',
       '',
-      `- **Languages:** ${langs.join(', ')}`,
-      `- **Source files:** ${allSrc.length}`,
-      existingSkills.length > 0 ? `- **Related skills:** ${existingSkills.map(f => vscode.workspace.asRelativePath(f)).join(', ')}` : '',
-      '',
-      '## Key Conventions',
-      '',
-      '- Follow existing code style and patterns',
-      langs.includes('TypeScript/JavaScript') ? '- Use TypeScript strict mode where applicable' : '',
-      '- Keep changes minimal and focused',
-      '',
-      '## Tools',
-      '',
-      `Invokes: ${toolsList}`,
+      '- Follow the existing code style and patterns',
+      langs.includes('TypeScript/JavaScript') ? '- Keep TypeScript strict; run the type checker before finishing' : '',
+      '- Keep changes minimal and focused; run the tests that cover what you changed',
       '',
     ].filter(Boolean).join('\n');
 
@@ -549,13 +535,15 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown('```markdown\n' + skillContent + '```\n\n');
 
     const arg = request.prompt.trim().toLowerCase();
-    if (arg === 'apply' || arg === 'write' || arg === 'generate') {
+    const target = arg.includes('agents') ? '.agents/skills' : '.claude/skills';
+    if (arg.startsWith('apply') || arg.startsWith('write') || arg.startsWith('generate')) {
       stream.progress('Writing SKILL.md...');
-      const skillUri = vscode.Uri.joinPath(root, 'SKILL.md');
-      await vscode.workspace.fs.writeFile(skillUri, Buffer.from(skillContent, 'utf-8'));
-      stream.markdown(`### Written!\n\n- \`SKILL.md\` created at workspace root\n\n`);
+      const dir = vscode.Uri.joinPath(root, target, skillName);
+      await vscode.workspace.fs.createDirectory(dir);
+      await vscode.workspace.fs.writeFile(vscode.Uri.joinPath(dir, 'SKILL.md'), Buffer.from(skillContent, 'utf-8'));
+      stream.markdown(`### Written\n\n\`${target}/${skillName}/SKILL.md\`. ${target === '.claude/skills' ? 'Claude Code and VS Code agent mode discover skills here.' : 'Codex and VS Code agent mode discover skills here.'}\n\n`);
     } else {
-      stream.markdown(`**To write:** \`@tokalator /skill-gen apply\`\n`);
+      stream.markdown(`**To write:** \`@tokalator /skill-gen apply\` (to \`.claude/skills/${skillName}/\`, read by Claude Code and VS Code) or \`@tokalator /skill-gen apply agents\` (to \`.agents/skills/${skillName}/\`, read by Codex and VS Code).\n`);
     }
 
     return {};
@@ -584,69 +572,76 @@ export class ContextChatParticipant implements vscode.Disposable {
     const instrFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '.github/instructions/*.instructions.md'), undefined, 10);
     const agentFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*.agent.md'), '**/node_modules/**', 10);
     const claudeFile = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'CLAUDE.md'), undefined, 1);
-    const cursorRules = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '.cursorrules'), undefined, 1);
+    const agentsFile = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'AGENTS.md'), undefined, 1);
+    const claudeSettings = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '.claude/settings.json'), undefined, 1);
+    const promptFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '.github/prompts/*.prompt.md'), undefined, 10);
+    const skills = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '{.claude,.agents,.github}/skills/*/SKILL.md'), undefined, 20);
+    const cursorRules = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '{.cursor/rules/*.mdc,.cursorrules}'), undefined, 10);
+    const geminiFile = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'GEMINI.md'), undefined, 1);
+    const mcpFile = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '{.mcp.json,.vscode/mcp.json}'), undefined, 2);
 
     stream.markdown(`## AI Settings Generator\n\n`);
     stream.markdown(`### Current Configuration\n\n`);
-    stream.markdown(`| Config File | Status |\n|---|---|\n`);
-    stream.markdown(`| \`.github/copilot-instructions.md\` | ${copilotInstr.length > 0 ? 'Exists' : 'Missing'} |\n`);
-    stream.markdown(`| \`.vscode/settings.json\` | ${vscodeSettings.length > 0 ? 'Exists' : 'Missing'} |\n`);
-    stream.markdown(`| \`.github/instructions/*.instructions.md\` | ${instrFiles.length > 0 ? instrFiles.length + ' file(s)' : 'None'} |\n`);
-    stream.markdown(`| \`*.agent.md\` | ${agentFiles.length > 0 ? agentFiles.length + ' file(s)' : 'None'} |\n`);
-    stream.markdown(`| \`CLAUDE.md\` | ${claudeFile.length > 0 ? 'Exists' : 'Missing'} |\n`);
-    stream.markdown(`| \`.cursorrules\` | ${cursorRules.length > 0 ? 'Exists' : 'Missing'} |\n\n`);
+    const row = (file: string, tools: string, n: number) => stream.markdown(`| \`${file}\` | ${tools} | ${n > 0 ? (n > 1 ? n + ' files' : 'Exists') : 'Missing'} |\n`);
+    stream.markdown(`| File | Read by | Status |\n|---|---|---|\n`);
+    row('AGENTS.md', 'Codex, Copilot, Cursor, Gemini CLI (configurable), Claude Code when there is no CLAUDE.md', agentsFile.length);
+    row('CLAUDE.md', 'Claude Code', claudeFile.length);
+    row('.claude/settings.json', 'Claude Code permissions and hooks', claudeSettings.length);
+    row('.github/copilot-instructions.md', 'GitHub Copilot', copilotInstr.length);
+    row('.github/instructions/*.instructions.md', 'GitHub Copilot (path-scoped with applyTo)', instrFiles.length);
+    row('.github/prompts/*.prompt.md', 'VS Code prompt files (slash commands)', promptFiles.length);
+    row('*.agent.md', 'VS Code custom agents', agentFiles.length);
+    row('{.claude,.agents,.github}/skills/*/SKILL.md', 'Agent Skills (Claude Code, Codex, VS Code)', skills.length);
+    row('.cursor/rules/*.mdc', 'Cursor', cursorRules.length);
+    row('GEMINI.md', 'Gemini CLI', geminiFile.length);
+    row('.mcp.json or .vscode/mcp.json', 'MCP servers for Claude Code or VS Code', mcpFile.length);
+    row('.vscode/settings.json', 'VS Code search exclusion', vscodeSettings.length);
+    stream.markdown('\n');
 
-    // Detect project info for generated content
-    let projectName = folders[0].name;
-    let projectDesc = '';
     const pkgFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'package.json'), '**/node_modules/**', 1);
-    if (pkgFiles.length > 0) {
-      try {
-        const doc = await vscode.workspace.openTextDocument(pkgFiles[0]);
-        const pkg = JSON.parse(doc.getText());
-        if (pkg.name) projectName = pkg.name;
-        if (pkg.description) projectDesc = pkg.description;
-      } catch { /* skip */ }
-    }
+    const { name: projectName, description: projectDesc, scripts } = await this.readPackageInfo(pkgFiles[0], folders[0].name);
 
     const missing: string[] = [];
     const generated: { path: string; content: string }[] = [];
+    const guide = [
+      `# ${projectName}`,
+      '',
+      projectDesc ? projectDesc + '\n' : '',
+      scripts.length ? '## Commands\n\n' + scripts.map(([k, v]) => `- \`npm run ${k}\`: ${v}`).join('\n') + '\n' : '',
+      '## Conventions',
+      '',
+      '- Follow existing patterns in the codebase',
+      '- Keep changes minimal and focused; no speculative abstractions',
+      '- Run the tests that cover what you changed before finishing',
+      '- Never read or print secret files such as .env or private keys',
+      '',
+    ].filter(Boolean).join('\n');
 
-    // Generate copilot-instructions.md if missing
+    if (agentsFile.length === 0) {
+      missing.push('AGENTS.md');
+      generated.push({ path: 'AGENTS.md', content: guide });
+    }
+    if (claudeFile.length === 0) {
+      missing.push('CLAUDE.md');
+      generated.push({ path: 'CLAUDE.md', content: '@AGENTS.md\n' });
+    }
     if (copilotInstr.length === 0) {
-      const content = [
-        `# Copilot Instructions for ${projectName}`,
-        '',
-        projectDesc ? projectDesc + '\n' : '',
-        '## Code Style',
-        '',
-        '- Follow existing patterns in the codebase',
-        '- Keep changes minimal and focused',
-        '- No over-engineering or speculative abstractions',
-        '',
-        '## Testing',
-        '',
-        '- Run existing tests before committing',
-        '- Add tests for new functionality',
-        '',
-      ].filter(Boolean).join('\n');
       missing.push('.github/copilot-instructions.md');
-      generated.push({ path: '.github/copilot-instructions.md', content });
+      generated.push({ path: '.github/copilot-instructions.md', content: guide });
     }
 
     // Generate .vscode/settings.json AI excludes if missing
     if (vscodeSettings.length === 0) {
       const content = JSON.stringify({
-        'chat.excludeFilePatterns': [
-          '**/.env*', '**/*.pem', '**/*.key', '**/id_rsa*',
-          '**/credentials.json', '**/service-account*.json',
-          '**/node_modules/**', '**/dist/**', '**/.git/**',
-        ],
-        'files.exclude': {
+        'search.exclude': {
           '**/.env': true,
           '**/.env.*': true,
           '**/*.pem': true,
           '**/*.key': true,
+          '**/id_rsa*': true,
+          '**/credentials.json': true,
+          '**/service-account*.json': true,
+          '**/dist/**': true,
         },
       }, null, 2) + '\n';
       missing.push('.vscode/settings.json');
@@ -692,7 +687,7 @@ export class ContextChatParticipant implements vscode.Disposable {
         try { await vscode.workspace.fs.createDirectory(parent); } catch { /* exists */ }
         await vscode.workspace.fs.writeFile(uri, Buffer.from(g.content, 'utf-8'));
       }
-      stream.markdown(`### Applied!\n\n`);
+      stream.markdown(`### Applied\n\nCLAUDE.md imports AGENTS.md, so both stay in sync.\n\n`);
       for (const g of generated) {
         stream.markdown(`- Generated: \`${g.path}\`\n`);
       }
@@ -702,6 +697,31 @@ export class ContextChatParticipant implements vscode.Disposable {
     }
 
     return {};
+  }
+
+  private async handleCodeMap(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
+    const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!root) {
+      stream.markdown('No workspace open.\n');
+      return {};
+    }
+    stream.progress('Mapping the codebase...');
+    const r = writeCodeMaps(root);
+    stream.markdown(`## Code maps\n\n${r.symbolCount} symbols across ${r.fileCount} source files. ${r.updated.length ? 'Updated ' + r.updated.map(f => '`' + f + '`').join(' and ') + '.' : 'Both files are already current.'}\n\n`);
+    stream.markdown('- `GLOSSARY.md`: every declaration with a source link and its documented purpose\n- `SITE-MAP.md`: packages and scripts, modules and routes, and imports by module\n\nAgents can read them to find the right files before opening source. Built locally with no model calls.\n');
+    return {};
+  }
+
+  private async readPackageInfo(pkgUri: vscode.Uri | undefined, fallback: string): Promise<{ name: string; description: string; scripts: [string, string][] }> {
+    if (!pkgUri) return { name: fallback, description: '', scripts: [] };
+    try {
+      const pkg = JSON.parse((await vscode.workspace.openTextDocument(pkgUri)).getText());
+      const keep = ['dev', 'build', 'test', 'lint', 'typecheck', 'format'];
+      const scripts = Object.entries((pkg.scripts ?? {}) as Record<string, string>).filter(([k]) => keep.includes(k)) as [string, string][];
+      return { name: pkg.name || fallback, description: pkg.description || '', scripts };
+    } catch {
+      return { name: fallback, description: '', scripts: [] };
+    }
   }
 
   /**
@@ -905,21 +925,28 @@ export class ContextChatParticipant implements vscode.Disposable {
     const patterns = [
       '**/*.instructions.md',
       '**/.github/copilot-instructions.md',
-      '**/.copilot/*.md',
       '**/*.prompt.md',
-      '**/.cursorrules',
+      '**/*.agent.md',
+      '**/*.chatmode.md',
       '**/.claude/**/*.md',
       '**/CLAUDE.md',
+      '**/CLAUDE.local.md',
       '**/AGENTS.md',
-      '**/*.agent.md',
+      '**/AGENTS.override.md',
+      '**/GEMINI.md',
+      '**/.cursor/rules/*.mdc',
+      '**/.cursorrules',
     ];
 
     const allFiles: { path: string; tokens: number }[] = [];
+    const seen = new Set<string>();
 
     for (const pattern of patterns) {
       try {
         const files = await vscode.workspace.findFiles(pattern, '**/node_modules/**', 50);
         for (const uri of files) {
+          if (seen.has(uri.toString())) continue;
+          seen.add(uri.toString());
           try {
             const doc = await vscode.workspace.openTextDocument(uri);
             const model = this.monitor.getActiveModel();
@@ -942,11 +969,12 @@ export class ContextChatParticipant implements vscode.Disposable {
       stream.markdown('No instruction files found in this workspace.\n\n');
       stream.markdown('Instruction files are automatically attached to AI context. Common patterns:\n\n');
       stream.markdown('| File | Used by |\n|---|---|\n');
-      stream.markdown('| `.github/copilot-instructions.md` | GitHub Copilot |\n');
-      stream.markdown('| `*.instructions.md` | GitHub Copilot |\n');
-      stream.markdown('| `*.prompt.md` | Copilot / Claude |\n');
-      stream.markdown('| `AGENTS.md` | Claude Code |\n');
-      stream.markdown('| `.cursorrules` | Cursor |\n');
+      stream.markdown('| `AGENTS.md` | Codex, Copilot, Cursor, Claude Code when there is no CLAUDE.md |\n');
+      stream.markdown('| `CLAUDE.md`, `.claude/rules/*.md` | Claude Code |\n');
+      stream.markdown('| `.github/copilot-instructions.md`, `*.instructions.md` | GitHub Copilot |\n');
+      stream.markdown('| `*.prompt.md`, `*.agent.md` | VS Code prompt files and custom agents |\n');
+      stream.markdown('| `GEMINI.md` | Gemini CLI |\n');
+      stream.markdown('| `.cursor/rules/*.mdc` | Cursor |\n');
       return {};
     }
 

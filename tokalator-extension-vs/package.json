@@ -2,7 +2,7 @@
   "name": "tokalator",
   "displayName": "Tokalator",
   "description": "Open-source context engineering for AI coding assistants: real-time context budget, tab relevance, model pricing, and workspace security for Copilot, Claude, and other agents.",
-  "version": "4.1.0",
+  "version": "4.1.1",
   "publisher": "vfaraji89",
   "license": "AGPL-3.0-or-later",
   "repository": {
@@ -116,6 +116,10 @@
             "description": "End the current session and save summary"
           },
           {
+            "name": "codemap",
+            "description": "Generate GLOSSARY.md and SITE-MAP.md for agents"
+          },
+          {
             "name": "pricewatch",
             "description": "Show model pricing changes, cost impact analysis, and rate change history"
           }
@@ -151,6 +155,26 @@
         "title": "Secure Workspace",
         "category": "Tokalator",
         "icon": "$(shield)"
+      },
+      {
+        "command": "tokalator.feedback",
+        "title": "Tokalator: Send Feedback"
+      },
+      {
+        "command": "tokalator.telemetryShow",
+        "title": "Tokalator: Show Telemetry Data"
+      },
+      {
+        "command": "tokalator.telemetryExport",
+        "title": "Tokalator: Export My Telemetry Data"
+      },
+      {
+        "command": "tokalator.telemetryDelete",
+        "title": "Tokalator: Delete My Telemetry Data"
+      },
+      {
+        "command": "tokalator.codeMaps",
+        "title": "Tokalator: Generate Code Maps (GLOSSARY.md, SITE-MAP.md)"
       }
     ],
     "menus": {
@@ -184,56 +208,74 @@
         },
         "tokalator.model": {
           "type": "string",
-          "default": "claude-opus-5",
+          "default": "claude-opus-5-5",
           "enum": [
             "claude-fable-5-1",
+            "claude-mythos-5-1",
             "claude-fable-5",
+            "claude-mythos-5",
+            "claude-opus-5-5",
             "claude-opus-5",
             "claude-opus-4.8",
             "claude-opus-4.7",
             "claude-opus-4.6",
+            "claude-opus-4.5",
+            "claude-sonnet-5-5",
             "claude-sonnet-5",
             "claude-sonnet-4.6",
+            "claude-haiku-5-5",
             "claude-haiku-4.5",
+            "gpt-6-astra",
+            "gpt-6.1-sol",
+            "gpt-6-luna",
+            "gpt-5.6-sol",
+            "gpt-5.6-terra",
+            "gpt-5.6-luna",
             "gpt-5.5",
             "gpt-5.4",
             "gpt-5.4-mini",
             "gpt-5.4-nano",
-            "gpt-5.6-luna",
-            "gpt-5.6-sol",
-            "gpt-5.6-terra",
             "gpt-5.3-codex",
-            "gemini-3.7-flash",
+            "gemini-3.8-flash",
             "gemini-3.6-flash",
             "gemini-3.5-flash",
-            "gemini-3.1-pro",
-            "gemini-3-flash",
+            "gemini-3.1-pro-preview",
+            "gemini-3-flash-preview",
             "gemini-2.5-pro"
           ],
           "enumDescriptions": [
             "Claude Fable 5.1 — 1M tokens — $10.00/$50.00 per MTok",
+            "Claude Mythos 5.1 — 1M tokens — $10.00/$50.00 per MTok",
             "Claude Fable 5 — 1M tokens — $10.00/$50.00 per MTok",
+            "Claude Mythos 5 — 1M tokens — $10.00/$50.00 per MTok",
+            "Claude Opus 5.5 — 1M tokens — $4.00/$20.00 per MTok",
             "Claude Opus 5 — 1M tokens — $5.00/$25.00 per MTok",
             "Claude Opus 4.8 — 1M tokens — $5.00/$25.00 per MTok",
             "Claude Opus 4.7 — 1M tokens — $5.00/$25.00 per MTok",
             "Claude Opus 4.6 — 1M tokens — $5.00/$25.00 per MTok",
+            "Claude Opus 4.5 — 200K tokens — $5.00/$25.00 per MTok",
+            "Claude Sonnet 5.5 — 1M tokens — $2.00/$10.00 per MTok",
             "Claude Sonnet 5 — 1M tokens — $2.00/$10.00 per MTok",
             "Claude Sonnet 4.6 — 1M tokens — $3.00/$15.00 per MTok",
+            "Claude Haiku 5.5 — 1M tokens — $0.100/$0.500 per MTok",
             "Claude Haiku 4.5 — 200K tokens — $1.00/$5.00 per MTok",
-            "GPT-5.5 — 272K tokens — $5.00/$30.00 per MTok",
-            "GPT-5.4 — 272K tokens — $2.50/$15.00 per MTok",
-            "GPT-5.4 mini — 128K tokens — $0.750/$4.50 per MTok",
-            "GPT-5.4 nano — 128K tokens — $0.200/$1.25 per MTok",
-            "GPT-5.6 Luna — 272K tokens — $3.00/$18.00 per MTok",
-            "GPT-5.6 Sol — 272K tokens — $5.00/$30.00 per MTok",
-            "GPT-5.6 Terra — 272K tokens — $8.00/$40.00 per MTok",
-            "GPT-5.3-Codex — 256K tokens — $1.75/$14.00 per MTok",
-            "Gemini 3.7 Flash — 1M tokens — $2.00/$12.00 per MTok",
-            "Gemini 3.6 Flash — 1M tokens — $1.75/$10.50 per MTok",
-            "Gemini 3.5 Flash — 1M tokens — $1.50/$9.00 per MTok",
-            "Gemini 3.1 Pro — 1M tokens — $2.00/$12.00 per MTok",
-            "Gemini 3 Flash — 1M tokens — $0.500/$3.00 per MTok",
-            "Gemini 2.5 Pro — 1M tokens — $1.25/$10.00 per MTok"
+            "GPT-6 Astra — 1.05M tokens — $10.00/$50.00 per MTok",
+            "GPT-6.1 Sol — 1.05M tokens — $2.00/$10.00 per MTok",
+            "GPT-6 Luna — 1.05M tokens — $0.100/$0.500 per MTok",
+            "GPT-5.6 Sol — 1.05M tokens — $4.00/$20.00 per MTok",
+            "GPT-5.6 Terra — 1.05M tokens — $2.00/$12.00 per MTok",
+            "GPT-5.6 Luna — 1.05M tokens — $0.200/$1.20 per MTok",
+            "GPT-5.5 — 1.05M tokens — $5.00/$30.00 per MTok",
+            "GPT-5.4 — 1.05M tokens — $2.50/$15.00 per MTok",
+            "GPT-5.4 mini — 400K tokens — $0.750/$4.50 per MTok",
+            "GPT-5.4 nano — 400K tokens — $0.200/$1.25 per MTok",
+            "GPT-5.3-Codex — 400K tokens — $1.75/$14.00 per MTok",
+            "Gemini 3.8 Flash — 1.05M tokens — $0.750/$3.75 per MTok",
+            "Gemini 3.6 Flash — 1.05M tokens — $0.750/$3.75 per MTok",
+            "Gemini 3.5 Flash — 1.05M tokens — $1.50/$9.00 per MTok",
+            "Gemini 3.1 Pro — 1.05M tokens — $2.00/$12.00 per MTok",
+            "Gemini 3 Flash — 1.05M tokens — $0.500/$3.00 per MTok",
+            "Gemini 2.5 Pro — 1.05M tokens — $1.25/$10.00 per MTok"
           ],
           "description": "AI model to calculate context budget against"
         },
@@ -246,6 +288,20 @@
           "type": "boolean",
           "default": false,
           "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores — no file names or contents."
+        },
+        "tokalator.claudeCode.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show token usage and cost from local Claude Code session logs (CLI and VS Code extension) for this workspace. Reads ~/.claude/projects (or CLAUDE_CONFIG_DIR) on this machine; nothing is uploaded."
+        },
+        "tokalator.telemetry.enabled": {
+          "type": "boolean",
+          "default": false,
+          "tags": [
+            "usesOnlineServices",
+            "telemetry"
+          ],
+          "markdownDescription": "Share anonymous daily usage counts (feature use, model IDs, Claude Code totals) with tokalator.ai to improve the extension. Off by default. Never includes code, file names, paths, or prompts. Also requires VS Code telemetry to be on. Use **Tokalator: Show Telemetry Data** to see exactly what is sent and **Tokalator: Delete My Telemetry Data** to erase it. [Privacy policy](https://tokalator.ai/privacy#telemetry)"
         }
       }
     }
@@ -257,21 +313,24 @@
     "generate-models": "npx tsx scripts/generate-models.ts",
     "package": "npm run compile && npx @vscode/vsce package --no-dependencies",
     "lint": "eslint src",
-    "test": "jest --verbose"
+    "test": "jest --verbose",
+    "preview:dashboard": "npx tsx scripts/render-dashboard-preview.ts",
+    "test:e2e": "npm run compile && node e2e/run.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
     "@types/node": "^24.12.0",
     "@types/vscode": "^1.99.0",
-    "@vscode/vsce": "^3.9.2",
-    "esbuild": "^0.27.4",
-    "jest": "^30.2.0",
-    "ts-jest": "^29.4.6",
+    "@vscode/vsce": "^4.0.0",
+    "esbuild": "^0.28.2",
+    "jest": "^30.5.2",
+    "ts-jest": "^29.4.14",
     "typescript": "^5.5.0"
   },
   "dependencies": {
     "@anthropic-ai/tokenizer": "^0.0.4",
     "js-tiktoken": "^1.0.21"
   },
-  "homepage": "https://tokalator.wiki"
+  "homepage": "https://tokalator.ai",
+  "author": "Vahid Farajijobehdar"
 }
