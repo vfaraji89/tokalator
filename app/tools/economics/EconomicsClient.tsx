@@ -1,5 +1,7 @@
 'use client';
 
+import { themePalette as P } from '@/lib/theme-palette';
+
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -17,10 +19,7 @@ import {
 import { PROVIDER_MODELS } from '@/lib/providers';
 import { formatCost } from '@/lib/pricing';
 
-const P = {
-  red: '#e3120b', black: '#111', white: '#fff',
-  g1: '#f3f3f3', g3: '#ccc', g5: '#888', g7: '#555',
-};
+
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 const ls: React.CSSProperties = { display: 'block', fontSize: '0.8125rem', color: P.g7, marginBottom: '0.25rem' };
 const ss: React.CSSProperties = { width: '100%', accentColor: P.red };

@@ -1,5 +1,7 @@
 "use client";
 
+import { themePalette as P } from "@/lib/theme-palette";
+
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -10,12 +12,12 @@ import {
   getModelInfo, MODEL_PARAMS, type CostBreakdown,
 } from "@/lib/pricing";
 
-const models = ["claude-opus-4.6", "claude-sonnet-4.6", "claude-haiku-4.5"] as const;
-const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
+const models = ["claude-fable-5", "claude-opus-5", "claude-sonnet-5", "claude-opus-4.8", "claude-haiku-4.5"] as const;
+
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 export function CostCalculator() {
-  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-4.6");
+  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-5");
   const [inputTokens, setInputTokens] = useState<number>(10000);
   const [outputTokens, setOutputTokens] = useState<number>(5000);
   const [cacheWriteTokens, setCacheWriteTokens] = useState<number>(0);
@@ -28,7 +30,7 @@ export function CostCalculator() {
   const params = MODEL_PARAMS[selectedModel];
   const cost: CostBreakdown = calculateCost(selectedModel, { inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens, promptLength }, { webSearches, codeExecMinutes });
   const qualityScore = calculateQuality(inputTokens, outputTokens, cacheWriteTokens + cacheReadTokens, params);
-  const isSonnet = selectedModel === "claude-sonnet-4.6";
+  const isSonnet = selectedModel === "claude-sonnet-5" || selectedModel === "claude-sonnet-4.6";
   const isExtendedContext = isSonnet && promptLength > 200000;
 
   // Cross-model cost comparison

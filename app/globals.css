@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 :root {
-  --font-primary: 'Space Mono', ui-monospace, monospace;
-  --font-mono: 'Space Mono', ui-monospace, SFMono-Regular, monospace;
-  --font-pixel: 'Silkscreen', 'Courier New', monospace;
-  --font-display: 'Instrument Serif', Georgia, serif;
+  --font-primary: "Sora", "Recursive", sans-serif;
+  --font-mono: "Recursive", ui-monospace, SFMono-Regular, monospace;
+  --font-pixel: "Sora", "Recursive", sans-serif;
+  --font-display: "Sora", "Recursive", sans-serif;
 
   --black: #000;
   --grey-900: #111;
@@ -4797,4 +4797,50 @@ a.hero-proof-item:hover .hero-proof-value { color: var(--accent); }
   .hero-proof-dot { display: none; }
   .footer-stats { flex-direction: column; gap: .75rem; }
   .footer-stat { flex-direction: row; gap: .5rem; }
+}
+
+/* 3.4.0 source-map release */
+.code-maps-release { scroll-margin-top: 2rem; padding: 2rem 0; }
+.code-maps-eyebrow { font-size: .7rem; letter-spacing: .08em; color: var(--green); }
+.code-maps-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 1.5rem 0 2rem; }
+.code-map-file { min-width: 0; border: 1px solid var(--border); border-radius: 8px; padding: 1.25rem; }
+.code-map-file h3 { margin: 0 0 .75rem; font-family: var(--font-mono); }
+.code-map-file p, .code-map-install p, .code-map-note { font-size: .85rem; line-height: 1.8; }
+.code-map-file pre, .code-map-install pre { overflow-x: auto; padding: 1rem; margin: 1rem 0; border: 1px solid var(--border); border-radius: 6px; font-size: .7rem; line-height: 1.9; }
+.code-map-file small { font-size: .7rem; line-height: 1.6; }
+.code-map-install { margin: 2rem 0 1rem; }
+.code-map-install a { text-decoration: underline; text-underline-offset: 4px; }
+.code-map-note { opacity: .8; }
+@media (max-width: 680px) { .code-maps-grid { grid-template-columns: 1fr; } }
+
+/* Shared 3.4.0 design language: the homepage and working pages use one theme. */
+body { font-weight: 380; }
+h1, h2, h3, h4 { font-family: var(--font-display); letter-spacing: -.025em; }
+code, pre { font-variation-settings: "MONO" 1, "CASL" 0; }
+input, select, textarea { font-family: var(--font-primary); color: var(--text-primary); background-color: var(--bg-subtle); }
+a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.main-content:not(:has(.natural-home)) { max-width: 1240px; padding: 48px clamp(24px, 4vw, 64px); }
+.main-content:not(:has(.natural-home)) .article > .hero { padding: 0 0 32px; margin-bottom: 36px; }
+.main-content:not(:has(.natural-home)) .hero-headline,
+.main-content:not(:has(.natural-home)) .article > header > h1 { font-size: clamp(28px, 3.3vw, 46px); font-weight: 700; line-height: 1.15; letter-spacing: -.025em; }
+.main-content:not(:has(.natural-home)) .hero-description { max-width: 720px; font-size: 15px; line-height: 1.8; }
+.main-content:not(:has(.natural-home)) .hero-marker { background: none; padding: 0; color: var(--text-primary); }
+.main-content:not(:has(.natural-home)) .hero-underline { color: var(--accent); }
+.main-content:not(:has(.natural-home)) .hero-underline::after { display: none; }
+.main-content:not(:has(.natural-home)) .section-header { font-size: 22px; line-height: 1.3; padding-bottom: 12px; margin-bottom: 20px; border-bottom: 1px solid var(--border); display: block; }
+.main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .feature-item, .install-method-card, .about-highlight-card, .why-stat-card) { background: var(--bg-subtle); border: 1px solid var(--border); border-radius: 6px; padding: 24px; box-shadow: none; }
+.main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .install-method-card):hover { border-color: var(--accent); background: var(--bg-muted); box-shadow: none; }
+.main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .feature-item) h3 { font-size: 16px; font-weight: 600; line-height: 1.45; }
+.main-content:not(:has(.natural-home)) :is(.tool-grid, .arch-grid, .feature-grid) { gap: 18px; }
+.main-content:not(:has(.natural-home)) pre { background: var(--bg-subtle); color: var(--text-primary); border: 1px solid var(--border); border-radius: 6px; }
+.sidebar { background: var(--bg); }
+.sidebar-logo-text { font-family: var(--font-display); font-weight: 600; letter-spacing: -.035em; }
+.nav-link { font-size: 12px; line-height: 1.6; border-radius: 4px; }
+.nav-link.active { color: var(--accent); background: var(--accent-bg); }
+.nav-section-label { font-size: 9px; letter-spacing: .1em; }
+.recharts-wrapper { font-family: var(--font-primary); }
+@media (max-width: 768px) {
+  .main-content:not(:has(.natural-home)) { padding: 76px 20px 32px; width: 100%; }
+  .main-content:not(:has(.natural-home)) .section-header { font-size: 19px; }
+  .main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .feature-item, .install-method-card) { padding: 20px; }
 }

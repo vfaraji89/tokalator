@@ -1,432 +1,59 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
-import { useState, useEffect, useRef } from "react";
-import { motion } from "motion/react";
-import { track } from "@vercel/analytics";
-import content from "../content/homepage.json";
-import { CommandTyper } from "../components/command-typer";
-import { HeroMorph } from "../components/hero-morph";
-import { StarCount } from "../components/star-count";
+import { useEffect, useState } from "react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import site from "@/content/site.json";
+import { ThemeToggle } from "@/components/theme-toggle";
+import "./home.css";
 
-const fadeUp = (delay = 0) => ({
-  initial: { opacity: 0, y: 18 },
-  animate: { opacity: 1, y: 0 },
-  transition: { duration: 0.45, delay, ease: [0.25, 0.1, 0.25, 1] as const },
-});
-const fadeIn = (delay = 0) => ({
-  initial: { opacity: 0 },
-  animate: { opacity: 1 },
-  transition: { duration: 0.4, delay },
-});
-const inView = {
-  initial: { opacity: 0, y: 22 },
-  whileInView: { opacity: 1, y: 0 },
-  viewport: { once: true, margin: "-60px" },
-  transition: { duration: 0.45, ease: [0.25, 0.1, 0.25, 1] as const },
-};
-
-const features = [
-  { title: "BPE Tokenization", desc: "Real token counts with Claude BPE and OpenAI o200k_base encoders.", badge: "v3.1.7" },
-  { title: "Context Budget Meter", desc: "Live sidebar showing token usage vs model context window with Budget Level indicators.", badge: "v3.1.7" },
-  { title: "Tab Relevance Scoring", desc: "5-signal scoring: language match, import relationships, path similarity, edit recency, diagnostics.", badge: "v3.1.7" },
-  { title: "Cost-per-Turn Estimate", desc: "Know the dollar cost before you send. Per-MTok pricing for 17 models.", badge: "v3.1.7" },
-  { title: "17 Model Profiles", desc: "Claude Opus/Sonnet/Haiku 4.x, GPT-5.x, o4-mini, Gemini 3.x/2.5 with live pricing.", badge: "v3.1.7" },
-  { title: "Next Turn Preview", desc: "Project total tokens after your next turn to decide whether to send or restart.", badge: "v3.1.7" },
-  { title: "Workspace Security Scan", desc: "Detect Sensitive Files (.env, .pem, credentials) and generate deny rules for Claude and Copilot.", badge: "Pro" },
-  { title: "Smart Model Routing", desc: "Automatically select the most cost-effective model based on task complexity.", badge: "Pro" },
-  { title: "Team Analytics", desc: "Usage dashboards, audit logs, cost insights, and spend controls across your organization.", badge: "Enterprise" },
+const scenes = [
+  { title: "Start with your code", caption: "A project full of names, routes and relationships.", file: "src/budget.ts", lines: ["import { Model } from './models'", "", "/** Estimate the cost of a request. */", "export function estimateCost(model: Model) {", "  return model.input * tokens / 1_000_000", "}", "", "export interface Budget {", "  remaining: number", "}"] },
+  { title: "Make the context visible", caption: "Turn declarations and imports into two source-linked maps.", file: "GLOSSARY.md", lines: ["# Codebase Glossary", "", "estimateCost · function", "↳ src/budget.ts:4", "  Estimate the cost of a request.", "", "Budget · interface", "↳ src/budget.ts:8", "", "Source links. Documented purpose."] },
+  { title: "Review with a map", caption: "Find the right modules, then inspect the source and tests.", file: "SITE-MAP.md", lines: ["# Codebase Site Map", "", "app/page.tsx       → Page: /", "app/api/route.ts   → API: /api", "src/budget.ts     → Source module", "", "## Imports", "src/budget.ts → src/models.ts", "", "## Packages and commands", "package.json → build, test, lint"] },
+  { title: "Leave fresh context behind", caption: "The Stop hook refreshes both files after a completed turn.", file: "Claude Code · Stop", lines: ["✓ Agent turn completed", "", "$ python3 scripts/tokalator-context.py .", "", "Updated: GLOSSARY.md, SITE-MAP.md", "", "Next session:", "  Read the map.", "  Follow the source.", "  Keep building."] },
 ];
 
-function LiveClock() {
-  const [now, setNow] = useState<Date | null>(null);
+function Walkthrough() {
+  const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(true);
+  const reduced = useReducedMotion();
   useEffect(() => {
-    setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  const fmt = now
-    ? new Intl.DateTimeFormat("en-US", {
-        weekday: "short", month: "short", day: "numeric",
-        hour: "2-digit", minute: "2-digit", second: "2-digit",
-        hour12: false, timeZone: "Europe/Istanbul",
-      })
-    : null;
-  return (
-    <span className="footer-clock" suppressHydrationWarning>
-      {fmt && now ? `${fmt.format(now)} IST` : " "}
-    </span>
-  );
+    if (!playing || reduced) return;
+    const timer = setInterval(() => { if (!document.hidden) setStep(s => (s + 1) % scenes.length); }, 5200);
+    return () => clearInterval(timer);
+  }, [playing, reduced]);
+  return <div className="story-player" id="walkthrough">
+    <div className="story-window"><span className="window-dots" aria-hidden="true">● ● ●</span><span>tokalator / a little context goes a long way</span><span className="demo-label">Illustrative demo</span></div>
+    <div className="story-stage">
+      <div className="story-project"><span className="tiny-label">YOUR PROJECT</span><p>⌄ &nbsp; workspace</p><span>├ &nbsp; app/</span><span>├ &nbsp; src/</span><span>├ &nbsp; tests/</span><span className={step > 0 ? "file-ready" : "file-pending"}>├ &nbsp; GLOSSARY.md</span><span className={step > 0 ? "file-ready" : "file-pending"}>└ &nbsp; SITE-MAP.md</span><div className="local-stamp"><span aria-hidden="true">◉</span> Generated locally<br/><small>No model API calls</small></div></div>
+      <div className="story-editor"><div className="editor-tab">{scenes[step].file}<span>↗</span></div><AnimatePresence mode="wait"><motion.div key={step} initial={{opacity:0,y:reduced?0:10}} animate={{opacity:1,y:0}} exit={{opacity:0}} transition={{duration:reduced?0:.3}} className="editor-lines">{scenes[step].lines.map((line,i)=><div key={i}><span>{String(i+1).padStart(2,"0")}</span><code>{line || " "}</code></div>)}</motion.div></AnimatePresence></div>
+      <div className="story-float"><span className="sprout" aria-hidden="true">✳</span><div><b>{step===0?"Your code is the starting point.":step===3?"Ready for the next session.":"A shared map for your agents."}</b><small>{step===0?"Let’s make it easier to navigate.":"Plain Markdown. Kept with your project."}</small></div></div>
+    </div>
+    <div className="story-controls"><button type="button" className="play-toggle" onClick={()=>setPlaying(!playing)} aria-label={playing&&!reduced?"Pause walkthrough":"Play walkthrough"} disabled={!!reduced}>{playing&&!reduced?"Ⅱ":"▶"}</button><div className="story-chapters" aria-label="Walkthrough chapters">{scenes.map((scene,i)=><button key={scene.title} type="button" aria-pressed={step===i} onClick={()=>{setStep(i);setPlaying(false);}}><span className={step===i?"chapter-track active":"chapter-track"}/><small>0{i+1} <span>{scene.title}</span></small></button>)}</div><span className="story-time">0{step+1} / 04</span></div>
+    <p className="story-caption">{scenes[step].caption}</p>
+  </div>;
 }
 
-function FooterHeart() {
-  const ref = useRef<HTMLDivElement>(null);
-  const [active, setActive] = useState(false);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const obs = new IntersectionObserver(
-      ([entry]) => setActive(entry.isIntersecting),
-      { threshold: 0.5 }
-    );
-    obs.observe(el);
-    return () => obs.disconnect();
-  }, []);
-
-  return (
-    <div className="footer-love" ref={ref}>
-      Made with <span className={`footer-love-icon${active ? " heart-active" : ""}`}>&#9829;</span> from Istanbul
-    </div>
-  );
+function Install() {
+  const [mode, setMode] = useState<"plugin"|"cli">("plugin");
+  const [copied,setCopied] = useState(false);
+  const [copyError,setCopyError] = useState(false);
+  const command=mode==="plugin" ? "claude --plugin-dir /path/to/tokalator-glossary-3.4.0" : "python3 tokalator-context-3.4.0/bin/tokalator-install /path/to/project\ncd /path/to/project\npython3 scripts/tokalator-context.py .";
+  async function copy(){try{await navigator.clipboard.writeText(command);setCopied(true);setCopyError(false);}catch{setCopyError(true);}}
+  return <section id="install" className="home-install home-section"><div><span className="eyebrow">A SMALL ADDITION. A BETTER START.</span><h2>Bring a little context<br/>to your next session.</h2><p>Choose the Claude Code plugin, or install the generator directly into your repository.</p><p className="install-requirements">Python 3.10+ · Local generation · MIT-licensed kit</p></div><div className="install-panel"><div className="install-tabs" aria-label="Installation options"><button type="button" aria-pressed={mode==="plugin"} onClick={()=>{setMode("plugin");setCopied(false);setCopyError(false);}}>Claude Code plugin</button><button type="button" aria-pressed={mode==="cli"} onClick={()=>{setMode("cli");setCopied(false);setCopyError(false);}}>Repository install</button></div><p>01 &nbsp; Download and extract the {mode==="plugin"?"plugin":"automation kit"}.</p><a className="home-button" href={`/downloads/${mode==="plugin"?"tokalator-glossary":"tokalator-context"}-3.4.0.zip`} download>Download {mode==="plugin"?"Claude plugin":"automation kit"} <span>↓</span></a><p>02 &nbsp; {mode==="plugin"?"From your project, launch Claude with the extracted plugin’s path.":"Replace the sample path with your project’s folder."}</p><div className="copy-command"><pre><code>{command}</code></pre><button type="button" onClick={copy}>{copied?"Copied":"Copy"}</button></div><span role="status" className="copy-status">{copyError?"Select the command above and copy it manually.":copied?"Command copied.":""}</span>{mode==="plugin"?<p className="install-note">Then use <code>/tokalator-glossary:code-review</code> or <code>/tokalator-glossary:refresh-context</code>. Inspect <code>/hooks</code> to check registration.</p>:<p className="install-note">Reload Claude Code for project hooks. Other agents use the CLI directly. Run with <code>--check</code> to verify freshness.</p>}<p className="install-note">Choose one installation method per project to avoid duplicate hook runs.</p></div></section>;
 }
 
 export default function HomePage() {
-  const { hero, quickStart, commands } = content;
-  const headlineParts = hero.headline.split("\n");
-
-  return (
-    <article className="article">
-      {/* Hero */}
-      <header className="hero">
-        <motion.a {...fadeIn(0)} href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator" target="_blank" rel="noopener noreferrer" className="update-pill" onClick={() => track("marketplace_click", { location: "home-hero-pill" })}>
-          <span className="update-dot" /> v3.1.7: Context Engineering stats, auto-detected model, Generate Glossary
-          <span className="update-arrow">&rarr;</span>
-        </motion.a>
-
-        <motion.div {...fadeIn(0.08)} className="hero-outline-icon" aria-hidden>
-          <HeroMorph />
-        </motion.div>
-
-        <motion.h1 {...fadeUp(0.15)} className="hero-headline">
-          {headlineParts.map((part, i) => (
-            <span key={i} className={i === 0 ? "hero-marker" : "hero-underline"}>
-              {i > 0 && <br />}
-              {part}
-            </span>
-          ))}
-        </motion.h1>
-        <motion.p {...fadeUp(0.25)} className="hero-description">
-          <span className="accent-highlight">{hero.highlightPhrase}</span>{" "}
-          {hero.description}
-        </motion.p>
-        <motion.div {...fadeUp(0.35)} className="hero-ctas">
-          <Link href={hero.secondaryCta.href} className="cta-secondary">
-            {hero.secondaryCta.label}
-          </Link>
-          <a
-            href="https://github.com/vfaraji89/tokalator"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cta-star"
-          >
-            <svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
-            Star on GitHub
-            <StarCount />
-          </a>
-        </motion.div>
-
-        {/* IDE Install Options */}
-        <motion.div {...fadeUp(0.42)} className="ide-install">
-          <a
-            href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="ide-install-btn ide-install-btn--primary"
-            onClick={() => track("marketplace_click", { location: "home-install-button" })}
-          >
-            <Image src="/icons/vscode.svg" alt="VS Code" width={18} height={18} />
-            VS Code
-          </a>
-          <Link href="/extension#mcp" className="ide-install-btn ide-install-btn--mcp" title="Use via MCP server">
-            <Image src="/icons/claude.svg" alt="Claude Code" width={18} height={18} />
-            Claude Code
-            <span className="ide-mcp-tag">MCP</span>
-          </Link>
-        </motion.div>
-
-        {/* Proof stats */}
-        <motion.div {...fadeUp(0.52)} className="hero-proof">
-          <a
-            href="https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hero-proof-item"
-            onClick={() => track("marketplace_click", { location: "home-proof-stat" })}
-          >
-            <span className="hero-proof-value">500+</span>
-            <span className="hero-proof-label">installs</span>
-          </a>
-          <span className="hero-proof-dot" />
-          <a
-            href="https://arxiv.org/abs/2604.08290"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hero-proof-item"
-          >
-            <span className="hero-proof-value">arXiv</span>
-            <span className="hero-proof-label">2604.08290</span>
-          </a>
-          <span className="hero-proof-dot" />
-          <span className="hero-proof-item">
-            <span className="hero-proof-value">17</span>
-            <span className="hero-proof-label">models</span>
-          </span>
-          <span className="hero-proof-dot" />
-          <span className="hero-proof-item">
-            <span className="hero-proof-value">Open</span>
-            <span className="hero-proof-label">source</span>
-          </span>
-        </motion.div>
-
-        {/* Command typing animation */}
-        <motion.div {...fadeIn(0.58)}>
-          <CommandTyper />
-        </motion.div>
-
-        {/* Dashboard screenshot */}
-        <motion.div
-          initial={{ opacity: 0, y: 28, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          transition={{ duration: 0.55, delay: 0.65, ease: [0.25, 0.1, 0.25, 1] as const }}
-          style={{ marginTop: "2rem", maxWidth: 420, width: "100%" }}
-        >
-          <Image
-            src="/screenshots/tokalator-ui.png"
-            alt="Tokalator token budget dashboard in VS Code — LOW budget, Context Engineering stats, budget breakdown"
-            width={474}
-            height={952}
-            style={{ width: "100%", height: "auto", borderRadius: "8px", border: "1px solid var(--border)", display: "block" }}
-          />
-        </motion.div>
-      </header>
-
-      {/* Features with tier badges */}
-      <motion.section {...inView}>
-        <div className="section-divider" />
-        <h2 className="section-header">Features</h2>
-        <div className="feature-grid">
-          {features.map((f) => {
-            const isLocked = f.badge === "Pro" || f.badge === "Enterprise";
-            const badgeClass = f.badge === "Pro" ? "pro" : f.badge === "Enterprise" ? "enterprise" : "extension";
-            return (
-              <div key={f.title} className={`feature-item feature-item--extension${isLocked ? " feature-item--locked" : ""}`}>
-                <h3>{f.title}</h3>
-                <p>{f.desc}</p>
-                <span className={`feature-badge feature-badge--${badgeClass}`}>
-                  {f.badge}
-                </span>
-                {f.badge === "Pro" && (
-                  <a href="https://tokalator.ai" target="_blank" rel="noopener noreferrer" className="feature-lock-link">Upgrade to Pro &rarr;</a>
-                )}
-                {f.badge === "Enterprise" && (
-                  <a href="https://tokalator.ai/enterprise" target="_blank" rel="noopener noreferrer" className="feature-lock-link feature-lock-link--enterprise">Contact Sales &rarr;</a>
-                )}
-              </div>
-            );
-          })}
-        </div>
-      </motion.section>
-
-      {/* Quick Start */}
-      <motion.section {...inView}>
-        <div className="section-divider" />
-        <h2 className="section-header">{quickStart.title}</h2>
-        <ol className="how-to-steps">
-          {quickStart.steps.map((step: string, i: number) => (
-            <li key={i} className="how-to-step">
-              <span className="how-to-num">{i + 1}</span>
-              <span>{step}</span>
-            </li>
-          ))}
-        </ol>
-        <div className="tech-details">
-          <h3 className="tech-details-title">{quickStart.technical.title}</h3>
-          <dl className="tech-details-list">
-            {quickStart.technical.items.map((item: { label: string; value: string }) => (
-              <div key={item.label} className="tech-details-item">
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
-              </div>
-            ))}
-          </dl>
-        </div>
-      </motion.section>
-
-      {/* All Commands */}
-      <motion.section {...inView} className="extension-section">
-        <div className="section-divider" />
-        <h2 className="section-header">{commands.title}</h2>
-        <p>{commands.description}</p>
-        <div className="command-grid">
-          {commands.items.map((cmd: { command: string; description: string }) => (
-            <div key={cmd.command} className="command-card">
-              <code className="command-name">{cmd.command}</code>
-              <p className="command-desc">{cmd.description}</p>
-            </div>
-          ))}
-        </div>
-        <div className="section-cta">
-          <a
-            href="https://github.com/vfaraji89/tokalator"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="cta-secondary"
-          >
-            View on GitHub &rarr;
-          </a>
-        </div>
-      </motion.section>
-
-      {/* Beyond VS Code */}
-      <motion.section {...inView} className="extension-section">
-        <div className="section-divider" />
-        <h2 className="section-header">Beyond VS Code</h2>
-        <p>Token budget awareness wherever you work — not just in the editor.</p>
-        <div className="feature-grid feature-grid--2col" style={{ marginTop: "1.25rem" }}>
-          <div className="feature-item feature-item--extension">
-            <span className="feature-number">1</span>
-            <h3>MCP Server for Claude Code</h3>
-            <p>
-              Real Claude BPE token counting inside Claude Code via stdio MCP transport.
-              Count tokens, estimate file budgets, preview turn cost — zero API calls.
-            </p>
-            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
-              <code>claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js</code>
-            </div>
-            <span className="feature-badge feature-badge--mcp">MCP</span>
-          </div>
-          <div className="feature-item feature-item--extension">
-            <span className="feature-number">2</span>
-            <h3>Standalone CLI</h3>
-            <p>
-              Terminal-first token budgeting for SSH sessions, containers, and non-VS Code workflows.
-              Run <code>tokalator count</code>, <code>budget</code>, <code>preview</code>, or <code>models</code> anywhere.
-            </p>
-            <div className="install-cmd" style={{ marginTop: "0.75rem" }}>
-              <code>npm install -g tokalator</code>
-            </div>
-            <span className="feature-badge feature-badge--cli">CLI</span>
-          </div>
-        </div>
-      </motion.section>
-
-      {/* Tokalator Pro */}
-      <motion.section {...inView}>
-        <div className="section-divider" />
-        <span className="feature-badge feature-badge--pro" style={{ position: "static", marginBottom: "0.75rem" }}>Pro</span>
-        <h2 className="section-header">Built for teams that ship with AI</h2>
-        <p style={{ maxWidth: "46rem", color: "var(--text-secondary)", marginBottom: "0.5rem" }}>
-          The free extension keeps your own context in check. Tokalator Pro takes that across your team,
-          your pipeline, and your sensitive code, so context stays a managed budget instead of a surprise.
-        </p>
-        <div className="feature-grid" style={{ gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", marginTop: "1.25rem" }}>
-          <div className="feature-item feature-item--extension">
-            <h3>See it across the team</h3>
-            <p>Shared context budgets and a team dashboard, so the whole org sees what is filling the window, not just the person who opened the file.</p>
-          </div>
-          <div className="feature-item feature-item--extension">
-            <h3>Catch regressions early</h3>
-            <p>Historical token analytics across days, sprints, and models. Spot context spend creeping up long before it shows on the invoice.</p>
-          </div>
-          <div className="feature-item feature-item--extension">
-            <h3>Guardrails in CI</h3>
-            <p>Budget gates fail the build when context blows past your threshold, keeping AI agents honest inside the pipeline.</p>
-          </div>
-          <div className="feature-item feature-item--extension">
-            <h3>Keep secrets out of context</h3>
-            <p>Secure Workspace shields sensitive files from the model, and custom model profiles plug in your internal or fine-tuned models.</p>
-          </div>
-        </div>
-        <div className="section-cta" style={{ marginTop: "1.5rem" }}>
-          <Link href="/pro" className="cta-primary">See what is in Pro &rarr;</Link>
-        </div>
-      </motion.section>
-
-      {/* Open Source */}
-      <motion.section {...inView} className="community-section">
-        <div className="community-glow" aria-hidden />
-        <div className="community-content">
-          <h2 className="community-headline">Every token you save<br />makes the next prompt better.</h2>
-          <p className="community-text">
-            Open source. Community shaped. Free forever.
-          </p>
-          <div className="community-ctas">
-            <a
-              href="https://github.com/vfaraji89/tokalator"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="cta-star cta-star--large"
-            >
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.75.75 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25z"/></svg>
-              Star on GitHub
-              <StarCount />
-            </a>
-          </div>
-        </div>
-      </motion.section>
-
-      <footer className="footer">
-        <div className="footer-nav">
-          <div className="footer-nav-col">
-            <h4 className="footer-nav-heading">Get Started</h4>
-            <Link href="/extension">Install Extension</Link>
-            <Link href="/learn">Learn Tokens</Link>
-          </div>
-          <div className="footer-nav-col">
-            <h4 className="footer-nav-heading">Resources</h4>
-            <Link href="/wiki">Wiki</Link>
-            <Link href="/dictionary">Dictionary</Link>
-            <Link href="/context-engineering">Context Engineering</Link>
-          </div>
-          <div className="footer-nav-col">
-            <h4 className="footer-nav-heading">Project</h4>
-            <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer">GitHub</a>
-            <Link href="/about">About</Link>
-            <Link href="/pro">Tokalator Pro</Link>
-          </div>
-          <div className="footer-nav-col">
-            <h4 className="footer-nav-heading">Research</h4>
-            <a href="https://arxiv.org/abs/2604.08290" target="_blank" rel="noopener noreferrer" className="footer-paper-link">
-              <span className="footer-paper-badge">arXiv:2604.08290</span>
-              Tokalator: A Context Engineering Toolkit
-            </a>
-            <span className="footer-paper-authors">Farajijobehdar, Koseoğlu Sarı, Üre, Zeydan (2026)</span>
-          </div>
-        </div>
-
-        <div className="footer-stats">
-          <div className="footer-stat">
-            <span className="footer-stat-value">500+</span>
-            <span className="footer-stat-label">Total Installs</span>
-          </div>
-          <div className="footer-stat">
-            <span className="footer-stat-value">17</span>
-            <span className="footer-stat-label">Model Profiles</span>
-          </div>
-          <div className="footer-stat">
-            <span className="footer-stat-value">124</span>
-            <span className="footer-stat-label">Unit Tests</span>
-          </div>
-          <div className="footer-stat">
-            <span className="footer-stat-value">37pp</span>
-            <span className="footer-stat-label">Research Paper</span>
-          </div>
-        </div>
-
-        <div className="footer-main">
-          <span className="footer-brand">&copy; 2026 @Tokalator.</span>
-          <a href="https://github.com/vfaraji89" target="_blank" rel="noopener noreferrer" className="footer-author-link">Vahid Faraji</a>
-        </div>
-        <FooterHeart />
-        <div className="footer-meta">
-          <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer" className="footer-github" aria-label="GitHub">
-            <svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>
-          </a>
-          <LiveClock />
-        </div>
-      </footer>
-    </article>
-  );
+  return <div className="natural-home">
+    <nav className="home-nav" aria-label="Homepage"><Link href="/" className="home-wordmark"><span aria-hidden="true">@</span> tokalator<span className="home-version">{site.version}</span></Link><div className="home-nav-links"><a href="#how-it-works">How it works</a><a href="#claude-plugin">Claude plugin</a><Link href="/tools">Tools</Link></div><div className="home-nav-actions"><ThemeToggle/><a className="home-nav-cta" href="#install">Get Tokalator <span>↗</span></a></div></nav>
+    <header className="natural-hero"><a className="release-note" href="#code-maps"><span/> NEW IN 3.4.0 <span className="release-note-divider">/</span> Two files. More understanding. ↗</a><h1>Your code has a story.<br/><em>Give your agents the context.</em></h1><p>Meet GLOSSARY.md and SITE-MAP.md. Two living maps of your codebase,<br className="wide-only"/> automatically refreshed, ready for the next review, session, or model.</p><div className="natural-hero-actions"><a href="#install" className="home-button">Get the Claude plugin <span>↗</span></a><a href="#walkthrough" className="home-text-link"><span>▷</span> See it in motion</a></div><Walkthrough/><div className="home-principles"><span>⌘ &nbsp; Your code stays local</span><span>↗ &nbsp; Markdown any agent can read</span><span>✳ &nbsp; No model API needed to generate</span></div></header>
+    <section className="home-section maps-section" id="code-maps"><div className="section-intro"><span className="eyebrow">LESS REPEATING. MORE BUILDING.</span><h2>A shared memory,<br/><em>rooted in your code.</em></h2><p>Give an agent a place to begin. Names, documented purpose and relationships, with a path back to the source.</p></div><div className="natural-file-grid"><article className="natural-file glossary-file"><div className="file-heading"><span>01 / THE VOCABULARY</span><span>↗</span></div><h3>GLOSSARY.md</h3><p>What’s this called?<br/>Where is it defined?</p><div className="paper-preview"><span className="paper-title"># Codebase Glossary</span><div><b>estimateCost</b><small>function · src/budget.ts:4</small><p>Estimate the cost of a request.</p></div><div><b>Budget</b><small>interface · src/budget.ts:8</small></div></div><p className="file-footnote">Declarations, documented purpose and source links.<br/>Illustrative excerpt.</p></article><article className="natural-file sitemap-file"><div className="file-heading"><span>02 / THE LANDSCAPE</span><span>↗</span></div><h3>SITE-MAP.md</h3><p>Where should I look?<br/>How does it connect?</p><div className="paper-preview map-preview"><span className="paper-title"># Codebase Site Map</span><div><b>app/page.tsx</b><small>Page: /</small></div><div><b>src/budget.ts → src/models.ts</b><small>Import relationship</small></div><div><b>package.json</b><small>build · test · lint</small></div></div><p className="file-footnote">Modules, imports, package entry points and filesystem routes.<br/>Illustrative excerpt.</p></article></div></section>
+    <section className="home-section rhythm-section" id="how-it-works"><span className="eyebrow">CONTEXT THAT KEEPS UP</span><h2>Part of your rhythm.<br/><em>Out of your way.</em></h2><div className="rhythm-steps">{[{n:"01",title:"Open your project",body:"The SessionStart hook refreshes the maps so you begin with current context.",tag:"SessionStart"},{n:"02",title:"Review with direction",body:"A review prompt refreshes context before the agent inspects changes, callers and tests.",tag:"/code-review"},{n:"03",title:"Leave it ready",body:"After a completed turn, the Stop hook refreshes the maps for whoever comes next.",tag:"Stop"}].map(item=><article key={item.n}><span className="step-number">{item.n}</span><h3>{item.title}</h3><p>{item.body}</p><code>{item.tag}</code></article>)}</div></section>
+    <section className="home-section claude-section" id="claude-plugin"><div className="claude-terminal"><div className="terminal-label"><span>✳</span> CLAUDE CODE <span>+ tokalator</span></div><div className="terminal-content"><p className="terminal-muted">~/your-project</p><p>❯ /tokalator-glossary:code-review</p><p className="terminal-green">↳ Refresh codebase context</p><p> &nbsp; GLOSSARY.md<br/> &nbsp; SITE-MAP.md</p><p className="terminal-muted">Read the map. Inspect the diff.<br/>Follow callers. Run relevant checks.</p><span className="terminal-cursor" aria-hidden="true">▌</span></div><small>Illustrative workflow · review results depend on your code</small></div><div><span className="eyebrow">AT HOME IN CLAUDE CODE</span><h2>A plugin with<br/><em>a sense of place.</em></h2><p>Start with the project, not another explanation of it. The Claude Code plugin brings map generation, review commands and lifecycle hooks together.</p><a className="home-text-link" href="#install">Add it to your workflow ↗</a><p className="plugin-detail">Prefer another coding agent? The same Markdown and Python CLI work independently of Claude Code.</p><a className="plugin-docs" href="https://code.claude.com/docs/en/plugins-reference" target="_blank" rel="noopener noreferrer">Claude Code plugin documentation ↗</a></div></section>
+    <section className="home-section toolkit-section"><div><span className="eyebrow">STILL PART OF THE TOOLKIT</span><h2>Context is only the beginning.</h2><p>Keep an eye on tokens, understand pricing, and make room for what matters.</p></div><div className="toolkit-links"><Link href="/extension"><span>01</span><div><h3>VS Code extension</h3><p>Token budgets and context tools in your editor.</p></div><b>↗</b></Link><Link href="/tools/pricing"><span>02</span><div><h3>Model pricing</h3><p>Dated rates and provider references.</p></div><b>↗</b></Link><Link href="/tools"><span>03</span><div><h3>Explore the tools</h3><p>Cost estimates, caching and context analysis.</p></div><b>↗</b></Link><Link href="/extension#mcp"><span>04</span><div><h3>MCP & CLI</h3><p>Bring token tools into your own workflow.</p></div><b>↗</b></Link></div></section>
+    <Install/>
+    <aside className="home-fine-print">A useful map, not a guarantee of understanding. Python uses AST extraction; JS/TS extraction is heuristic and may miss dynamic relationships. Always verify source and tests. Automatic hooks are for Claude Code; interrupted turns do not fire Stop.</aside>
+    <footer className="natural-footer"><Link href="/" className="home-wordmark"><span>@</span> tokalator</Link><p>A little more context. A little less starting over.</p><div><Link href="/learn">Learn</Link><Link href="/about">About</Link><Link href="/pro">Pro</Link><a href="https://github.com/vfaraji89/tokalator">GitHub ↗</a><Link href="/privacy">Privacy</Link></div><small>Made with care in Istanbul. © 2026 Tokalator.</small></footer>
+  </div>;
 }

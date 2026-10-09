@@ -3,15 +3,20 @@
  * Scoped to Anthropic models only.
  */
 export const MODEL_PROFILES = [
-    { id: 'claude-opus-4.6', label: 'Claude Opus 4.6', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 32_000, rotThreshold: 40 },
-    { id: 'claude-sonnet-4.5', label: 'Claude Sonnet 4.5', provider: 'anthropic', contextWindow: 200_000, maxOutput: 16_000, rotThreshold: 20 },
-    { id: 'claude-sonnet-4', label: 'Claude Sonnet 4', provider: 'anthropic', contextWindow: 200_000, maxOutput: 16_000, rotThreshold: 20 },
-    { id: 'claude-haiku-4.5', label: 'Claude Haiku 4.5', provider: 'anthropic', contextWindow: 200_000, maxOutput: 64_000, rotThreshold: 15 },
+    { id: 'claude-fable-5-1', label: 'Claude Fable 5.1', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 52 },
+    { id: 'claude-fable-5', label: 'Claude Fable 5', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 50 },
+    { id: 'claude-opus-5', label: 'Claude Opus 5', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 48 },
+    { id: 'claude-opus-4.8', label: 'Claude Opus 4.8', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 45 },
+    { id: 'claude-opus-4.7', label: 'Claude Opus 4.7', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 43 },
+    { id: 'claude-opus-4.6', label: 'Claude Opus 4.6', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 42 },
+    { id: 'claude-sonnet-5', label: 'Claude Sonnet 5', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 35 },
+    { id: 'claude-sonnet-4.6', label: 'Claude Sonnet 4.6', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 30 },
+    { id: 'claude-haiku-4.5', label: 'Claude Haiku 4.5', provider: 'anthropic', contextWindow: 200_000, maxOutput: 64_000, rotThreshold: 25 },
 ];
-export const DEFAULT_MODEL_ID = 'claude-opus-4.6';
+export const DEFAULT_MODEL_ID = 'claude-opus-5';
 /**
  * Find a model by partial ID or label match.
- * Priority: exact id → exact label → startsWith → contains.
+ * Priority: exact id -> exact label -> startsWith -> contains.
  */
 export function findModel(query) {
     const q = query.toLowerCase().replace(/[^a-z0-9.]/g, '');

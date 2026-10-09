@@ -1,5 +1,7 @@
 "use client";
 
+import { themePalette as P } from "@/lib/theme-palette";
+
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -11,12 +13,12 @@ import {
 } from "@/lib/context";
 import { getModelInfo, formatCost, calculateCost } from "@/lib/pricing";
 
-const models = ["claude-opus-4.6", "claude-sonnet-4.6", "claude-haiku-4.5"] as const;
-const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
+const models = ["claude-fable-5", "claude-opus-5", "claude-sonnet-5", "claude-opus-4.8", "claude-haiku-4.5"] as const;
+
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 export function ContextOptimizer() {
-  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-4.6");
+  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-5");
   const [systemPrompt, setSystemPrompt] = useState<string>("");
   const [userMessage, setUserMessage] = useState<string>("");
   const [reservedOutput, setReservedOutput] = useState<number>(4000);

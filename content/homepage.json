@@ -1,25 +1,25 @@
 {
   "hero": {
     "icon": "",
-    "headline": "Count your tokens.\nLike beads on an abacus.",
-    "markerLine": "Count your tokens.",
-    "highlightPhrase": "Every token counts",
-    "description": "— monitor budgets, estimate costs, optimize context, and cut AI spending before it adds up. A VS Code extension, MCP server, and CLI that makes the invisible visible.",
+    "headline": "Give your agents\na map of your code.",
+    "markerLine": "Give your agents",
+    "highlightPhrase": "New in 3.4.0: GLOSSARY.md + SITE-MAP.md.",
+    "description": "Generate source-linked code maps locally. Refresh them before reviews and after agent turns, so the next model starts with current project context. No model API or network calls to generate the files.",
     "installCmd": "ext install vfaraji89.tokalator",
     "primaryCta": {
       "label": "Install Extension",
       "href": "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator"
     },
     "secondaryCta": {
-      "label": "Learn More",
-      "href": "/learn"
+      "label": "See how it works",
+      "href": "#code-maps"
     }
   },
   "quickStart": {
-    "title": "Quick Start",
+    "title": "Token tools: quick start",
     "steps": [
       "Install from the VS Code Marketplace or run `ext install vfaraji89.tokalator`",
-      "Click the Tokalator icon in the Activity Bar — the sidebar dashboard opens",
+      "Click the Tokalator icon in the Activity Bar \u2014 the sidebar dashboard opens",
       "Type `@tokalator /count` in Copilot or Claude Chat to see your token budget",
       "Pin important files with `/pin` so they always stay in context",
       "Run `/optimize` to get a full health report on your context window"
@@ -33,7 +33,7 @@
         },
         {
           "label": "Models",
-          "value": "17 profiles — Claude Opus/Sonnet/Haiku 4.x, GPT-5.5, GPT-5.4 family, GPT-5.3 Codex, o4-mini, Gemini 3.x, Gemini 2.5"
+          "value": "Provider-specific profiles for Claude, OpenAI and Gemini; see the website pricing table for dated references."
         },
         {
           "label": "Caching",
@@ -45,11 +45,11 @@
         },
         {
           "label": "Pricing",
-          "value": "Live cost estimation per turn — input/output breakdown with per-MTok rates for all 17 models"
+          "value": "Estimated input/output costs using configured per-million-token rates. Provider billing remains authoritative."
         },
         {
           "label": "MCP & CLI",
-          "value": "count_tokens, estimate_budget, preview_turn, list_models — works in Claude Code via stdio MCP or as a standalone terminal CLI"
+          "value": "count_tokens, estimate_budget, preview_turn, list_models \u2014 works in Claude Code via stdio MCP or as a standalone terminal CLI"
         }
       ]
     }
@@ -110,11 +110,11 @@
   },
   "shipped": {
     "title": "Recently Shipped",
-    "subtitle": "What landed in v3.1.7.",
+    "subtitle": "New in the 3.4.0 website release.",
     "items": [
       {
-        "name": "Tokalator 3.1.7 on the Marketplace",
-        "description": "Model now auto-detected from your Copilot chat, a Context Engineering stats panel (context-window used, turns-to-rot, measured per-turn growth), the Generate Glossary command, and a redesigned abacus-branded dashboard. Catalog refreshed with May 2026 pricing.",
+        "name": "Automated codebase context",
+        "description": "Download the local generator for GLOSSARY.md and SITE-MAP.md, with Claude Code review and stop hooks.",
         "badge": "New",
         "number": 1
       },
@@ -150,7 +150,7 @@
       },
       {
         "name": "Per-Turn Budget Indicator",
-        "description": "Live IDE status-bar widget showing estimated turns remaining before the conversation exhausts the context budget — the top community-requested feature.",
+        "description": "Live IDE status-bar widget showing estimated turns remaining before the conversation exhausts the context budget \u2014 the top community-requested feature.",
         "badge": "Feedback",
         "number": 2
       },

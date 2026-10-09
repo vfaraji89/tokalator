@@ -1,185 +1,51 @@
-"use client";
-
-import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
-  ResponsiveContainer, Legend,
-} from "recharts";
-
-const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
-const tt = { contentStyle: { background: P.white, border: "1px solid " + P.g3, borderRadius: 4, fontSize: 12, color: P.black } };
-
-const models = [
-  { name: "Claude Opus 4.6", tier: "Most Capable", input: "$5.00", output: "$25.00", cacheWrite: "$6.25", cacheRead: "$0.50", ratio: "5.0x", inputNum: 5, outputNum: 25 },
-  {
-    name: "Claude Sonnet 4.6", tier: "Best Value", input: "$3.00", output: "$15.00", cacheWrite: "$3.75", cacheRead: "$0.30", ratio: "5.0x", inputNum: 3, outputNum: 15,
-    extended: { input: "$6.00", output: "$22.50", cacheWrite: "$7.50", cacheRead: "$0.60", ratio: "3.75x" },
-  },
-  { name: "Claude Haiku 4.5", tier: "Most Efficient", input: "$1.00", output: "$5.00", cacheWrite: "$1.25", cacheRead: "$0.10", ratio: "5.0x", inputNum: 1, outputNum: 5 },
-];
-
-const chartData = models.map((m) => ({
-  name: m.name.replace("Claude ", ""),
-  input: m.inputNum,
-  output: m.outputNum,
-}));
-
-const services = [
-  { name: "Web Search", desc: "Real-time web search capability", price: "$10.00 / 1K searches" },
-  { name: "Code Execution", desc: "Sandbox code execution environment", price: "$0.05 / execution" },
-  { name: "MCP Connectors", desc: "Model Context Protocol integrations", price: "Varies by connector" },
-];
-
-const tiers = [
-  { name: "Free", context: "200K", rateLimit: "Low", features: "Basic models, limited usage" },
-  { name: "Pro ($20/mo)", context: "200K", rateLimit: "Higher", features: "All models, higher limits" },
-  { name: "Max ($100/mo)", context: "200K", rateLimit: "Highest", features: "Unlimited usage, priority access" },
-  { name: "Team ($30/seat/mo)", context: "200K", rateLimit: "Higher", features: "Admin tools, shared workspaces" },
-  { name: "Enterprise", context: "200K", rateLimit: "Custom", features: "SSO, audit logs, custom terms" },
-];
+import { PROVIDER_MODELS, formatTokenCount, pricingSource, getProviderName } from '@/lib/providers';
+import { ANTHROPIC_PRICING } from '@/lib/pricing';
 
 export default function PricingPage() {
   return (
     <article className="article">
       <header className="hero">
-        <div className="hero-outline-icon" aria-hidden>
-          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
-            <path d="M20 4L24 8L12 20H4V16L16 4H20Z" stroke="currentColor" strokeWidth="1.5" fill="none" strokeLinejoin="round" />
-            <line x1="14" y1="8" x2="20" y2="14" stroke="#e3120b" strokeWidth="1" />
-            <line x1="4" y1="24" x2="24" y2="24" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
-        <h1 className="hero-headline">
-          <span className="hero-marker">Pricing Reference</span>
-        </h1>
-        <p className="hero-description">
-          Current pricing for Claude models and services (March 2026). All prices per million tokens.
-        </p>
+        <h1 className="hero-headline"><span className="hero-marker">Pricing Reference</span></h1>
+        <p className="hero-description">Published API rates in USD per million text tokens. Each entry shows its catalog date and links to the provider. This is a pricing snapshot, not a live billing feed.</p>
       </header>
-
-      {/* Price Visualization */}
       <section>
-        <div className="section-divider" />
-        <h2 className="section-header">Price Comparison</h2>
-        <div className="eco-card-flat">
-          <ResponsiveContainer width="100%" height={300}>
-            <BarChart data={chartData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke={P.g3} />
-              <XAxis dataKey="name" stroke={P.g7} tick={{ fontSize: 12 }} />
-              <YAxis stroke={P.g7} tick={{ fontSize: 11 }} tickFormatter={(v) => "$" + v} />
-              <Tooltip {...tt} formatter={(v) => ["$" + Number(v).toFixed(2) + "/MTok"]} />
-              <Legend wrapperStyle={{ fontSize: 12, paddingTop: 12 }} />
-              <Bar dataKey="input" name="Input Cost" radius={[4, 4, 0, 0]} fill={P.black} />
-              <Bar dataKey="output" name="Output Cost" radius={[4, 4, 0, 0]} fill={P.red} />
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
-      </section>
-
-      {/* Model Cards */}
-      <section>
-        <div className="section-divider" />
-        <h2 className="section-header">Model Pricing</h2>
-        <div className="feature-grid">
-          {models.map((m) => (
-            <div key={m.name} className="eco-card-flat">
-              <h3 style={{ margin: "0 0 4px" }}>{m.name}</h3>
-              <span className="badge">{m.tier}</span>
-              <table className="settings-table" style={{ marginTop: 12 }}>
-                <tbody>
-                  <tr><td>Input</td><td><strong>{m.input}</strong></td></tr>
-                  <tr><td>Output</td><td><strong>{m.output}</strong></td></tr>
-                  <tr><td>Cache Write</td><td><strong>{m.cacheWrite}</strong></td></tr>
-                  <tr><td>Cache Read</td><td><strong>{m.cacheRead}</strong></td></tr>
-                  <tr><td>Output/Input</td><td><strong>{m.ratio}</strong></td></tr>
-                </tbody>
-              </table>
-              {m.extended && (
-                <>
-                  <p style={{ color: "var(--text-muted)", fontSize: "0.85rem", marginTop: 12 }}>
-                    Extended Thinking (128K budget):
-                  </p>
-                  <table className="settings-table">
-                    <tbody>
-                      <tr><td>Input</td><td><strong>{m.extended.input}</strong></td></tr>
-                      <tr><td>Output</td><td><strong>{m.extended.output}</strong></td></tr>
-                      <tr><td>Cache Write</td><td><strong>{m.extended.cacheWrite}</strong></td></tr>
-                      <tr><td>Cache Read</td><td><strong>{m.extended.cacheRead}</strong></td></tr>
-                    </tbody>
-                  </table>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Services */}
-      <section>
-        <div className="section-divider" />
-        <h2 className="section-header">Additional Services</h2>
-        <div className="feature-grid">
-          {services.map((s) => (
-            <div key={s.name} className="eco-card-flat">
-              <h3 style={{ margin: "0 0 4px" }}>{s.name}</h3>
-              <p style={{ color: "var(--text-muted)", fontSize: "0.9rem", margin: "4px 0 8px" }}>{s.desc}</p>
-              <strong>{s.price}</strong>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Tiers */}
-      <section>
-        <div className="section-divider" />
-        <h2 className="section-header">API Tiers</h2>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Tier</th>
-              <th>Context</th>
-              <th>Rate Limit</th>
-              <th>Features</th>
-            </tr>
-          </thead>
-          <tbody>
-            {tiers.map((t) => (
-              <tr key={t.name}>
-                <td><strong>{t.name}</strong></td>
-                <td>{t.context}</td>
-                <td>{t.rateLimit}</td>
-                <td>{t.features}</td>
+        <h2 className="section-header">{PROVIDER_MODELS.length} model profiles</h2>
+        <p>Base rates exclude caching, tool calls, regional surcharges and service-tier adjustments. Check each model’s conditions before estimating a request.</p>
+        <div style={{ overflowX: 'auto' }}>
+          <table className="settings-table">
+            <thead><tr><th>Model</th><th>Input / MTok</th><th>Output / MTok</th><th>Context</th><th>Max output</th><th>Catalog date</th></tr></thead>
+            <tbody>{PROVIDER_MODELS.map(model => (
+              <tr key={model.id}>
+                <td><a href={pricingSource(model)} target="_blank" rel="noopener noreferrer">{model.name}</a><br /><small>{getProviderName(model.provider)}</small></td>
+                <td>${model.inputCostPerMTok.toFixed(2)}</td><td>${model.outputCostPerMTok.toFixed(2)}</td>
+                <td>{formatTokenCount(model.contextWindow)}</td><td>{formatTokenCount(model.maxOutput)}</td>
+                <td>{model.lastUpdated}<br /><small>{model.pricingCheckedAt ? `Rates checked ${model.pricingCheckedAt}` : 'Carried-forward entry; recheck source'}</small></td>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            ))}</tbody>
+          </table>
+        </div>
       </section>
-
-      {/* Comparison Table */}
       <section>
-        <div className="section-divider" />
-        <h2 className="section-header">Quick Comparison</h2>
-        <table className="settings-table">
-          <thead>
-            <tr>
-              <th>Model</th>
-              <th>Input</th>
-              <th>Output</th>
-              <th>Cache Write</th>
-              <th>Cache Read</th>
-            </tr>
-          </thead>
-          <tbody>
-            {models.map((m) => (
-              <tr key={m.name}>
-                <td><strong>{m.name}</strong></td>
-                <td>{m.input}</td>
-                <td>{m.output}</td>
-                <td>{m.cacheWrite}</td>
-                <td>{m.cacheRead}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="section-divider" /><h2 className="section-header">Pricing conditions</h2>
+        <ul>{PROVIDER_MODELS.filter(model => model.longContext || model.notes?.includes('Promotional')).map(model => (
+          <li key={model.id}><strong>{model.name}:</strong> {model.longContext && `Above ${formatTokenCount(model.longContext.threshold)} input tokens, full-request input is ${model.longContext.inputMultiplier}× and output is ${model.longContext.outputMultiplier}× the base rate. `}{model.notes?.includes('Promotional') ? model.notes : ''}</li>
+        ))}</ul>
+        <p>These comparisons estimate independent text requests. Session-wide pricing rules, cached tokens, thinking tokens and tool usage can change the final bill.</p>
+      </section>
+      <section>
+        <div className="section-divider" /><h2 className="section-header">Claude prompt caching</h2>
+        <p>Five-minute cache writes and cache reads, in USD per million tokens. Other cache durations have different prices.</p>
+        <div style={{ overflowX: 'auto' }}><table className="settings-table">
+          <thead><tr><th>Model</th><th>5-minute write</th><th>Read</th></tr></thead>
+          <tbody>{Object.entries(ANTHROPIC_PRICING).map(([id, rate]) => (
+            <tr key={id}><td>{PROVIDER_MODELS.find(model => model.id === id)?.name ?? id}</td><td>${rate.standard.cacheWriteCostPerMTok.toFixed(2)}</td><td>${rate.standard.cacheReadCostPerMTok.toFixed(2)}</td></tr>
+          ))}</tbody>
+        </table></div>
+      </section>
+      <section>
+        <div className="section-divider" /><h2 className="section-header">Subscriptions and services</h2>
+        <p>Chat subscriptions and API billing are separate products. Subscription names do not determine API context windows or guarantee unlimited usage. Tool calls, cache storage and hosted code execution may add charges.</p>
+        <p><a href="https://platform.claude.com/docs/en/about-claude/pricing">Anthropic pricing</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a> · <a href="https://ai.google.dev/gemini-api/docs/pricing">Google pricing</a></p>
       </section>
     </article>
   );

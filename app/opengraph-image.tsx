@@ -1,7 +1,6 @@
 import { ImageResponse } from "next/og";
 
-export const runtime = "edge";
-export const alt = "Tokalator — Count Your Tokens";
+export const alt = "Tokalator 3.4.0 — Automated Code Maps";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -68,7 +67,7 @@ export default function Image() {
             fontWeight: 500,
           }}
         >
-          Count Your Tokens Like Beads on an Abacus
+          GLOSSARY.md + SITE-MAP.md
         </div>
 
         <div

@@ -39,15 +39,18 @@ function generateTimeSeriesData(): TimeSeriesPoint[] {
   const data: TimeSeriesPoint[] = [];
   const now = new Date('2026-02-01');
   
+  let seed = 42;
+  const random = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+
   for (let i = 29; i >= 0; i--) {
     const date = new Date(now);
     date.setDate(date.getDate() - i);
     
     // Simulate growing trends with some variance
     const dayFactor = (30 - i) / 30;
-    const baseAnthropic = 2.1 + dayFactor * 0.4 + (Math.random() - 0.5) * 0.3;
-    const baseOpenai = 8.5 + dayFactor * 0.8 + (Math.random() - 0.5) * 0.5;
-    const baseGoogle = 3.2 + dayFactor * 0.6 + (Math.random() - 0.5) * 0.4;
+    const baseAnthropic = 2.1 + dayFactor * 0.4 + (random() - 0.5) * 0.3;
+    const baseOpenai = 8.5 + dayFactor * 0.8 + (random() - 0.5) * 0.5;
+    const baseGoogle = 3.2 + dayFactor * 0.6 + (random() - 0.5) * 0.4;
     
     data.push({
       date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),

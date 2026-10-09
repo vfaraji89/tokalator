@@ -39,7 +39,7 @@ const jsonLd = {
       url: siteUrl,
       name: "Tokalator",
       description:
-        "Real-time context budget calculator for AI coding assistants. Token calculator, context optimizer, and VS Code extension.",
+        "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
       publisher: { "@id": `${siteUrl}/#organization` },
       author: { "@id": `${siteUrl}/#author` },
     },
@@ -54,11 +54,11 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Tokalator — Count Your Tokens",
+    default: "Tokalator 3.4.0 — Give Your Agents a Map of Your Code",
     template: "%s | Tokalator",
   },
   description:
-    "Count your tokens like beads on an abacus. Token calculator, context optimizer, caching ROI tools, and VS Code extension for AI coding assistants.",
+    "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
   keywords: [
     "token calculator",
     "context engineering",
@@ -82,15 +82,15 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: siteUrl,
     siteName: "Tokalator",
-    title: "Tokalator — Count Your Tokens",
+    title: "Tokalator 3.4.0 — Give Your Agents a Map of Your Code",
     description:
-      "Count your tokens like beads on an abacus. Token calculator, context optimizer, and VS Code extension for AI coding assistants.",
+      "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tokalator — Count Your Tokens",
+    title: "Tokalator 3.4.0 — Give Your Agents a Map of Your Code",
     description:
-      "Token calculator, context optimizer, and VS Code extension for AI coding assistants.",
+      "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
   },
   icons: {
     icon: [
@@ -114,6 +114,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:CASL,CRSV,MONO,slnt,wght@0,0,0..1,0,300..1000&amp;family=Sora:wght@100..800&amp;display=swap" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

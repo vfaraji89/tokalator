@@ -95,7 +95,7 @@ function ProviderBadge({ provider }: { provider: Provider }) {
 
 export function LiveMarketDashboard() {
   const [snapshots, setSnapshots] = useState<MarketSnapshot[]>(MARKET_SNAPSHOTS);
-  const [lastUpdate, setLastUpdate] = useState(new Date());
+  const [lastUpdate, setLastUpdate] = useState(MARKET_SNAPSHOTS[0].timestamp);
   const globalStats = getGlobalStats();
   const marketShare = calculateMarketShare();
   
@@ -119,15 +119,15 @@ export function LiveMarketDashboard() {
               AI Token Market
             </h1>
             <p className="subheadline mt-2">
-              Live pricing and usage data across major AI providers
+              Simulated usage and revenue for demonstration. Pricing is a dated catalog snapshot.
             </p>
           </div>
           <div className="text-right">
             <span className="live-pulse text-xs font-semibold uppercase tracking-wider">
-              Live
+              Demo
             </span>
             <p className="text-xs text-muted mt-1">
-              Updated {lastUpdate.toLocaleTimeString()}
+              Simulation refreshed {lastUpdate.toLocaleTimeString('en-US', { timeZone: 'UTC' })}
             </p>
           </div>
         </div>
@@ -305,8 +305,8 @@ export function LiveMarketDashboard() {
                 />
                 <Line
                   type="monotone"
-                  dataKey="claude-opus-4.6"
-                  name="Claude Opus 4.6"
+                  dataKey="claude-fable-5"
+                  name="Claude Fable 5"
                   stroke={COLORS.anthropic}
                   strokeWidth={2}
                   dot={false}
@@ -419,7 +419,7 @@ export function LiveMarketDashboard() {
               </tr>
             </thead>
             <tbody>
-              {PROVIDER_MODELS.sort((a, b) => b.inputCostPerMTok - a.inputCostPerMTok).map((model) => (
+              {[...PROVIDER_MODELS].sort((a, b) => b.inputCostPerMTok - a.inputCostPerMTok).map((model) => (
                 <tr key={model.id}>
                   <td className="font-medium">{model.name}</td>
                   <td><ProviderBadge provider={model.provider} /></td>

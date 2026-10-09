@@ -20,13 +20,15 @@ import { getModelInfo, formatCost } from '@/lib/pricing';
 import { formatTokenCount } from '@/lib/context';
 
 const models = [
-  'claude-opus-4.6',
-  'claude-sonnet-4.6',
+  'claude-fable-5',
+  'claude-opus-5',
+  'claude-sonnet-5',
+  'claude-opus-4.8',
   'claude-haiku-4.5',
 ] as const;
 
 export function CachingCalculator() {
-  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-4.6');
+  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-5');
   const [cacheTokens, setCacheTokens] = useState<number>(50000);
   const [reuseCount, setReuseCount] = useState<number>(5);
 

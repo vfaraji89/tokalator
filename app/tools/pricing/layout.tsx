@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Pricing Reference",
-  description: "Live AI model pricing dashboard — compare token costs for Claude, GPT-4, Gemini, and other LLMs with interactive charts.",
+  description: "Dated API pricing references for Claude, GPT and Gemini, with source links, context limits and pricing conditions.",
   alternates: { canonical: "/tools/pricing" },
 };
 

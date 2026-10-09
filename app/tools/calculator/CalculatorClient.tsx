@@ -5,13 +5,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { PROVIDER_MODELS } from '@/lib/providers';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
-const R = '#e3120b';   // eco-red
-const K = '#111';      // eco-black
-const W = '#fff';
-const G1 = '#f7f7f5';  // near-white tint
-const G3 = '#d4d4d0';  // rule colour
-const G5 = '#888';
-const G7 = '#444';
+const R = 'var(--accent)';
+const K = 'var(--text-primary)';
+const W = 'var(--bg)';
+const G1 = 'var(--bg-subtle)';
+const G3 = 'var(--border)';
+const G5 = 'var(--text-secondary)';
+const G7 = 'var(--text-secondary)';
 
 const PROV_DOT: Record<string, string> = {
   anthropic: K,
