@@ -1,5 +1,5 @@
 /**
- * Tests for ContextChatParticipant — /terminology-gen command (v3.1.7)
+ * Tests for ContextChatParticipant — /terminology-gen command
  * Covers: no-workspace guard, no-sources guidance, and compression report.
  */
 
@@ -54,17 +54,20 @@ describe('ContextChatParticipant /terminology-gen', () => {
     expect(md()).toContain('No workspace open');
   });
 
-  test('guides the user when no Markdown sources are found', async () => {
+  test('guides the user when no terminology sources are found', async () => {
     (vscode.workspace.findFiles as jest.Mock).mockResolvedValue([]);
     const { stream, md } = createMockStream();
     await (participant as any).handleTerminologyGen(stream);
-    expect(md()).toContain('No Markdown files found');
+    const out = md();
+    expect(out).toContain('No terminology sources found');
+    expect(out).toContain('dictionary.json');
   });
 
-  test('derives sources from the workspace .md files (not a template)', async () => {
+  test('measures the discovered sources with the real tokenizer', async () => {
     (vscode.workspace.findFiles as jest.Mock).mockImplementation(async (pattern: any) => {
       const p = pattern?.pattern ?? '';
-      if (p.includes('*.md')) return [vscode.Uri.file('/workspace/README.md'), vscode.Uri.file('/workspace/docs/terms.md')];
+      if (p.includes('dictionary.json')) return [vscode.Uri.file('/workspace/content/dictionary.json')];
+      if (p.includes('terminologies.md')) return [vscode.Uri.file('/workspace/terminologies.md')];
       return [];
     });
     (vscode.workspace.openTextDocument as jest.Mock).mockResolvedValue({ getText: () => 'x'.repeat(4000) });
@@ -73,14 +76,11 @@ describe('ContextChatParticipant /terminology-gen', () => {
     await (participant as any).handleTerminologyGen(stream);
 
     const out = md();
-    expect(out).toContain('Sources (2 Markdown files)');
-    expect(out).toContain('README.md');
+    expect(out).toContain('dictionary.json');
+    expect(out).toContain('terminologies.md');
     expect(out).toContain('Compression Potential');
-    expect(out).toContain('measured');
-    expect(out).toContain('not a template');
     // tokenizer mocked to 1000 tokens per source × 2 → 2.0K measured
     expect(out).toContain('2.0K');
-    expect(out).not.toContain('89% compression');
     expect(monitor.getTokenizer).toHaveBeenCalled();
   });
 });

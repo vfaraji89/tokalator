@@ -12,10 +12,25 @@ import {
   onDidChangeCatalog,
 } from './catalogStore';
 import { SessionLogger } from './sessionLogger';
+import { UsageAnalytics, UsageInsights } from './usageAnalytics';
 
 const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
 const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
 const SESSION_KEY = 'tokalator.lastSession';
+const USAGE_ANALYTICS_KEY = 'tokalator.usageAnalytics';
+const MODEL_USAGE_LOG_KEY = 'tokalator.modelUsageLog';
+const MAX_MODEL_LOG_ENTRIES = 200;
+
+/** Where a model switch originated. */
+export type ModelSwitchSource = 'chat-api' | 'detected' | 'available-lms' | 'manual';
+
+/** One entry in the chronological model-switch log. */
+export interface ModelUsageEntry {
+  modelId: string;
+  label: string;
+  timestamp: number;
+  source: ModelSwitchSource;
+}
 
 /**
  * Core engine that tracks all editor state and produces real-time ContextSnapshots.
@@ -33,6 +48,22 @@ export class ContextMonitor implements vscode.Disposable {
 
   private readonly _onDidUpdateSnapshot = new vscode.EventEmitter<ContextSnapshot>();
   readonly onDidUpdateSnapshot = this._onDidUpdateSnapshot.event;
+
+  /**
+   * Fires when turns are discovered that happened while Tokalator was not
+   * counting (chat history longer than our own tally). Consumers backfill
+   * their own ledgers by `count`. Turns counted live through
+   * `incrementChatTurns` do NOT fire this event.
+   */
+  private readonly _onDidInferTurn = new vscode.EventEmitter<{
+    count: number;
+    costEstimate: CostEstimate | null;
+  }>();
+  readonly onDidInferTurn = this._onDidInferTurn.event;
+
+  private usageAnalytics: UsageAnalytics | null = null;
+  private modelUsageLog: ModelUsageEntry[] = [];
+  private detectedModels: string[] = [];
 
   private readonly scorer = new TabRelevanceScorer();
   private readonly tokenizer = new TokenizerService();
@@ -73,6 +104,17 @@ export class ContextMonitor implements vscode.Disposable {
     const savedModelId = workspaceState?.get<string>(SELECTED_MODEL_KEY, DEFAULT_MODEL_ID) || DEFAULT_MODEL_ID;
     this.activeModel = getModel(savedModelId);
     this.estimator.setProvider(this.activeModel.provider);
+
+    if (workspaceState) {
+      this.usageAnalytics = new UsageAnalytics(
+        {
+          get: <T>(key: string, fallback: T) => workspaceState.get<T>(key, fallback),
+          update: (key: string, value: unknown) => workspaceState.update(key, value),
+        },
+        USAGE_ANALYTICS_KEY,
+      );
+      this.modelUsageLog = workspaceState.get<ModelUsageEntry[]>(MODEL_USAGE_LOG_KEY, []);
+    }
 
     // Scan workspace files on startup
     this.scanWorkspaceFiles();
@@ -234,6 +276,13 @@ export class ContextMonitor implements vscode.Disposable {
     // Capture a turn snapshot for compaction tracking
     const snapshot = this.latestSnapshot;
     if (snapshot) {
+      this.usageAnalytics?.recordTurn(
+        this.activeModel.id,
+        snapshot.costEstimate.inputTokens,
+        snapshot.costEstimate.outputTokens,
+        snapshot.costEstimate.effectiveCost,
+        'chat-api',
+      );
       const fileTokens = snapshot.tabs.reduce((s, t) => s + t.estimatedTokens, 0);
       const overheadTokens = snapshot.totalEstimatedTokens - fileTokens;
       this.turnHistory.push({
@@ -309,6 +358,38 @@ export class ContextMonitor implements vscode.Disposable {
   /**
    * Reset conversation turn counter and clear turn history.
    */
+  /**
+   * Reconcile our turn tally with the chat history when the host reports more
+   * turns than we counted (Tokalator started mid-conversation, or the window
+   * reloaded). Fires `onDidInferTurn` once with the backfilled delta so
+   * consumers can catch their ledgers up.
+   */
+  syncChatTurns(historyTurns: number): void {
+    const delta = historyTurns - this.chatTurnCount;
+    if (delta <= 0) { return; }
+
+    this.chatTurnCount = historyTurns;
+
+    const snapshot = this.latestSnapshot;
+    if (snapshot) {
+      for (let i = 0; i < delta; i++) {
+        this.usageAnalytics?.recordTurn(
+          this.activeModel.id,
+          snapshot.costEstimate.inputTokens,
+          snapshot.costEstimate.outputTokens,
+          snapshot.costEstimate.effectiveCost,
+          'burst',
+        );
+      }
+    }
+
+    this._onDidInferTurn.fire({
+      count: delta,
+      costEstimate: this.latestSnapshot?.costEstimate ?? null,
+    });
+    this.refresh();
+  }
+
   resetChatTurns(): void {
     this.chatTurnCount = 0;
     this.turnHistory = [];
@@ -454,14 +535,23 @@ export class ContextMonitor implements vscode.Disposable {
     const outputTokens = this.activeModel.maxOutput;
     const inputCost = (inputTokens / 1_000_000) * this.activeModel.inputCostPerMTok;
     const outputCost = (outputTokens / 1_000_000) * this.activeModel.outputCostPerMTok;
+    const cachedInputCostPerMTok =
+      this.activeModel.cachedInputCostPerMTok ?? this.activeModel.inputCostPerMTok;
+    // After the first turn the stable prefix is served from cache, so the
+    // realistic per-turn spend uses the cache-read rate on input.
+    const cachedInputCost = (inputTokens / 1_000_000) * cachedInputCostPerMTok;
     const costEstimate: CostEstimate = {
       inputTokens,
       outputTokens,
       inputCost,
       outputCost,
       totalCost: inputCost + outputCost,
+      effectiveCost: this.chatTurnCount > 0
+        ? cachedInputCost + outputCost
+        : inputCost + outputCost,
       inputCostPerMTok: this.activeModel.inputCostPerMTok,
       outputCostPerMTok: this.activeModel.outputCostPerMTok,
+      cachedInputCostPerMTok,
     };
 
     return {
@@ -611,6 +701,12 @@ export class ContextMonitor implements vscode.Disposable {
     const available = await vscode.lm.selectChatModels();
     if (!available.length) { return; }
 
+    this.detectedModels = Array.from(new Set(
+      available
+        .map(lm => (findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name))?.id)
+        .filter((id): id is string => Boolean(id)),
+    ));
+
     const current = this.activeModel;
 
     // Check if any available model maps to our current profile — still good
@@ -623,7 +719,7 @@ export class ContextMonitor implements vscode.Disposable {
     for (const lm of available) {
       const match = findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name);
       if (match) {
-        await this.setModel(match.id);
+        await this.setModel(match.id, 'available-lms');
         vscode.window.showInformationMessage(
           `Tokalator: "${current.label}" is no longer available. Switched to "${match.label}".`
         );
@@ -635,9 +731,13 @@ export class ContextMonitor implements vscode.Disposable {
   /**
    * Set the active model and persist it.
    */
-  async setModel(modelId: string): Promise<void> {
+  async setModel(modelId: string, source: ModelSwitchSource = 'manual'): Promise<void> {
+    const previousId = this.activeModel.id;
     this.activeModel = getModel(modelId);
     this.estimator.setProvider(this.activeModel.provider);
+    if (previousId !== this.activeModel.id) {
+      this.recordModelUsage(source);
+    }
     if (this.workspaceState) {
       this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
     }
@@ -664,6 +764,47 @@ export class ContextMonitor implements vscode.Disposable {
    */
   getModels(): ModelProfile[] {
     return getActiveCatalog();
+  }
+
+  /**
+   * Model IDs the host currently offers, resolved to our catalog.
+   */
+  getDetectedModels(): string[] {
+    return [...this.detectedModels];
+  }
+
+  /**
+   * Chronological log of model switches, oldest first.
+   */
+  getModelUsageLog(): ModelUsageEntry[] {
+    return [...this.modelUsageLog];
+  }
+
+  /**
+   * Persisted spend analytics, or null when no workspace storage is available.
+   */
+  getUsageAnalytics(): UsageAnalytics | null {
+    return this.usageAnalytics;
+  }
+
+  /**
+   * Aggregated spend insights for the dashboard.
+   */
+  getUsageInsights(): UsageInsights | null {
+    return this.usageAnalytics ? this.usageAnalytics.analyze() : null;
+  }
+
+  private recordModelUsage(source: ModelSwitchSource): void {
+    this.modelUsageLog.push({
+      modelId: this.activeModel.id,
+      label: this.activeModel.label,
+      timestamp: Date.now(),
+      source,
+    });
+    if (this.modelUsageLog.length > MAX_MODEL_LOG_ENTRIES) {
+      this.modelUsageLog.splice(0, this.modelUsageLog.length - MAX_MODEL_LOG_ENTRIES);
+    }
+    this.workspaceState?.update(MODEL_USAGE_LOG_KEY, this.modelUsageLog);
   }
 
   /**
@@ -746,6 +887,7 @@ export class ContextMonitor implements vscode.Disposable {
   }
 
   dispose(): void {
+    this._onDidInferTurn.dispose();
     this.saveSessionSummary();
     if (this.sessionLogger) { this.sessionLogger.endSession(); }
     if (this.refreshTimer) { clearInterval(this.refreshTimer); }

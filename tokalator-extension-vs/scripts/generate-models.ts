@@ -25,6 +25,7 @@ interface ModelEntry {
   inputCostPerMTok: number;
   outputCostPerMTok: number;
   cachedInputCostPerMTok?: number;
+  featured?: boolean;
   priceSource?: PriceSource;
   verifiedAt?: string;
 }
@@ -103,7 +104,11 @@ for (const provider of providerOrder) {
     const outC  = fmtPrice(m.outputCostPerMTok).padStart(6);
     const ps    = m.priceSource ?? 'verified';
     const va    = m.verifiedAt ?? '';
-    profileLines += `  { id: ${id}, label: ${label}, provider: ${prov}, contextWindow: ${cw}, maxOutput: ${mo}, rotThreshold: ${rot}, inputCostPerMTok: ${inC}, outputCostPerMTok: ${outC}, priceSource: '${ps}', verifiedAt: '${va}' },\n`;
+    const cache = m.cachedInputCostPerMTok !== undefined
+      ? `, cachedInputCostPerMTok: ${fmtPrice(m.cachedInputCostPerMTok)}`
+      : '';
+    const feat  = m.featured ? ', featured: true' : '';
+    profileLines += `  { id: ${id}, label: ${label}, provider: ${prov}, contextWindow: ${cw}, maxOutput: ${mo}, rotThreshold: ${rot}, inputCostPerMTok: ${inC}, outputCostPerMTok: ${outC}${cache}, priceSource: '${ps}', verifiedAt: '${va}'${feat} },\n`;
   }
 }
 
@@ -130,6 +135,7 @@ export interface ModelProfile {
   cachedInputCostPerMTok?: number;
   priceSource: PriceSource;
   verifiedAt: string;
+  featured?: boolean;
 }
 
 export const BUNDLED_SCHEMA_VERSION = ${schemaVersion};
@@ -184,6 +190,16 @@ export function getModel(
   return catalog.find(m => m.id === id)
     || catalog.find(m => m.id === DEFAULT_MODEL_ID)
     || MODEL_PROFILES.find(m => m.id === DEFAULT_MODEL_ID)!;
+}
+
+/**
+ * Models flagged for prominent display in the dashboard picker.
+ */
+export function getFeaturedModels(
+  catalog: ModelProfile[] = MODEL_PROFILES,
+): ModelProfile[] {
+  const featured = catalog.filter(m => m.featured);
+  return featured.length ? featured : catalog;
 }
 `;
 

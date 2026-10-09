@@ -3,9 +3,15 @@ import { ContextMonitor } from './core/contextMonitor';
 import { ContextDashboardProvider } from './webview/contextDashboardProvider';
 import { ContextChatParticipant } from './chat/contextChatParticipant';
 import { loadPricingCatalog, refreshPricingCatalog } from './core/pricingCatalog';
+import { WorkspaceSecurityScanner } from './core/workspaceSecurityScanner';
+import { AuthService } from './core/authService';
+import { TelemetrySync } from './core/telemetrySync';
+import { LicenseService } from './core/licenseService';
+import { CopilotCreditsTracker } from './core/copilotPlan';
+import { PriceWatchService } from './core/priceWatch';
 
-// Module-level reference so deactivate() can save session
 let monitorRef: ContextMonitor | undefined;
+const log = vscode.window.createOutputChannel('Tokalator');
 
 function fmtTokens(n: number): string {
   if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M';
@@ -23,28 +29,15 @@ function formatTimeAgo(iso: string): string {
   return `${days}d ago`;
 }
 
-/**
- * Tokalator - Count your tokens like beads on an abacus.
- *
- * Activates:
- *  1. ContextMonitor — core engine tracking editor state
- *  2. ContextDashboardProvider — sidebar webview panel
- *  3. ContextChatParticipant — @tokalator chat commands
- *  4. Commands — refresh, optimize, clearPins
- */
 export async function activate(context: vscode.ExtensionContext): Promise<void> {
+  try {
 
-  // 0. Load pricing catalog from cache and kick a background refresh.
-  //    Applies cached remote payload synchronously if present so ContextMonitor
-  //    construction sees the freshest known prices.
   void loadPricingCatalog(context);
 
-  // 1. Core monitor (with persistence for pinned files)
   const monitor = new ContextMonitor(context.workspaceState);
   monitorRef = monitor;
   context.subscriptions.push(monitor);
 
-  // 2. Sidebar dashboard
   const dashboardProvider = new ContextDashboardProvider(context.extensionUri, monitor);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
@@ -53,11 +46,56 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     ),
   );
 
-  // 3. Chat participant
   const chatParticipant = new ContextChatParticipant(monitor);
   context.subscriptions.push(chatParticipant);
 
-  // 4. Commands
+  const authService = new AuthService(context.secrets);
+  await authService.initialize();
+  const telemetrySync = new TelemetrySync(authService);
+  const licenseService = new LicenseService(authService, telemetrySync);
+  await licenseService.initialize();
+  context.subscriptions.push(licenseService);
+
+  chatParticipant.setLicense(licenseService);
+  chatParticipant.setTelemetry(telemetrySync);
+  dashboardProvider.setLicense(licenseService);
+
+  const creditsTracker = new CopilotCreditsTracker(context.workspaceState);
+  context.subscriptions.push(creditsTracker);
+  chatParticipant.setCreditsTracker(creditsTracker);
+  dashboardProvider.setCreditsTracker(creditsTracker);
+
+  const analytics = monitor.getUsageAnalytics();
+  if (analytics) {
+    const priceWatch = new PriceWatchService(context.globalState, analytics);
+    context.subscriptions.push(priceWatch);
+    chatParticipant.setPriceWatch(priceWatch);
+    dashboardProvider.setPriceWatch(priceWatch);
+
+    priceWatch.onDidDetectChange(changeset => {
+      const inputChanges = changeset.changes.filter(c => c.field === 'input');
+      if (inputChanges.length === 0) return;
+      const labels = inputChanges.map(c => c.label).slice(0, 3).join(', ');
+      const suffix = inputChanges.length > 3 ? ` and ${inputChanges.length - 3} more` : '';
+      vscode.window.showInformationMessage(
+        `Tokalator: Pricing changed for ${labels}${suffix}. Use @tokalator /pricewatch for impact analysis.`,
+        'Show Impact',
+      ).then(choice => {
+        if (choice === 'Show Impact') {
+          vscode.commands.executeCommand('workbench.action.chat.open', { query: '@tokalator /pricewatch' });
+        }
+      });
+    });
+  }
+
+  monitor.onDidInferTurn(({ count, costEstimate }) => {
+    if (costEstimate) {
+      for (let i = 0; i < count; i++) {
+        creditsTracker.recordTurn(costEstimate.effectiveCost);
+      }
+    }
+  });
+
   context.subscriptions.push(
     vscode.commands.registerCommand('tokalator.refresh', () => {
       monitor.refresh();
@@ -91,7 +129,60 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     }),
   );
 
-  // Status bar item — live token count preview
+  context.subscriptions.push(
+    vscode.commands.registerCommand('tokalator.openDashboard', async () => {
+      const cfg = vscode.workspace.getConfiguration('tokalator');
+      const endpoint = cfg.get<string>('apiEndpoint', '').replace(/\/+$/, '');
+      if (!endpoint) {
+        vscode.window.showWarningMessage(
+          'Tokalator Enterprise: Set tokalator.apiEndpoint first (e.g. http://localhost:3100)',
+        );
+        return;
+      }
+      const url = endpoint + '/dashboard';
+      await vscode.commands.executeCommand('simpleBrowser.show', url);
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('tokalator.setApiKey', async () => {
+      const key = await vscode.window.showInputBox({
+        prompt: 'Enter your Tokalator Enterprise API key',
+        password: true,
+        placeHolder: 'tok_...',
+      });
+      if (key) {
+        await authService.setApiKey(key);
+        await licenseService.initialize();
+        vscode.window.showInformationMessage(
+          `Tokalator Enterprise: API key set. Tier: ${licenseService.getTierLabel()}`,
+        );
+      }
+    }),
+  );
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand('tokalator.secure', async () => {
+      const scanner = new WorkspaceSecurityScanner();
+      const audit = await scanner.audit();
+      if (audit.level === 'protected') {
+        vscode.window.showInformationMessage('Tokalator: Workspace is fully protected (score: 100/100)');
+        return;
+      }
+      const choice = await vscode.window.showWarningMessage(
+        `Tokalator: Security score ${audit.score}/100. ${audit.missingConfigs.length} config(s) missing.`,
+        'Apply All',
+        'Preview in Chat',
+      );
+      if (choice === 'Apply All') {
+        const applied = await scanner.applyAll();
+        vscode.window.showInformationMessage(`Tokalator: Generated ${applied.length} security config(s)`);
+      } else if (choice === 'Preview in Chat') {
+        vscode.commands.executeCommand('workbench.action.chat.open', { query: '@tokalator /secure' });
+      }
+    }),
+  );
+
   const statusBar = vscode.window.createStatusBarItem(
     vscode.StatusBarAlignment.Right,
     100,
@@ -115,7 +206,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     statusBar.show();
   });
 
-  // Show last session summary on activation
   const lastSession = monitor.getLastSession();
   if (lastSession && lastSession.totalTurns > 0) {
     const ago = formatTimeAgo(lastSession.endedAt);
@@ -129,10 +219,30 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     });
   }
 
-  console.log('Tokalator is now active');
-
-  // Force an initial refresh now that all listeners (status bar, dashboard) are registered
   await monitor.refresh();
+  log.appendLine('Tokalator v4.0 activated');
+
+  setTimeout(() => {
+    (async () => {
+      const scanner = new WorkspaceSecurityScanner();
+      const audit = await scanner.audit();
+      if (audit.level === 'unprotected' && audit.missingConfigs.length > 0) {
+        const choice = await vscode.window.showWarningMessage(
+          `Tokalator: AI agents can read your secret files. ${audit.missingConfigs.length} security config(s) missing.`,
+          'Secure Workspace',
+          'Dismiss',
+        );
+        if (choice === 'Secure Workspace') {
+          vscode.commands.executeCommand('tokalator.secure');
+        }
+      }
+    })().catch(err => log.appendLine('[security-scan] failed: ' + String(err)));
+  }, 5000);
+
+  } catch (err) {
+    log.appendLine('[activate] FATAL: ' + String(err));
+    log.show();
+  }
 }
 
 export function deactivate(): void {
