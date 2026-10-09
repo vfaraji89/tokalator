@@ -21,3 +21,7 @@ AGENTS.md
 CLAUDE.md
 *.csv
 *.vsix
+content/paper
+prisma/archive
+.env*
+*.db
