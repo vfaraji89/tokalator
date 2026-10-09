@@ -23,7 +23,7 @@ const jsonLd = {
   url: "https://tokalator.wiki/extension",
   downloadUrl:
     "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator",
-  softwareVersion: "3.1.7",
+  softwareVersion: "4.1.0",
   license: "https://opensource.org/license/mit",
   offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
 };

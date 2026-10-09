@@ -19,7 +19,7 @@
     "title": "Token tools: quick start",
     "steps": [
       "Install from the VS Code Marketplace or run `ext install vfaraji89.tokalator`",
-      "Click the Tokalator icon in the Activity Bar \u2014 the sidebar dashboard opens",
+      "Click the Tokalator icon in the Activity Bar — the sidebar dashboard opens",
       "Type `@tokalator /count` in Copilot or Claude Chat to see your token budget",
       "Pin important files with `/pin` so they always stay in context",
       "Run `/optimize` to get a full health report on your context window"
@@ -49,7 +49,7 @@
         },
         {
           "label": "MCP & CLI",
-          "value": "count_tokens, estimate_budget, preview_turn, list_models \u2014 works in Claude Code via stdio MCP or as a standalone terminal CLI"
+          "value": "count_tokens, estimate_budget, preview_turn, list_models — works in Claude Code via stdio MCP or as a standalone terminal CLI"
         }
       ]
     }
@@ -81,10 +81,6 @@
       {
         "command": "/instructions",
         "description": "List, count, and estimate tokens for instruction files in workspace"
-      },
-      {
-        "command": "/terminology-gen",
-        "description": "Scan terminology sources and show token compression potential"
       },
       {
         "command": "/model",
@@ -143,14 +139,14 @@
     "subtitle": "Next on the roadmap.",
     "items": [
       {
-        "name": "Tokalator Pro",
-        "description": "Team dashboards, historical token usage analytics, CI/CD budget gates, and custom model profiles.",
-        "badge": "Pro",
+        "name": "Tokalator Bead",
+        "description": "How you work with coding agents: turn economy, oversight of agent changes, and skill retention, from your local Claude Code and Codex sessions. A separate extension at tokalator.ai.",
+        "badge": "Beta",
         "number": 1
       },
       {
         "name": "Per-Turn Budget Indicator",
-        "description": "Live IDE status-bar widget showing estimated turns remaining before the conversation exhausts the context budget \u2014 the top community-requested feature.",
+        "description": "Live IDE status-bar widget showing estimated turns remaining before the conversation exhausts the context budget — the top community-requested feature.",
         "badge": "Feedback",
         "number": 2
       },

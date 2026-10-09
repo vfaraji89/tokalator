@@ -1,7 +1,7 @@
 {
   "name": "@Tokalator",
   "version": "v3.4.0",
-  "footer": "\u00a9 2026 @Tokalator. Made by Vahid Faraji with love from Istanbul.",
+  "footer": "© 2026 @Tokalator. Made by Vahid Faraji with love from Istanbul.",
   "github": "https://github.com/vfaraji89/tokalator",
   "authorGithub": "https://github.com/vfaraji89",
   "nav": [
@@ -74,12 +74,12 @@
       ]
     },
     {
-      "section": "Pro",
+      "section": "Bead",
       "items": [
         {
-          "href": "/pro",
-          "label": "Tokalator Pro",
-          "badge": "Soon"
+          "href": "https://tokalator.ai",
+          "label": "Tokalator Bead",
+          "badge": "Beta"
         }
       ]
     },
