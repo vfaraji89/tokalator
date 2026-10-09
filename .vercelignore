@@ -1,8 +1,8 @@
 .git
 .claude
 .entire
-paper
-user-content
+/paper
+/user-content
 tokalator-extension-vs/*
 !tokalator-extension-vs/models.json
 !tokalator-extension-vs/package.json
@@ -13,8 +13,8 @@ tokalator-extension-vs/src/core/*
 !tokalator-extension-vs/src/core/claudeCodeUsage.pure.ts
 tokalator-mcp/*
 !tokalator-mcp/package.json
-api
-scripts
+/api
+/scripts
 GLOSSARY.md
 SITE-MAP.md
 AGENTS.md
