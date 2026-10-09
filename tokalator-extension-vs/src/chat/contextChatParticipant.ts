@@ -5,9 +5,6 @@ import { ContextMonitor } from '../core/contextMonitor';
 import type { ContextSnapshot } from '../core/types';
 import { findModel } from '../core/modelProfiles';
 import { WorkspaceSecurityScanner, SECRET_FILE_PATTERNS } from '../core/workspaceSecurityScanner';
-import type { LicenseService } from '../core/licenseService';
-import type { TelemetrySync } from '../core/telemetrySync';
-import type { CopilotCreditsTracker } from '../core/copilotPlan';
 import type { PriceWatchService, RateChange } from '../core/priceWatch';
 
 /**
@@ -29,9 +26,6 @@ export class ContextChatParticipant implements vscode.Disposable {
   private participant: vscode.ChatParticipant;
   // Track unknown model IDs we've already warned about to avoid repeated toasts
   private readonly _warnedUnknownModels = new Set<string>();
-  private license: LicenseService | null = null;
-  private telemetry: TelemetrySync | null = null;
-  private creditsTracker: CopilotCreditsTracker | null = null;
   private priceWatch: PriceWatchService | null = null;
 
   constructor(private readonly monitor: ContextMonitor) {
@@ -43,9 +37,6 @@ export class ContextChatParticipant implements vscode.Disposable {
     this.participant.iconPath = new vscode.ThemeIcon('symbol-numeric');
   }
 
-  setLicense(license: LicenseService): void { this.license = license; }
-  setTelemetry(telemetry: TelemetrySync): void { this.telemetry = telemetry; }
-  setCreditsTracker(tracker: CopilotCreditsTracker): void { this.creditsTracker = tracker; }
   setPriceWatch(pw: PriceWatchService): void { this.priceWatch = pw; }
 
   // Cached history length from the last request for context comparison
@@ -61,7 +52,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     // Auto-sync Tokalator's model to match the active Copilot model
     await this.syncModelFromRequest(request);
 
-    const READONLY_COMMANDS = new Set(['count', 'breakdown', 'preview', 'credits', 'pricewatch']);
+    const READONLY_COMMANDS = new Set(['count', 'breakdown', 'preview', 'pricewatch']);
     const historyTurns = context.history.filter(
       h => h instanceof vscode.ChatRequestTurn && !READONLY_COMMANDS.has(h.command ?? '')
     ).length;
@@ -73,18 +64,11 @@ export class ContextChatParticipant implements vscode.Disposable {
     const isReadOnly = READONLY_COMMANDS.has(request.command ?? '');
     if (!isReadOnly) {
       await this.monitor.incrementChatTurns();
-      const snapshot = this.monitor.getLatestSnapshot();
-      if (snapshot && this.creditsTracker) {
-        this.creditsTracker.recordTurn(snapshot.costEstimate.effectiveCost);
-      }
     }
 
     switch (request.command) {
       case 'count':
         return this.handleCount(stream);
-
-      case 'credits':
-        return this.handleCredits(stream);
 
       case 'optimize':
         return this.handleOptimize(stream);
@@ -116,9 +100,6 @@ export class ContextChatParticipant implements vscode.Disposable {
       case 'secure':
         return this.handleSecure(request, stream);
 
-      case 'terminology-gen':
-        return this.handleTerminologyGen(stream);
-
       case 'skill-gen':
         return this.handleSkillGen(request, stream);
 
@@ -127,15 +108,6 @@ export class ContextChatParticipant implements vscode.Disposable {
 
       case 'exit':
         return this.handleExit(stream);
-
-      case 'team':
-        return this.handleEnterprise('team', stream);
-
-      case 'skills':
-        return this.handleSkills(request, stream);
-
-      case 'audit':
-        return this.handleEnterprise('audit', stream);
 
       case 'pricewatch':
         return this.handlePriceWatch(stream);
@@ -203,68 +175,6 @@ export class ContextChatParticipant implements vscode.Disposable {
     return {};
   }
 
-  /**
-   * /credits — Show GitHub AI Credits usage and remaining allowance
-   */
-  private async handleCredits(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    if (!this.creditsTracker) {
-      stream.markdown('Credits tracker not initialized.');
-      return {};
-    }
-
-    const cs = this.creditsTracker.getSnapshot();
-    const plan = cs.plan;
-
-    stream.markdown(`## GitHub AI Credits — ${plan.label}\n\n`);
-
-    stream.markdown(`| | |\n|---|---|\n`);
-    stream.markdown(`| **Plan** | ${plan.label} (${this.fmtCost(plan.monthlyPrice)}/mo) |\n`);
-    stream.markdown(`| **Monthly allowance** | ${this.fmtCost(plan.monthlyCredits)} in AI Credits |\n`);
-    stream.markdown(`| **Credits used** | ${this.fmtCost(cs.usage.totalCreditsUsed)} (${cs.usage.turnCount} turns) |\n`);
-    stream.markdown(`| **Credits remaining** | ${this.fmtCost(Math.max(cs.creditsRemaining, 0))} |\n`);
-    stream.markdown(`| **Usage** | ${cs.percentUsed.toFixed(1)}% of allowance |\n`);
-    stream.markdown(`| **Projected monthly** | ${this.fmtCost(cs.projectedMonthly)} |\n`);
-
-    if (cs.isOverage) {
-      stream.markdown(`| **Overage** | ${this.fmtCost(cs.overageAmount)} over allowance |\n`);
-    }
-    stream.markdown('\n');
-
-    // Model-specific cost per turn
-    await this.monitor.refresh();
-    const snapshot = this.monitor.getLatestSnapshot();
-    if (snapshot) {
-      const costPerTurn = snapshot.costEstimate.totalCost;
-      const turnsRemaining = cs.creditsRemaining > 0 ? Math.floor(cs.creditsRemaining / costPerTurn) : 0;
-      stream.markdown(`### At Current Usage (${snapshot.modelLabel})\n\n`);
-      stream.markdown(`| | |\n|---|---|\n`);
-      stream.markdown(`| **Cost per turn** | ${this.fmtCost(costPerTurn)} |\n`);
-      stream.markdown(`| **Turns remaining** | ~${turnsRemaining} |\n`);
-
-      // Cached input savings estimate
-      const cached = snapshot.costEstimate.inputCostPerMTok;
-      const model = this.monitor.getModels().find(m => m.id === snapshot.modelId);
-      if (model?.cachedInputCostPerMTok) {
-        const fullInputCost = snapshot.costEstimate.inputCost;
-        const cachedInputCost = (snapshot.costEstimate.inputTokens / 1_000_000) * model.cachedInputCostPerMTok;
-        const savings = fullInputCost - cachedInputCost;
-        stream.markdown(`| **Cached input rate** | ${this.fmtCost(model.cachedInputCostPerMTok * 1_000_000 / 1_000_000)}/MTok (vs ${this.fmtCost(cached)}/MTok) |\n`);
-        stream.markdown(`| **Potential cache savings** | ${this.fmtCost(savings)}/turn |\n`);
-      }
-      stream.markdown('\n');
-    }
-
-    // Warnings
-    if (cs.percentUsed > 90) {
-      stream.markdown(`> **Warning:** You've used ${cs.percentUsed.toFixed(0)}% of your monthly credits. Consider switching to a cheaper model or upgrading your plan.\n\n`);
-    } else if (cs.projectedMonthly > plan.monthlyCredits * 1.5) {
-      stream.markdown(`> **Heads up:** At current rate, projected monthly spend is ${this.fmtCost(cs.projectedMonthly)} (${((cs.projectedMonthly / plan.monthlyCredits) * 100).toFixed(0)}% of allowance).\n\n`);
-    }
-
-    stream.markdown(`*1 AI Credit = $0.01. Rates from [GitHub Copilot billing](https://docs.github.com/copilot/reference/copilot-billing/models-and-pricing). Code completions are free on paid plans.*\n`);
-
-    return {};
-  }
 
   /**
    * /optimize — Close low-relevance tabs
@@ -432,178 +342,9 @@ export class ContextChatParticipant implements vscode.Disposable {
   /**
    * /exit — End session, save summary, clear state
    */
-  /**
-   * Enterprise tier gate. Checks license, shows upgrade message if blocked.
-   */
-  private async handleEnterprise(
-    command: string,
-    stream: vscode.ChatResponseStream,
-  ): Promise<vscode.ChatResult> {
-    if (!this.license || !this.license.isCommandAllowed(command)) {
-      stream.markdown(`## Enterprise Feature\n\n`);
-      stream.markdown(`\`/${command}\` requires **Tokalator Enterprise**.\n\n`);
-      stream.markdown(`Configure in VS Code settings:\n`);
-      stream.markdown(`\`\`\`json\n"tokalator.licenseTier": "enterprise",\n"tokalator.teamId": "<your-team-id>",\n"tokalator.apiEndpoint": "https://tokalator.yourcompany.com"\n\`\`\`\n\n`);
-      stream.markdown(`Then run **Tokalator: Set Enterprise API Key** from the command palette.\n`);
-      return {};
-    }
 
-    if (command === 'team') return this.handleTeam(stream);
-    if (command === 'audit') return this.handleAudit(stream);
-    return {};
-  }
 
-  /**
-   * /team — Team usage analytics (Enterprise)
-   */
-  private async handleTeam(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Fetching team analytics...');
 
-    if (!this.telemetry) {
-      stream.markdown('Enterprise backend not configured.');
-      return {};
-    }
-
-    try {
-      const summary = await this.telemetry.fetchTeamSummary('7d');
-      if (!summary) {
-        stream.markdown('No team analytics available yet.\n');
-        return {};
-      }
-
-      stream.markdown(`## Team Analytics\n\n`);
-      stream.markdown(`**${summary.teamName || 'Team'}** — last 7 days\n\n`);
-      stream.markdown(`| Metric | Value |\n|---|---|\n`);
-      stream.markdown(`| Sessions | ${summary.totalSessions} |\n`);
-      stream.markdown(`| Total Turns | ${summary.totalTurns} |\n`);
-      stream.markdown(`| Avg Tokens/Turn | ${summary.avgTokensPerTurn.toLocaleString()} |\n`);
-      stream.markdown(`| Avg Cost/Session | $${summary.avgCostPerSession.toFixed(4)} |\n`);
-      stream.markdown(`| Active Developers | ${summary.activeDevelopers} |\n\n`);
-
-      if (summary.modelDistribution && Object.keys(summary.modelDistribution).length > 0) {
-        stream.markdown(`**Model Distribution:**\n`);
-        for (const [model, count] of Object.entries(summary.modelDistribution)) {
-          stream.markdown(`- \`${model}\`: ${count} sessions\n`);
-        }
-        stream.markdown(`\n`);
-      }
-
-      if (summary.topCommands && summary.topCommands.length > 0) {
-        stream.markdown(`**Top Commands:**\n`);
-        for (const cmd of summary.topCommands) {
-          stream.markdown(`- \`/${cmd.command}\`: ${cmd.count} uses\n`);
-        }
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      stream.markdown(`Failed to fetch team analytics: ${msg}\n`);
-    }
-
-    return {};
-  }
-
-  /**
-   * /skills — Browse and publish shared skills (Enterprise)
-   */
-  private async handleSkills(
-    request: vscode.ChatRequest,
-    stream: vscode.ChatResponseStream,
-  ): Promise<vscode.ChatResult> {
-    if (!this.license || !this.license.isCommandAllowed('skills')) {
-      return this.handleEnterprise('skills', stream);
-    }
-
-    if (!this.telemetry) {
-      stream.markdown('Enterprise backend not configured.');
-      return {};
-    }
-
-    const arg = request.prompt.trim();
-
-    if (arg.startsWith('publish')) {
-      stream.progress('Publishing skill to team catalog...');
-      // Look for SKILL.md in workspace root
-      const files = await vscode.workspace.findFiles('**/SKILL.md', '**/node_modules/**', 1);
-      if (files.length === 0) {
-        stream.markdown('No `SKILL.md` found in workspace. Run `@tokalator /skill-gen` first.\n');
-        return {};
-      }
-      const content = (await vscode.workspace.fs.readFile(files[0])).toString();
-      const nameMatch = content.match(/^#\s+(.+)/m);
-      const descMatch = content.match(/^>\s*(.+)/m);
-
-      try {
-        const result = await this.telemetry.publishSkill({
-          name: nameMatch?.[1] || path.basename(files[0].fsPath),
-          description: descMatch?.[1] || '',
-          content,
-        });
-        stream.markdown(`Skill published to team catalog. ID: \`${(result as {id: string}).id}\`\n`);
-      } catch (err: unknown) {
-        const msg = err instanceof Error ? err.message : String(err);
-        stream.markdown(`Failed to publish: ${msg}\n`);
-      }
-      return {};
-    }
-
-    // Default: list skills
-    stream.progress('Fetching team skill catalog...');
-    try {
-      const skills = await this.telemetry.listSkills(arg || undefined);
-
-      if (!skills || skills.length === 0) {
-        stream.markdown('No skills in team catalog yet. Use `@tokalator /skills publish` to share a SKILL.md.\n');
-        return {};
-      }
-
-      stream.markdown(`## Team Skill Catalog\n\n`);
-      stream.markdown(`| Skill | Author | Downloads |\n|---|---|---|\n`);
-      for (const s of skills) {
-        stream.markdown(`| **${s.name}** — ${s.description || ''} | ${s.author} | ${s.downloads} |\n`);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      stream.markdown(`Failed to fetch skills: ${msg}\n`);
-    }
-    return {};
-  }
-
-  /**
-   * /audit — View team audit log (Enterprise)
-   */
-  private async handleAudit(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Fetching audit trail...');
-
-    if (!this.telemetry) {
-      stream.markdown('Enterprise backend not configured.');
-      return {};
-    }
-
-    try {
-      const headers = this.telemetry.getHeaders();
-      const endpoint = this.telemetry.getEndpoint();
-      const res = await fetch(`${endpoint}/api/v1/audit?limit=25`, { headers });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = await res.json() as { entries: Array<{timestamp: string; developer_id: string; action: string; resource_type: string; resource_id: string}> };
-
-      if (!data.entries || data.entries.length === 0) {
-        stream.markdown('No audit entries found.\n');
-        return {};
-      }
-
-      stream.markdown(`## Audit Trail (last 25)\n\n`);
-      stream.markdown(`| Time | Developer | Action | Resource |\n|---|---|---|---|\n`);
-      for (const e of data.entries) {
-        const time = new Date(e.timestamp).toLocaleString();
-        stream.markdown(`| ${time} | ${e.developer_id} | ${e.action} | ${e.resource_type || ''} ${e.resource_id ? '`' + e.resource_id.slice(0, 8) + '`' : ''} |\n`);
-      }
-    } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : String(err);
-      stream.markdown(`Failed to fetch audit log: ${msg}\n`);
-    }
-
-    return {};
-  }
 
   private async handleExit(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
     this.monitor.saveSessionSummary();
@@ -621,7 +362,7 @@ export class ContextChatParticipant implements vscode.Disposable {
   }
 
   /**
-   * /secure — Scan workspace and auto-generate AI agent security settings (Pro)
+   * /secure — Scan workspace and auto-generate AI agent security settings
    */
   private async handleSecure(
     request: vscode.ChatRequest,
@@ -696,81 +437,9 @@ export class ContextChatParticipant implements vscode.Disposable {
     return {};
   }
 
-  /**
-   * /terminology-gen — Generate compressed terminology glossary (Pro)
-   */
-  private async handleTerminologyGen(stream: vscode.ChatResponseStream): Promise<vscode.ChatResult> {
-    stream.progress('Scanning project for terminology sources...');
-
-    const folders = vscode.workspace.workspaceFolders;
-    if (!folders) {
-      stream.markdown('No workspace open.\n');
-      return {};
-    }
-
-    const root = folders[0].uri;
-
-    // Check for dictionary.json
-    const dictPattern = new vscode.RelativePattern(root, '**/dictionary.json');
-    const dictFiles = await vscode.workspace.findFiles(dictPattern, '**/node_modules/**', 5);
-
-    // Check for terminologies.md
-    const termPattern = new vscode.RelativePattern(root, '**/terminologies.md');
-    const termFiles = await vscode.workspace.findFiles(termPattern, '**/node_modules/**', 5);
-
-    stream.markdown(`## Terminology Generator (Pro)\n\n`);
-    stream.markdown(`### Sources Found\n\n`);
-    stream.markdown(`| Source | Status |\n|---|---|\n`);
-    stream.markdown(`| \`dictionary.json\` | ${dictFiles.length > 0 ? dictFiles.length + ' file(s)' : 'Not found'} |\n`);
-    stream.markdown(`| \`terminologies.md\` | ${termFiles.length > 0 ? termFiles.length + ' file(s)' : 'Not found'} |\n\n`);
-
-    if (dictFiles.length === 0 && termFiles.length === 0) {
-      stream.markdown(`No terminology sources found. Create a \`content/dictionary.json\` with:\n\n`);
-      stream.markdown('```json\n{\n  "terms": [\n    { "term": "Context Rot", "definition": "...", "category": "context-management", "tags": [] }\n  ]\n}\n```\n\n');
-      stream.markdown(`Then run \`@tokalator /terminology-gen\` again.\n`);
-      return {};
-    }
-
-    // Measure source sizes
-    let totalSourceTokens = 0;
-    for (const uri of [...dictFiles, ...termFiles]) {
-      try {
-        const doc = await vscode.workspace.openTextDocument(uri);
-        const model = this.monitor.getActiveModel();
-        const tokenizer = this.monitor.getTokenizer();
-        const tokens = tokenizer.countTokens(doc.getText(), model.provider);
-        totalSourceTokens += tokens;
-        stream.markdown(`- \`${vscode.workspace.asRelativePath(uri)}\`: ~${this.fmtTokens(tokens)} tokens\n`);
-      } catch { /* skip */ }
-    }
-
-    // Check if output already exists
-    const instrPattern = new vscode.RelativePattern(root, '**/.github/instructions/terminology.instructions.md');
-    const instrFiles = await vscode.workspace.findFiles(instrPattern, undefined, 1);
-
-    stream.markdown(`\n### Compression Potential\n\n`);
-    stream.markdown(`| Metric | Value |\n|---|---|\n`);
-    stream.markdown(`| Raw sources | ~${this.fmtTokens(totalSourceTokens)} tokens |\n`);
-    stream.markdown(`| Expected compressed | ~${this.fmtTokens(Math.round(totalSourceTokens * 0.11))} tokens (89% compression) |\n`);
-    stream.markdown(`| Break-even | ~9 turns (at 3 terms/turn) |\n`);
-    stream.markdown(`| 25-turn savings | ~56% terminology overhead |\n\n`);
-
-    if (instrFiles.length > 0) {
-      stream.markdown(`> Glossary already exists: \`${vscode.workspace.asRelativePath(instrFiles[0])}\`\n\n`);
-      stream.markdown(`To regenerate, run in terminal:\n`);
-    } else {
-      stream.markdown(`### Generate\n\n`);
-      stream.markdown(`Run in terminal:\n`);
-    }
-
-    stream.markdown('```bash\nnpx tsx scripts/terminology-scanner.ts --format=instructions\n```\n\n');
-    stream.markdown(`Or use the **Generate Glossary** button in the Tokalator Pro panel.\n`);
-
-    return {};
-  }
 
   /**
-   * /skill-gen — Auto-generate SKILL.md from project analysis (Pro)
+   * /skill-gen — Auto-generate SKILL.md from project analysis
    */
   private async handleSkillGen(
     request: vscode.ChatRequest,
@@ -816,7 +485,7 @@ export class ContextChatParticipant implements vscode.Disposable {
       '**/node_modules/**', 500,
     );
 
-    stream.markdown(`## SKILL.md Generator (Pro)\n\n`);
+    stream.markdown(`## SKILL.md Generator\n\n`);
     stream.markdown(`### Project Analysis: ${rootPath}\n\n`);
     stream.markdown(`| Metric | Value |\n|---|---|\n`);
     stream.markdown(`| Languages | ${langs.join(', ')} |\n`);
@@ -893,7 +562,7 @@ export class ContextChatParticipant implements vscode.Disposable {
   }
 
   /**
-   * /settings-gen — Generate GitHub and VS Code AI settings files (Pro)
+   * /settings-gen — Generate GitHub and VS Code AI settings files
    */
   private async handleSettingsGen(
     request: vscode.ChatRequest,
@@ -917,7 +586,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     const claudeFile = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'CLAUDE.md'), undefined, 1);
     const cursorRules = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '.cursorrules'), undefined, 1);
 
-    stream.markdown(`## AI Settings Generator (Pro)\n\n`);
+    stream.markdown(`## AI Settings Generator\n\n`);
     stream.markdown(`### Current Configuration\n\n`);
     stream.markdown(`| Config File | Status |\n|---|---|\n`);
     stream.markdown(`| \`.github/copilot-instructions.md\` | ${copilotInstr.length > 0 ? 'Exists' : 'Missing'} |\n`);
@@ -1201,7 +870,7 @@ export class ContextChatParticipant implements vscode.Disposable {
     const snapshot = this.monitor.getLatestSnapshot();
 
     stream.markdown(`## Tokalator\n\n`);
-    stream.markdown(`Enterprise token intelligence for AI teams.\n\n`);
+    stream.markdown(`Open-source context engineering for AI coding assistants.\n\n`);
     stream.markdown(`| Command | Description |\n|---|---|\n`);
     stream.markdown(`| \`@tokalator /count\` | Current token count and budget level |\n`);
     stream.markdown(`| \`@tokalator /breakdown\` | See where tokens are going |\n`);
@@ -1212,14 +881,12 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`| \`@tokalator /model [name]\` | Show or switch the active model |\n`);
     stream.markdown(`| \`@tokalator /compaction\` | Per-turn growth and compaction advice |\n`);
     stream.markdown(`| \`@tokalator /preview\` | Preview token cost before sending |\n`);
-    stream.markdown(`| \`@tokalator /secure\` | Scan and auto-generate security settings (Pro) |\n`);
-    stream.markdown(`| \`@tokalator /skill-gen\` | Auto-generate SKILL.md from project analysis (Pro) |\n`);
-    stream.markdown(`| \`@tokalator /settings-gen\` | Generate GitHub + VS Code AI settings (Pro) |\n`);
+    stream.markdown(`| \`@tokalator /secure\` | Scan and auto-generate security settings |\n`);
+    stream.markdown(`| \`@tokalator /skill-gen\` | Auto-generate SKILL.md from project analysis |\n`);
+    stream.markdown(`| \`@tokalator /settings-gen\` | Generate GitHub + VS Code AI settings |\n`);
     stream.markdown(`| \`@tokalator /reset\` | Reset session (clear turn counter) |\n`);
-    stream.markdown(`| \`@tokalator /exit\` | End session and save summary |\n`);
-    stream.markdown(`| \`@tokalator /team\` | Team usage analytics (Enterprise) |\n`);
-    stream.markdown(`| \`@tokalator /skills\` | Shared skill catalog (Enterprise) |\n`);
-    stream.markdown(`| \`@tokalator /audit\` | Team audit trail (Enterprise) |\n\n`);
+    stream.markdown(`| \`@tokalator /pricewatch\` | Model price changes and their impact |\n`);
+    stream.markdown(`| \`@tokalator /exit\` | End session and save summary |\n\n`);
 
     if (snapshot) {
       stream.markdown(`**Current:** ${snapshot.tabs.length} tabs, budget ${snapshot.budgetLevel}\n`);

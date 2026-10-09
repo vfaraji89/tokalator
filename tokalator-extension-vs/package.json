@@ -1,8 +1,8 @@
 {
   "name": "tokalator",
   "displayName": "Tokalator",
-  "description": "Count your tokens like beads on an abacus. Real-time context budget calculator, security scanner, and usage analytics for AI coding assistants.",
-  "version": "4.0.0",
+  "description": "Open-source context engineering for AI coding assistants: real-time context budget, tab relevance, model pricing, and workspace security for Copilot, Claude, and other agents.",
+  "version": "4.1.0",
   "publisher": "vfaraji89",
   "license": "AGPL-3.0-or-later",
   "repository": {
@@ -25,7 +25,8 @@
     "copilot",
     "claude",
     "tokalator",
-    "abacus"
+    "calculator",
+    "open-source"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -37,7 +38,7 @@
         {
           "id": "tokalator",
           "title": "Tokalator",
-          "icon": "media/abacus.svg"
+          "icon": "media/tokalator.svg"
         }
       ]
     },
@@ -103,10 +104,6 @@
             "description": "Scan workspace security and auto-generate AI agent settings"
           },
           {
-            "name": "terminology-gen",
-            "description": "Generate compressed terminology glossary for context optimization"
-          },
-          {
             "name": "skill-gen",
             "description": "Auto-generate a SKILL.md from project analysis"
           },
@@ -117,22 +114,6 @@
           {
             "name": "exit",
             "description": "End the current session and save summary"
-          },
-          {
-            "name": "team",
-            "description": "Show team usage analytics and cost insights (Enterprise)"
-          },
-          {
-            "name": "skills",
-            "description": "Browse and publish shared team skills (Enterprise)"
-          },
-          {
-            "name": "audit",
-            "description": "View team audit log and compliance trail (Enterprise)"
-          },
-          {
-            "name": "credits",
-            "description": "Show GitHub AI Credits usage, remaining allowance, and projected monthly cost"
           },
           {
             "name": "pricewatch",
@@ -170,17 +151,6 @@
         "title": "Secure Workspace",
         "category": "Tokalator",
         "icon": "$(shield)"
-      },
-      {
-        "command": "tokalator.setApiKey",
-        "title": "Set Enterprise API Key",
-        "category": "Tokalator"
-      },
-      {
-        "command": "tokalator.openDashboard",
-        "title": "Open Enterprise Dashboard",
-        "category": "Tokalator",
-        "icon": "$(globe)"
       }
     ],
     "menus": {
@@ -267,11 +237,6 @@
           ],
           "description": "AI model to calculate context budget against"
         },
-        "tokalator.contextRotWarningTurns": {
-          "type": "number",
-          "default": 20,
-          "description": "Warn about context rot after this many chat turns"
-        },
         "tokalator.autoRefreshInterval": {
           "type": "number",
           "default": 2000,
@@ -281,50 +246,6 @@
           "type": "boolean",
           "default": false,
           "description": "Enable opt-in session logging for research studies. Logs only aggregate counts and scores — no file names or contents."
-        },
-        "tokalator.licenseTier": {
-          "type": "string",
-          "default": "community",
-          "enum": [
-            "community",
-            "pro",
-            "enterprise"
-          ],
-          "enumDescriptions": [
-            "Community — core token counting and budget features",
-            "Pro — adds security scanner, SKILL.md gen, AI settings gen, terminology optimization",
-            "Enterprise — adds team telemetry, shared skill catalog, audit trail, web dashboard"
-          ],
-          "description": "License tier. Pro features work locally. Enterprise requires API key and backend."
-        },
-        "tokalator.teamId": {
-          "type": "string",
-          "default": "",
-          "description": "Enterprise: your team ID (provided by admin during setup)"
-        },
-        "tokalator.apiEndpoint": {
-          "type": "string",
-          "default": "",
-          "description": "Enterprise: URL of the Tokalator Enterprise backend (e.g. https://tokalator.yourcompany.com)"
-        },
-        "tokalator.copilotPlan": {
-          "type": "string",
-          "default": "pro",
-          "enum": [
-            "free",
-            "pro",
-            "pro_plus",
-            "business",
-            "enterprise"
-          ],
-          "enumDescriptions": [
-            "Copilot Free — limited credits",
-            "Copilot Pro — $10/mo, $10 AI Credits included",
-            "Copilot Pro+ — $39/mo, $39 AI Credits included",
-            "Copilot Business — $19/user/mo, $19 AI Credits pooled",
-            "Copilot Enterprise — $39/user/mo, $39 AI Credits pooled"
-          ],
-          "description": "Your GitHub Copilot plan. Used to track AI Credits consumption against your monthly allowance."
         }
       }
     }
@@ -351,5 +272,6 @@
   "dependencies": {
     "@anthropic-ai/tokenizer": "^0.0.4",
     "js-tiktoken": "^1.0.21"
-  }
+  },
+  "homepage": "https://tokalator.wiki"
 }

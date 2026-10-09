@@ -4,10 +4,6 @@ import { ContextDashboardProvider } from './webview/contextDashboardProvider';
 import { ContextChatParticipant } from './chat/contextChatParticipant';
 import { loadPricingCatalog, refreshPricingCatalog } from './core/pricingCatalog';
 import { WorkspaceSecurityScanner } from './core/workspaceSecurityScanner';
-import { AuthService } from './core/authService';
-import { TelemetrySync } from './core/telemetrySync';
-import { LicenseService } from './core/licenseService';
-import { CopilotCreditsTracker } from './core/copilotPlan';
 import { PriceWatchService } from './core/priceWatch';
 
 let monitorRef: ContextMonitor | undefined;
@@ -49,22 +45,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   const chatParticipant = new ContextChatParticipant(monitor);
   context.subscriptions.push(chatParticipant);
 
-  const authService = new AuthService(context.secrets);
-  await authService.initialize();
-  const telemetrySync = new TelemetrySync(authService);
-  const licenseService = new LicenseService(authService, telemetrySync);
-  await licenseService.initialize();
-  context.subscriptions.push(licenseService);
-
-  chatParticipant.setLicense(licenseService);
-  chatParticipant.setTelemetry(telemetrySync);
-  dashboardProvider.setLicense(licenseService);
-
-  const creditsTracker = new CopilotCreditsTracker(context.workspaceState);
-  context.subscriptions.push(creditsTracker);
-  chatParticipant.setCreditsTracker(creditsTracker);
-  dashboardProvider.setCreditsTracker(creditsTracker);
-
   const analytics = monitor.getUsageAnalytics();
   if (analytics) {
     const priceWatch = new PriceWatchService(context.globalState, analytics);
@@ -87,14 +67,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
       });
     });
   }
-
-  monitor.onDidInferTurn(({ count, costEstimate }) => {
-    if (costEstimate) {
-      for (let i = 0; i < count; i++) {
-        creditsTracker.recordTurn(costEstimate.effectiveCost);
-      }
-    }
-  });
 
   context.subscriptions.push(
     vscode.commands.registerCommand('tokalator.refresh', () => {
@@ -126,38 +98,6 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
     vscode.commands.registerCommand('tokalator.refreshPricing', async () => {
       await refreshPricingCatalog(context);
       vscode.window.showInformationMessage('Tokalator pricing catalog refreshed');
-    }),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('tokalator.openDashboard', async () => {
-      const cfg = vscode.workspace.getConfiguration('tokalator');
-      const endpoint = cfg.get<string>('apiEndpoint', '').replace(/\/+$/, '');
-      if (!endpoint) {
-        vscode.window.showWarningMessage(
-          'Tokalator Enterprise: Set tokalator.apiEndpoint first (e.g. http://localhost:3100)',
-        );
-        return;
-      }
-      const url = endpoint + '/dashboard';
-      await vscode.commands.executeCommand('simpleBrowser.show', url);
-    }),
-  );
-
-  context.subscriptions.push(
-    vscode.commands.registerCommand('tokalator.setApiKey', async () => {
-      const key = await vscode.window.showInputBox({
-        prompt: 'Enter your Tokalator Enterprise API key',
-        password: true,
-        placeHolder: 'tok_...',
-      });
-      if (key) {
-        await authService.setApiKey(key);
-        await licenseService.initialize();
-        vscode.window.showInformationMessage(
-          `Tokalator Enterprise: API key set. Tier: ${licenseService.getTierLabel()}`,
-        );
-      }
     }),
   );
 
@@ -224,7 +164,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<void> 
   }
 
   await monitor.refresh();
-  log.appendLine('Tokalator v4.0 activated');
+  log.appendLine('Tokalator activated');
 
   setTimeout(() => {
     (async () => {

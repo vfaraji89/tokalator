@@ -1,5 +1,28 @@
 # Changelog
 
+## 4.1.0
+
+### Changed
+
+- Tokalator Pro is merged into the open-source extension. Every feature is free, and the dashboard badge reads OPEN SOURCE.
+- New calculator icon and activity bar icon.
+- Turn cost is an input-only estimate. Output tokens and cache hits are not observable from the editor, so they are no longer priced.
+
+### Removed
+
+- Enterprise features: `/team`, `/skills`, `/audit`, the API key and dashboard commands, license tiers, and telemetry sync.
+- The GitHub AI Credits tracker and `/credits`, which counted Tokalator's own commands rather than Copilot usage.
+- `/terminology-gen` and the Generate Glossary button, which pointed to a generator that did not exist and showed unmeasured savings.
+- Unused settings: `licenseTier`, `teamId`, `apiEndpoint`, `copilotPlan`, `contextRotWarningTurns`.
+
+### Fixed
+
+- Default `windowSize` of 0 produced a 0-token capacity and a permanent 100% critical state.
+- Secure Workspace overwrote `.claude/settings.json` and `.vscode/settings.json` when they could not be parsed.
+- The dashboard inserted file names, model labels, catalog data, and errors into HTML without escaping. The CSP now adds `form-action` and `base-uri`, and the nonce uses `crypto`.
+- Detected-model chips rendered "undefined" and could save it as the model setting.
+- Emoji removed from chat output and dashboard buttons.
+
 ## 3.1.7 — 2026-05-31
 
 ### Added
