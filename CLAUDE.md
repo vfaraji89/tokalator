@@ -80,9 +80,9 @@ Core logic in `src/core/`:
 - `tokenBudgetEstimator.ts` — computes budget from model context window minus system/conversation overhead
 - `tokenizerService.ts` — wraps `@anthropic-ai/tokenizer` (Claude BPE) and `js-tiktoken` (OpenAI o200k_base)
 - `sessionLogger.ts` — opt-in anonymized research logging (aggregate counts only, no filenames)
-- `modelProfiles.ts` — 17 model profiles with per-MTok pricing (Claude Opus/Sonnet/Haiku 4.x, GPT-5.x, o3, o4-mini, Gemini 3.x/2.5). Each profile has `inputCostPerMTok` and `outputCostPerMTok` for live cost estimation in the dashboard.
+- `modelProfiles.ts` — generated from `models.json`; per-MTok pricing for Claude, GPT, and Gemini models. Turn cost in the dashboard is an input-only estimate: output tokens and cache hits are not observable from the editor.
 
-The sidebar dashboard (`src/webview/contextDashboardProvider.ts`) renders an inline HTML webview with a cost estimation box that computes per-turn cost from input tokens and model max output using the model's pricing rates.
+The sidebar dashboard (`src/webview/contextDashboardProvider.ts`) renders an inline HTML webview. Escape every interpolated value with `esc()`; the CSP is nonce-locked.
 
 Bundled with esbuild (not tsc), outputs a single `dist/extension.js`. The scorer evaluation framework lives in `/evaluation/` with human labels and scripts to compute precision/recall/F1.
 
