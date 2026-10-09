@@ -1,6 +1,6 @@
 {
   "name": "tokalator-mcp",
-  "version": "3.1.7",
+  "version": "3.1.8",
   "description": "Tokalator MCP server — real Claude BPE token counting for Claude Code",
   "type": "module",
   "main": "build/index.js",
@@ -9,16 +9,20 @@
   },
   "scripts": {
     "build": "tsc",
-    "dev": "tsc --watch"
+    "dev": "tsc --watch",
+    "sync": "node scripts/sync.mjs",
+    "prebuild": "node scripts/sync.mjs"
   },
   "dependencies": {
     "@anthropic-ai/tokenizer": "^0.0.4",
-    "@modelcontextprotocol/sdk": "^1.27.1",
+    "@modelcontextprotocol/sdk": "^1.32.1",
     "js-tiktoken": "^1.0.21",
-    "zod": "^3.25.0"
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",
     "typescript": "^5.5.0"
-  }
+  },
+  "license": "AGPL-3.0-or-later",
+  "author": "Vahid Farajijobehdar"
 }
