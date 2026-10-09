@@ -1,5 +1,7 @@
 "use client";
 
+import { themePalette as P } from "@/lib/theme-palette";
+
 import { useState, useMemo } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -11,13 +13,13 @@ import {
   ANTHROPIC_PRICING, formatCost,
 } from "@/lib/pricing";
 
-type ModelId = "claude-opus-4.6" | "claude-sonnet-4.6" | "claude-haiku-4.5";
+type ModelId = "claude-fable-5" | "claude-opus-5" | "claude-sonnet-5" | "claude-opus-4.8" | "claude-sonnet-4.6" | "claude-haiku-4.5";
 
-const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
+
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 export function EconomicAnalysis() {
-  const [model, setModel] = useState<ModelId>("claude-sonnet-4.6");
+  const [model, setModel] = useState<ModelId>("claude-sonnet-5");
   const [inputTokens, setInputTokens] = useState(100000);
   const [outputTokens, setOutputTokens] = useState(50000);
   const [cacheTokens, setCacheTokens] = useState(20000);
@@ -65,7 +67,7 @@ export function EconomicAnalysis() {
   ];
 
   const modelCosts = useMemo(() => {
-    return (["claude-opus-4.6", "claude-sonnet-4.6", "claude-haiku-4.5"] as ModelId[]).map((m) => {
+    return (["claude-fable-5", "claude-opus-5", "claude-sonnet-5", "claude-opus-4.8", "claude-haiku-4.5"] as ModelId[]).map((m) => {
       const p = ANTHROPIC_PRICING[m].standard;
       return { name: m.replace("claude-", "").split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" "), cost: +((inputTokens * p.inputCostPerMTok + outputTokens * p.outputCostPerMTok) / 1_000_000).toFixed(4) };
     });
@@ -166,7 +168,10 @@ export function EconomicAnalysis() {
             <div style={{ marginBottom: "1rem" }}>
               <label style={ls}>Model</label>
               <select value={model} onChange={(e) => setModel(e.target.value as ModelId)} style={{ width: "100%", padding: "0.5rem", border: `1px solid ${P.g3}`, borderRadius: "4px", background: P.white }}>
-                <option value="claude-opus-4.6">Claude Opus 4.6</option>
+                <option value="claude-fable-5">Claude Fable 5</option>
+                <option value="claude-opus-5">Claude Opus 5</option>
+                <option value="claude-sonnet-5">Claude Sonnet 5</option>
+                <option value="claude-opus-4.8">Claude Opus 4.8</option>
                 <option value="claude-sonnet-4.6">Claude Sonnet 4.6</option>
                 <option value="claude-haiku-4.5">Claude Haiku 4.5</option>
               </select>

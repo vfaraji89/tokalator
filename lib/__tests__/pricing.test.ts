@@ -28,10 +28,10 @@ describe('getPricingTier', () => {
     expect(tier.outputCostPerMTok).toBe(25.0);
   });
 
-  it('returns extended tier for Opus at >200K tokens', () => {
+  it('bills Opus at standard rates across the full 1M window', () => {
     const tier = getPricingTier('claude-opus-4.6', 250_000);
-    expect(tier.inputCostPerMTok).toBe(10.0);
-    expect(tier.outputCostPerMTok).toBe(37.5);
+    expect(tier.inputCostPerMTok).toBe(5.0);
+    expect(tier.outputCostPerMTok).toBe(25.0);
   });
 
   it('returns standard tier for Sonnet at ≤200K', () => {
@@ -39,9 +39,9 @@ describe('getPricingTier', () => {
     expect(tier.inputCostPerMTok).toBe(3.0);
   });
 
-  it('returns extended tier for Sonnet at >200K', () => {
+  it('bills Sonnet at standard rates across the full 1M window', () => {
     const tier = getPricingTier('claude-sonnet-4.6', 300_000);
-    expect(tier.inputCostPerMTok).toBe(6.0);
+    expect(tier.inputCostPerMTok).toBe(3.0);
   });
 
   it('returns standard tier when no prompt length provided', () => {
@@ -155,16 +155,16 @@ describe('calculateCost', () => {
     expect(result.totalCost).toBeGreaterThan(0);
   });
 
-  it('uses extended pricing when promptLength exceeds threshold', () => {
-    const standard = calculateCost(
+  it('does not surcharge long prompts (1M window is standard-priced)', () => {
+    const short = calculateCost(
       'claude-opus-4.6',
       { inputTokens: 100_000, outputTokens: 0, promptLength: 100_000 }
     );
-    const extended = calculateCost(
+    const long = calculateCost(
       'claude-opus-4.6',
-      { inputTokens: 100_000, outputTokens: 0, promptLength: 300_000 }
+      { inputTokens: 100_000, outputTokens: 0, promptLength: 900_000 }
     );
-    expect(extended.inputCost).toBe(standard.inputCost * 2);
+    expect(long.inputCost).toBe(short.inputCost);
   });
 });
 

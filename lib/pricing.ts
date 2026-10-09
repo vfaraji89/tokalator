@@ -61,18 +61,46 @@ export interface QualityMetrics {
 }
 
 // ============================================
-// CONSTANTS - Anthropic Pricing (May 2026)
+// CONSTANTS - Anthropic Pricing (September 2026)
 // ============================================
 
 export const MODEL_LIMITS = {
+  'claude-fable-5-1': { contextWindow: 1_000_000, maxOutput: 128_000 },
+  'claude-fable-5': { contextWindow: 1_000_000, maxOutput: 128_000 },
+  'claude-opus-5': { contextWindow: 1_000_000, maxOutput: 128_000 },
   'claude-opus-4.8': { contextWindow: 1_000_000, maxOutput: 128_000 },
   'claude-opus-4.7': { contextWindow: 1_000_000, maxOutput: 128_000 },
   'claude-opus-4.6': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-sonnet-4.6': { contextWindow: 1_000_000, maxOutput: 64_000 },
+  'claude-sonnet-5': { contextWindow: 1_000_000, maxOutput: 128_000 },
+  'claude-sonnet-4.6': { contextWindow: 1_000_000, maxOutput: 128_000 },
   'claude-haiku-4.5': { contextWindow: 200_000, maxOutput: 64_000 },
 } as const;
 
 export const ANTHROPIC_PRICING = {
+  'claude-fable-5-1': {
+    standard: {
+      inputCostPerMTok: 10.0,
+      outputCostPerMTok: 50.0,
+      cacheWriteCostPerMTok: 12.50,
+      cacheReadCostPerMTok: 0.25,
+    },
+  },
+  'claude-fable-5': {
+    standard: {
+      inputCostPerMTok: 10.0,
+      outputCostPerMTok: 50.0,
+      cacheWriteCostPerMTok: 12.50,
+      cacheReadCostPerMTok: 1.00,
+    },
+  },
+  'claude-opus-5': {
+    standard: {
+      inputCostPerMTok: 5.0,
+      outputCostPerMTok: 25.0,
+      cacheWriteCostPerMTok: 6.25,
+      cacheReadCostPerMTok: 0.50,
+    },
+  },
   'claude-opus-4.8': {
     standard: {
       inputCostPerMTok: 5.0,
@@ -80,13 +108,6 @@ export const ANTHROPIC_PRICING = {
       cacheWriteCostPerMTok: 6.25,
       cacheReadCostPerMTok: 0.50,
     },
-    extended: {
-      inputCostPerMTok: 10.0,
-      outputCostPerMTok: 37.50,
-      cacheWriteCostPerMTok: 12.50,
-      cacheReadCostPerMTok: 1.00,
-    },
-    threshold: 200000,
   },
   'claude-opus-4.7': {
     standard: {
@@ -95,13 +116,6 @@ export const ANTHROPIC_PRICING = {
       cacheWriteCostPerMTok: 6.25,
       cacheReadCostPerMTok: 0.50,
     },
-    extended: {
-      inputCostPerMTok: 10.0,
-      outputCostPerMTok: 37.50,
-      cacheWriteCostPerMTok: 12.50,
-      cacheReadCostPerMTok: 1.00,
-    },
-    threshold: 200000,
   },
   'claude-opus-4.6': {
     standard: {
@@ -110,13 +124,14 @@ export const ANTHROPIC_PRICING = {
       cacheWriteCostPerMTok: 6.25,
       cacheReadCostPerMTok: 0.50,
     },
-    extended: {
-      inputCostPerMTok: 10.0,
-      outputCostPerMTok: 37.50,
-      cacheWriteCostPerMTok: 12.50,
-      cacheReadCostPerMTok: 1.00,
+  },
+  'claude-sonnet-5': {
+    standard: {
+      inputCostPerMTok: 2.0,
+      outputCostPerMTok: 10.0,
+      cacheWriteCostPerMTok: 2.50,
+      cacheReadCostPerMTok: 0.20,
     },
-    threshold: 200000,
   },
   'claude-sonnet-4.6': {
     standard: {
@@ -125,13 +140,6 @@ export const ANTHROPIC_PRICING = {
       cacheWriteCostPerMTok: 3.75,
       cacheReadCostPerMTok: 0.30,
     },
-    extended: {
-      inputCostPerMTok: 6.0,
-      outputCostPerMTok: 22.50,
-      cacheWriteCostPerMTok: 7.50,
-      cacheReadCostPerMTok: 0.60,
-    },
-    threshold: 200000,
   },
   'claude-haiku-4.5': {
     standard: {
@@ -145,15 +153,33 @@ export const ANTHROPIC_PRICING = {
 
 export const SERVICE_PRICING = {
   webSearch: {
-    costPer1K: 10.0, // $10 per 1K searches
+    costPer1K: 10.0,
   },
   codeExecution: {
-    costPerHour: 0.05, // $0.05 per hour
-    freeHoursPerDay: 50, // 50 free hours per day per org
+    costPerHour: 0.05,
+    freeHoursPerDay: 50,
   },
 } as const;
 
 export const MODEL_PARAMS: Record<string, ModelParams> = {
+  'claude-fable-5-1': {
+    baseQuality: 1.25,
+    alphaParam: 0.35,
+    betaParam: 0.40,
+    gammaParam: 0.20,
+  },
+  'claude-fable-5': {
+    baseQuality: 1.2,
+    alphaParam: 0.35,
+    betaParam: 0.40,
+    gammaParam: 0.20,
+  },
+  'claude-opus-5': {
+    baseQuality: 1.1,
+    alphaParam: 0.32,
+    betaParam: 0.38,
+    gammaParam: 0.20,
+  },
   'claude-opus-4.8': {
     baseQuality: 1.0,
     alphaParam: 0.30,
@@ -161,15 +187,21 @@ export const MODEL_PARAMS: Record<string, ModelParams> = {
     gammaParam: 0.20,
   },
   'claude-opus-4.7': {
-    baseQuality: 1.0,
+    baseQuality: 0.98,
     alphaParam: 0.30,
     betaParam: 0.35,
     gammaParam: 0.20,
   },
   'claude-opus-4.6': {
-    baseQuality: 1.0,
+    baseQuality: 0.95,
     alphaParam: 0.30,
     betaParam: 0.35,
+    gammaParam: 0.20,
+  },
+  'claude-sonnet-5': {
+    baseQuality: 0.90,
+    alphaParam: 0.28,
+    betaParam: 0.32,
     gammaParam: 0.20,
   },
   'claude-sonnet-4.6': {
@@ -202,11 +234,19 @@ export function getPricingTier(
     throw new Error(`Unknown model: ${modelName}`);
   }
 
-  // Check for tiered pricing (Sonnet)
-  if ('threshold' in pricing && promptLength !== undefined) {
-    if (promptLength > pricing.threshold) {
-      return pricing.extended;
-    }
+  const tiered = pricing as {
+    standard: PricingTier;
+    threshold?: number;
+    extended?: PricingTier;
+  };
+
+  if (
+    tiered.threshold !== undefined &&
+    tiered.extended !== undefined &&
+    promptLength !== undefined &&
+    promptLength > tiered.threshold
+  ) {
+    return tiered.extended;
   }
 
   return pricing.standard;
@@ -523,24 +563,29 @@ export function formatTokens(tokens: number): string {
  */
 export function getModelInfo(modelName: string) {
   const info = {
-    'claude-opus-4.8': {
-      displayName: 'Claude Opus 4.8',
-      description: 'Most capable model for complex reasoning and agentic coding',
-      color: '#8B5CF6',
+    'claude-fable-5': {
+      displayName: 'Claude Fable 5',
+      description: 'Mythos-class; most intelligent generally available model',
+      color: '#DC2626',
     },
-    'claude-opus-4.7': {
-      displayName: 'Claude Opus 4.7',
-      description: 'Flagship model with adaptive thinking and 128K output',
+    'claude-opus-5': {
+      displayName: 'Claude Opus 5',
+      description: 'Claude 5 family Opus; complex reasoning and agentic coding',
       color: '#7C3AED',
     },
-    'claude-opus-4.6': {
-      displayName: 'Claude Opus 4.6',
-      description: 'Extended thinking model with 128K output',
-      color: '#6D28D9',
+    'claude-sonnet-5': {
+      displayName: 'Claude Sonnet 5',
+      description: 'Claude 5 family; best speed-intelligence balance',
+      color: '#E85D04',
+    },
+    'claude-opus-4.8': {
+      displayName: 'Claude Opus 4.8',
+      description: 'Most capable Opus for complex reasoning and agentic coding',
+      color: '#8B5CF6',
     },
     'claude-sonnet-4.6': {
       displayName: 'Claude Sonnet 4.6',
-      description: 'Best combination of speed and intelligence',
+      description: 'Extended thinking; strong coding performance',
       color: '#3B82F6',
     },
     'claude-haiku-4.5': {

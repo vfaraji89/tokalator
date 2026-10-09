@@ -41,7 +41,7 @@ const SKILLS_DIRECTORIES = [
 let cachedCatalog: Catalog | null = null;
 
 function loadConfig(): CatalogConfig {
-  const configPath = path.join(PROJECT_ROOT, 'catalog-config.json');
+  const configPath = path.join(/* turbopackIgnore: true */ PROJECT_ROOT, 'catalog-config.json');
   try {
     const raw = fs.readFileSync(configPath, 'utf-8');
     const parsed = JSON.parse(raw);
@@ -205,14 +205,14 @@ function scanClaudeCodeContent(featuredIds: string[]): CatalogItem[] {
   const items: CatalogItem[] = [];
 
   // Check project root for CLAUDE.md
-  const claudeMdPath = path.join(PROJECT_ROOT, 'CLAUDE.md');
+  const claudeMdPath = path.join(/* turbopackIgnore: true */ PROJECT_ROOT, 'CLAUDE.md');
   if (fs.existsSync(claudeMdPath)) {
     const item = parseFile(claudeMdPath, 'user', 'claude-code', featuredIds);
     if (item) items.push(item);
   }
 
   // Check .claude/ directory for commands, hooks, etc.
-  const claudeDir = path.join(PROJECT_ROOT, '.claude');
+  const claudeDir = path.join(/* turbopackIgnore: true */ PROJECT_ROOT, '.claude');
   if (fs.existsSync(claudeDir)) {
     const files = walkDirectory(claudeDir, ['.md', '.yml', '.yaml']);
     for (const file of files) {
@@ -232,42 +232,45 @@ export function scanCatalog(forceRefresh = false): Catalog {
   const config = loadConfig();
   const items: CatalogItem[] = [];
   const seenIds = new Set<string>();
+  const addItem = (item: CatalogItem | null) => {
+    if (!item) return;
+    if (seenIds.has(item.id)) {
+      const id = item.id;
+      const existing = items.find(candidate => candidate.id === id);
+      if (existing?.kind === item.kind) return;
+      item = { ...item, id: `${item.id}-${item.kind}` };
+    }
+    if (seenIds.has(item.id)) return;
+    seenIds.add(item.id);
+    items.push(item);
+  };
 
   // Scan configured directories
   for (const dir of config.scanDirectories) {
-    const fullDir = path.join(PROJECT_ROOT, dir.path);
+    const fullDir = path.join(/* turbopackIgnore: true */ PROJECT_ROOT, dir.path);
     const files = walkDirectory(fullDir, ['.agent.md', '.prompt.md', '.instructions.md', '.collection.yml', '.collection.yaml']);
 
     for (const file of files) {
       const item = parseFile(file, dir.source, dir.ecosystem, config.featuredIds);
-      if (item && !seenIds.has(item.id)) {
-        seenIds.add(item.id);
-        items.push(item);
-      }
+      addItem(item);
     }
   }
 
   // Auto-detect Claude Code content
   const claudeItems = scanClaudeCodeContent(config.featuredIds);
   for (const item of claudeItems) {
-    if (!seenIds.has(item.id)) {
-      seenIds.add(item.id);
-      items.push(item);
-    }
+    addItem(item);
   }
 
   // Scan skills directories (VS Code 1.109+ / Claude compatible)
   for (const skillsDir of SKILLS_DIRECTORIES) {
-    const fullSkillsDir = path.join(PROJECT_ROOT, skillsDir);
+    const fullSkillsDir = path.join(/* turbopackIgnore: true */ PROJECT_ROOT, skillsDir);
     if (!fs.existsSync(fullSkillsDir)) continue;
     const skillFiles = walkDirectory(fullSkillsDir, ['.md']);
     for (const file of skillFiles) {
       if (!/SKILL\.md$/i.test(path.basename(file))) continue;
       const item = parseFile(file, 'user', undefined, config.featuredIds);
-      if (item && !seenIds.has(item.id)) {
-        seenIds.add(item.id);
-        items.push(item);
-      }
+      addItem(item);
     }
   }
 

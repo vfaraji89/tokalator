@@ -11,7 +11,7 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { PROVIDER_MODELS, getProviderColor, Provider } from '@/lib/providers';
+import { PROVIDER_MODELS, getProviderColor, Provider, estimateModelCost } from '@/lib/providers';
 
 // ============================================
 // COST COMPARISON CHART
@@ -30,8 +30,7 @@ export function CostComparisonChart({
   const data = PROVIDER_MODELS
     .map(model => ({
       name: model.name.replace('Claude ', '').replace('Gemini ', ''),
-      cost: (inputTokens / 1_000_000) * model.inputCostPerMTok +
-            (outputTokens / 1_000_000) * model.outputCostPerMTok,
+      cost: estimateModelCost(model, inputTokens, outputTokens),
       provider: model.provider,
       fullName: model.name,
     }))
@@ -197,17 +196,17 @@ export function PriceQualityChart() {
   // Quality scores based on latest benchmarks (Feb 2026)
   const data: PriceQualityData[] = [
     { name: 'Opus 4.6', pricePerToken: 5.0, qualityScore: 99, provider: 'anthropic' },
-    { name: 'Sonnet 4.6', pricePerToken: 3.0, qualityScore: 93, provider: 'anthropic' },
+    { name: 'Sonnet 5', pricePerToken: 3.0, qualityScore: 94, provider: 'anthropic' },
+    { name: 'Opus 4.8', pricePerToken: 5.0, qualityScore: 96, provider: 'anthropic' },
     { name: 'Haiku 4.5', pricePerToken: 1.0, qualityScore: 86, provider: 'anthropic' },
-    { name: 'GPT-5.2', pricePerToken: 1.75, qualityScore: 97, provider: 'openai' },
-    { name: 'GPT-4.1', pricePerToken: 3.0, qualityScore: 92, provider: 'openai' },
-    { name: 'GPT-4.1 Mini', pricePerToken: 0.80, qualityScore: 87, provider: 'openai' },
-    { name: 'GPT-5 Mini', pricePerToken: 0.25, qualityScore: 84, provider: 'openai' },
-    { name: 'o4-mini', pricePerToken: 4.0, qualityScore: 96, provider: 'openai' },
-    { name: 'Gemini 3 Pro', pricePerToken: 2.0, qualityScore: 96, provider: 'google' },
-    { name: 'Gemini 3 Flash', pricePerToken: 0.50, qualityScore: 89, provider: 'google' },
+    { name: 'GPT-5.6 Terra', pricePerToken: 8.0, qualityScore: 99, provider: 'openai' },
+    { name: 'GPT-5.6 Sol', pricePerToken: 5.0, qualityScore: 97, provider: 'openai' },
+    { name: 'GPT-5.5', pricePerToken: 5.0, qualityScore: 96, provider: 'openai' },
+    { name: 'GPT-5.4', pricePerToken: 2.5, qualityScore: 93, provider: 'openai' },
+    { name: 'Gemini 3.7 Flash', pricePerToken: 2.0, qualityScore: 95, provider: 'google' },
+    { name: 'Gemini 3.1 Pro', pricePerToken: 2.0, qualityScore: 96, provider: 'google' },
+    { name: 'Gemini 3.5 Flash', pricePerToken: 1.50, qualityScore: 92, provider: 'google' },
     { name: 'Gemini 2.5 Pro', pricePerToken: 1.25, qualityScore: 94, provider: 'google' },
-    { name: 'Gemini 2.5 Flash', pricePerToken: 0.30, qualityScore: 85, provider: 'google' },
   ];
   
   // Calculate efficiency (quality per dollar)

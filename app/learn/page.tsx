@@ -1,19 +1,10 @@
 "use client";
 
+import { themePalette as P } from "@/lib/theme-palette";
+
 import Link from "next/link";
 
-const P = {
-  red: "#e3120b",
-  black: "#111",
-  g7: "#333",
-  g6: "#555",
-  g5: "#888",
-  g3: "#ccc",
-  g2: "#ddd",
-  g1: "#f0f0f0",
-  g05: "#f8f8f8",
-  white: "#fff",
-};
+
 
 /* ── Reusable visual frame (browser chrome mockup) ── */
 function Frame({

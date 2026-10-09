@@ -9,6 +9,15 @@
             "command": "entire hooks claude-code session-start"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/tokalator-context.py\" --hook",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "SessionEnd": [
@@ -31,6 +40,15 @@
             "command": "entire hooks claude-code user-prompt-submit"
           }
         ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/tokalator-context.py\" --hook",
+            "timeout": 30
+          }
+        ]
       }
     ],
     "Stop": [
@@ -40,6 +58,15 @@
           {
             "type": "command",
             "command": "entire hooks claude-code stop"
+          }
+        ]
+      },
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/scripts/tokalator-context.py\" --hook",
+            "timeout": 30
           }
         ]
       }

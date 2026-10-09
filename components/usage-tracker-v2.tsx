@@ -1,5 +1,7 @@
 "use client";
 
+import { themePalette as P } from "@/lib/theme-palette";
+
 import { useState, useMemo, useCallback, useRef } from "react";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
@@ -7,7 +9,7 @@ import {
 } from "recharts";
 import { formatCost } from "@/lib/pricing";
 
-const P = { red: "#e3120b", black: "#111", g7: "#555", g5: "#888", g3: "#ccc", g1: "#f3f3f3", white: "#fff" };
+
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 const fmtTok = (n: number) => n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
 
@@ -29,12 +31,14 @@ interface UsageRecord {
 // ── Pricing for client-side cost estimation ──
 
 const PRICING: Record<string, [number, number]> = {
-  "claude-opus-4.6": [5.0, 25.0], "claude-sonnet-4.6": [3.0, 15.0], "claude-haiku-4.5": [1.0, 5.0],
-  "gpt-5.2": [1.75, 14.0], "gpt-5.2-codex": [0.50, 4.0], "gpt-5.1": [2.50, 10.0],
-  "gpt-4.1": [3.0, 12.0], "gpt-4.1-mini": [0.80, 3.20], "gpt-4.1-nano": [0.20, 0.80],
-  "gpt-5-mini": [0.25, 2.0], "o4-mini": [4.0, 16.0], "gpt-4o": [2.50, 10.0],
-  "gemini-3-pro": [2.0, 12.0], "gemini-3-flash": [0.50, 3.0], "gemini-2.5-pro": [1.25, 10.0],
-  "gemini-2.5-flash": [0.30, 2.50], "gemini-2.5-flash-lite": [0.10, 0.40], "gemini-2.0-flash": [0.10, 0.40],
+  "claude-fable-5": [10.0, 50.0], "claude-opus-5": [5.0, 25.0], "claude-sonnet-5": [3.0, 15.0],
+  "claude-opus-4.8": [5.0, 25.0], "claude-sonnet-4.6": [3.0, 15.0], "claude-haiku-4.5": [1.0, 5.0],
+  "gpt-5.6-terra": [8.0, 40.0], "gpt-5.6-sol": [5.0, 30.0], "gpt-5.6-luna": [3.0, 18.0],
+  "gpt-5.5": [5.0, 30.0], "gpt-5.4": [2.50, 15.0], "gpt-5.4-mini": [0.75, 4.50],
+  "gpt-5.4-nano": [0.20, 1.25], "gpt-5.3-codex": [1.75, 14.0],
+  "gemini-3.7-flash": [2.0, 12.0], "gemini-3.6-flash": [1.75, 10.50],
+  "gemini-3.5-flash": [1.50, 9.0], "gemini-3.1-pro": [2.0, 12.0],
+  "gemini-3-flash": [0.50, 3.0], "gemini-2.5-pro": [1.25, 10.0],
 };
 
 function estimateCost(model: string, inp: number, out: number): number {

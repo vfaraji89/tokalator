@@ -22,8 +22,8 @@ const features = [
     command: '@tokalator /model',
   },
   {
-    name: '14 Model Profiles',
-    description: 'Built-in profiles for Opus 4.6, Sonnet 4.6/4, Haiku 4.5, GPT-5.2, GPT-5.2 Codex, GPT-5.1, GPT-5 Mini, GPT-4.1, o3, o4-mini, Gemini 3 Pro/Flash, Gemini 2.5 Pro.',
+    name: '20 Model Profiles',
+    description: 'Built-in profiles for Fable 5, Opus 5, Sonnet 5, Opus 4.8, Sonnet 4.6, Haiku 4.5, GPT-5.6 Luna/Sol/Terra, GPT-5.5/5.4/5.4-mini/nano, Codex, Gemini 3.7/3.6/3.5 Flash, 3.1 Pro, 3 Flash, 2.5 Pro.',
     command: 'Settings: tokalator.model',
   },
   {
@@ -56,7 +56,7 @@ const features = [
 const settings = [
   {
     key: 'tokalator.model',
-    default: 'claude-opus-4.6',
+    default: 'claude-fable-5',
     description: 'AI model to calculate context budget against. Sets tokenizer, context window, and rot threshold automatically.',
   },
   {
