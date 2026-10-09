@@ -53,8 +53,10 @@ export interface CostEstimate {
   inputCost: number;        // $ for input tokens
   outputCost: number;       // $ for estimated output tokens
   totalCost: number;        // inputCost + outputCost
+  effectiveCost: number;    // totalCost after cache reads on the repeated prefix
   inputCostPerMTok: number; // model rate for display
   outputCostPerMTok: number;
+  cachedInputCostPerMTok: number; // cache-read rate; equals input rate when uncached
 }
 
 /**

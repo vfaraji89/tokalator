@@ -114,12 +114,11 @@ describe('ContextDashboardProvider', () => {
       expect(exec).toHaveBeenCalledWith('workbench.action.chat.open', { query: '@tokalator /terminology-gen' });
     });
 
-    test('proFeature command shows an upgrade message', async () => {
-      await mockView.simulateMessage({ command: 'proFeature', feature: 'Secure Workspace' });
-      expect(vscode.window.showInformationMessage).toHaveBeenCalledWith(
-        expect.stringContaining('Secure Workspace'),
-        'Learn More',
-      );
+    test('secure command opens the workspace security scan', async () => {
+      const exec = vscode.commands.executeCommand as jest.Mock;
+      exec.mockClear();
+      await mockView.simulateMessage({ command: 'secure' });
+      expect(exec).toHaveBeenCalled();
     });
 
     test('resetTurns command calls monitor.resetChatTurns', async () => {
@@ -136,7 +135,7 @@ describe('ContextDashboardProvider', () => {
       expect(html).not.toContain('onchange=');
       expect(html).toContain('data-action="openFile"');
       expect(html).toContain('data-action="terminologyGen"');
-      expect(html).toContain('data-action="proFeature"');
+      expect(html).toContain('data-action="secure"');
     });
 
     test('contains event delegation listeners', () => {
@@ -145,30 +144,28 @@ describe('ContextDashboardProvider', () => {
       expect(html).toContain("document.addEventListener('dblclick'");
     });
 
-    test('has no model dropdown (model is auto-detected, read-only)', () => {
+    test('switches model by delegated action, never an inline handler', () => {
       const html = mockView.webview.html;
-      expect(html).not.toContain('data-action="setModel"');
       expect(html).not.toContain("addEventListener('change'");
-      expect(html).toContain('model-active');
-      expect(html).toContain('Auto-detected from your active Copilot chat model');
+      expect(html).toContain('data-action="switchModel"');
+      expect(html).toContain("dataset.model");
     });
 
-    test('renders Context Engineering stats and API Cost Simulation', () => {
+    test('renders budget, cost and conversation stats', () => {
       const html = mockView.webview.html;
-      expect(html).toContain('Context Engineering');
-      expect(html).toContain('class="ce-grid"');
-      expect(html).toContain('context used');
-      expect(html).toContain('tokens/turn');
-      expect(html).toContain('turns left');
-      expect(html).toContain('API Cost Simulation');
+      expect(html).toContain('Context used');
+      expect(html).toContain('Next turn estimate');
+      expect(html).toContain('Budget Breakdown');
+      expect(html).toContain('Conversation');
+      expect(html).toContain('Cache savings');
     });
 
-    test('renders feature panel and price-compare with vs Current', () => {
+    test('renders the pro feature panel', () => {
       const html = mockView.webview.html;
+      expect(html).toContain('Pro Features');
       expect(html).toContain('Generate Glossary');
       expect(html).toContain('Secure Workspace');
-      expect(html).toContain('compare-tbl');
-      expect(html).toContain('vs Current');
+      expect(html).toContain('Generate AI Settings');
     });
 
     test('contains CSP with nonce', () => {

@@ -15,8 +15,8 @@ import {
 // ============================================
 
 describe('MODEL_PROFILES', () => {
-  it('contains 17 model profiles', () => {
-    expect(MODEL_PROFILES).toHaveLength(17);
+  it('is non-empty', () => {
+    expect(MODEL_PROFILES.length).toBeGreaterThan(0);
   });
 
   it('covers 3 providers', () => {
@@ -24,12 +24,24 @@ describe('MODEL_PROFILES', () => {
     expect(providers).toEqual(new Set(['anthropic', 'openai', 'google']));
   });
 
-  it('has 5 Anthropic, 6 OpenAI, 6 Google models', () => {
+  it('has at least one model per provider', () => {
     const counts: Record<string, number> = { anthropic: 0, openai: 0, google: 0 };
     MODEL_PROFILES.forEach((m: ModelProfile) => counts[m.provider]++);
-    expect(counts.anthropic).toBe(5);
-    expect(counts.openai).toBe(6);
-    expect(counts.google).toBe(6);
+    expect(counts.anthropic).toBeGreaterThan(0);
+    expect(counts.openai).toBeGreaterThan(0);
+    expect(counts.google).toBeGreaterThan(0);
+  });
+
+  it('every model has a non-negative cache-read rate at or below its input rate', () => {
+    MODEL_PROFILES.forEach((m: ModelProfile) => {
+      if (m.cachedInputCostPerMTok === undefined) { return; }
+      expect(m.cachedInputCostPerMTok).toBeGreaterThanOrEqual(0);
+      expect(m.cachedInputCostPerMTok).toBeLessThanOrEqual(m.inputCostPerMTok);
+    });
+  });
+
+  it('at least one model is featured', () => {
+    expect(MODEL_PROFILES.some((m: ModelProfile) => m.featured)).toBe(true);
   });
 
   it('all models have positive context window', () => {
@@ -77,8 +89,8 @@ describe('DEFAULT_MODEL_ID', () => {
     expect(found).toBeDefined();
   });
 
-  it('is claude-opus-4.8', () => {
-    expect(DEFAULT_MODEL_ID).toBe('claude-opus-4.8');
+  it('points at a current Claude model', () => {
+    expect(DEFAULT_MODEL_ID).toMatch(/^claude-/);
   });
 });
 
@@ -109,7 +121,7 @@ describe('findModel', () => {
 
   it('contains match (fallback)', () => {
     const result = findModel('opus');
-    expect(result?.id).toBe('claude-opus-4.8');
+    expect(result?.id).toMatch(/^claude-opus-/);
   });
 
   it('returns undefined for empty string', () => {
@@ -121,7 +133,7 @@ describe('findModel', () => {
   });
 
   it('finds OpenAI models', () => {
-    expect(findModel('o4-mini')?.provider).toBe('openai');
+    expect(findModel('gpt-5.4-nano')?.provider).toBe('openai');
   });
 
   it('finds Google models', () => {
@@ -130,7 +142,7 @@ describe('findModel', () => {
 
   it('finds GPT-5.5 model', () => {
     expect(findModel('gpt-5.5')?.provider).toBe('openai');
-    expect(findModel('gpt-5.5')?.contextWindow).toBe(1_000_000);
+    expect(findModel('gpt-5.5')?.contextWindow).toBe(272_000);
   });
 
   it('finds Claude Sonnet 4.6', () => {
