@@ -2,7 +2,7 @@
 
 A context engineering toolkit for AI coding. Website + VS Code extension + Claude Code plugin + reusable prompts
 
-**Site**: [tokalator.wiki](https://tokalator.wiki)
+**Site**: [tokalator.ai](https://tokalator.ai)
 **Extension**: [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator)
 **Claude Code Plugin**: [tokalator-glossary](https://github.com/vfaraji89/tokalator-glossary)
 

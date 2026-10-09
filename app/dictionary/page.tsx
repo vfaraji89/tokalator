@@ -2,8 +2,12 @@
 
 import { useState, useMemo } from "react";
 import dictionary from "../../content/dictionary.json";
+import { termSlug } from "./term-slug";
 
 type Term = (typeof dictionary.terms)[number];
+
+const ANCHOR_OFFSET = { scrollMarginTop: "4rem" };
+const CATEGORY_LABELS = Object.fromEntries(dictionary.categories.map((c) => [c.id, c.label]));
 
 export default function DictionaryPage() {
   const [search, setSearch] = useState("");
@@ -64,24 +68,26 @@ export default function DictionaryPage() {
       {/* Search */}
       <div className="wiki-search">
         <input
-          type="text"
+          type="search"
+          aria-label="Search dictionary terms"
           placeholder="Search terms, definitions, tags..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="wiki-search-input"
         />
-        <span className="wiki-search-count">
+        <span className="wiki-search-count" aria-live="polite">
           {filtered.length} of {terms.length}
         </span>
       </div>
 
       {/* Category Filter */}
       <div className="wiki-filters">
-        <div className="wiki-filter-row">
+        <div className="wiki-filter-row" role="group" aria-label="Filter by category">
           {categories.map((c) => (
             <button
               key={c.id}
               className={`category-pill ${categoryFilter === c.id ? "active" : ""}`}
+              aria-pressed={categoryFilter === c.id}
               onClick={() => setCategoryFilter(c.id)}
             >
               {c.label}
@@ -97,29 +103,39 @@ export default function DictionaryPage() {
 
       {/* Letter Index */}
       {letters.length > 3 && (
-        <div className="dict-letter-index">
+        <nav className="dict-letter-index" aria-label="Jump to letter">
           {letters.map((letter) => (
             <a key={letter} href={`#letter-${letter}`} className="dict-letter-link">
               {letter}
             </a>
           ))}
-        </div>
+        </nav>
       )}
 
       {/* Terms */}
       {letters.map((letter) => (
-        <section key={letter} id={`letter-${letter}`}>
-          <div className="dict-letter-header">{letter}</div>
+        <section key={letter} id={`letter-${letter}`} style={ANCHOR_OFFSET}>
+          <h2 className="dict-letter-header">{letter}</h2>
           <div className="dict-terms">
             {grouped[letter].map((t) => (
-              <div key={t.term} className="dict-term">
+              <div key={t.term} id={termSlug(t.term)} className="dict-term" style={ANCHOR_OFFSET}>
                 <div className="dict-term-header">
-                  <h3 className="dict-term-name">{t.term}</h3>
-                  <span className="category-badge">
-                    {t.category.replace(/-/g, " ")}
-                  </span>
+                  <h3 className="dict-term-name">
+                    <a href={`#${termSlug(t.term)}`} style={{ color: "inherit" }}>
+                      {t.term}
+                    </a>
+                  </h3>
+                  <span className="category-badge">{CATEGORY_LABELS[t.category] ?? t.category}</span>
                 </div>
                 <p className="dict-term-def">{t.definition}</p>
+                {t.source && (
+                  <p className="dict-term-def" style={{ fontSize: "0.75rem" }}>
+                    Source:{" "}
+                    <a href={t.source} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>
+                      {t.source.replace(/^https?:\/\//, "")}
+                    </a>
+                  </p>
+                )}
                 <div className="wiki-card-tags">
                   {t.tags.map((tag) => (
                     <span key={tag} className="wiki-tag">{tag}</span>

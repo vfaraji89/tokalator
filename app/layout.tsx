@@ -4,8 +4,9 @@ import { SideNav } from "@/components/side-nav";
 import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { WebVitals } from "./_components/web-vitals";
+import { SiteFooter } from "@/components/site-footer";
 
-const siteUrl = "https://tokalator.wiki";
+const siteUrl = "https://tokalator.ai";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -13,7 +14,8 @@ const jsonLd = {
     {
       "@type": "Person",
       "@id": `${siteUrl}/#author`,
-      name: "vfaraji89",
+      name: "Vahid Farajijobehdar",
+      alternateName: "vfaraji89",
       url: "https://vfaraji89.github.io",
       sameAs: [
         "https://vfaraji89.github.io",
@@ -25,7 +27,8 @@ const jsonLd = {
       "@id": `${siteUrl}/#organization`,
       name: "Tokalator",
       url: siteUrl,
-      logo: `${siteUrl}/favicon.svg`,
+      logo: `${siteUrl}/apple-touch-icon.png`,
+      description: "Open-source context engineering tools for AI coding assistants.",
       founder: { "@id": `${siteUrl}/#author` },
       sameAs: [
         "https://vfaraji89.github.io",
@@ -38,8 +41,9 @@ const jsonLd = {
       "@id": `${siteUrl}/#website`,
       url: siteUrl,
       name: "Tokalator",
-      description:
-        "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
+      description: "Context engineering for AI coding: living code maps (GLOSSARY.md and SITE-MAP.md) for agents, a VS Code extension that tracks context budgets and Claude Code turns with API-equivalent cost, and token and pricing tools for 32 Claude, GPT, and Gemini models. Free and open source.",
+      inLanguage: "en",
+      dateModified: "2026-10-10",
       publisher: { "@id": `${siteUrl}/#organization` },
       author: { "@id": `${siteUrl}/#author` },
     },
@@ -54,12 +58,24 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   title: {
-    default: "Tokalator 3.4.0 — Give Your Agents a Map of Your Code",
+    default: "Tokalator: Context Engineering for AI Coding",
     template: "%s | Tokalator",
   },
-  description:
-    "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
+  description: "Context engineering for AI coding: living code maps (GLOSSARY.md and SITE-MAP.md) for agents, a VS Code extension that tracks context budgets and Claude Code turns with API-equivalent cost, and token and pricing tools for 32 Claude, GPT, and Gemini models. Free and open source.",
+  applicationName: "Tokalator",
   keywords: [
+    "Claude Code cost",
+    "Claude Code usage",
+    "Claude Code tokens",
+    "token counter",
+    "context window calculator",
+    "Claude Opus 5.5 pricing",
+    "GPT-6 pricing",
+    "Gemini 3.8 Flash pricing",
+    "GitHub Copilot context",
+    "MCP server",
+    "AGENTS.md",
+    "CLAUDE.md",
     "token calculator",
     "context engineering",
     "AI cost optimizer",
@@ -71,26 +87,21 @@ export const metadata: Metadata = {
     "context window",
     "token budget",
   ],
-  authors: [{ name: "vfaraji89", url: "https://vfaraji89.github.io" }],
-  creator: "vfaraji89",
+  authors: [{ name: "Vahid Farajijobehdar", url: "https://vfaraji89.github.io" }],
+  creator: "Vahid Farajijobehdar",
   metadataBase: new URL(siteUrl),
-  alternates: {
-    canonical: "/",
-  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: siteUrl,
     siteName: "Tokalator",
-    title: "Tokalator 3.4.0 — Give Your Agents a Map of Your Code",
-    description:
-      "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
+    title: "Tokalator: Context Engineering for AI Coding",
+    description: "Context engineering for AI coding: living code maps (GLOSSARY.md and SITE-MAP.md) for agents, a VS Code extension that tracks context budgets and Claude Code turns with API-equivalent cost, and token and pricing tools for 32 Claude, GPT, and Gemini models. Free and open source.",
   },
   twitter: {
     card: "summary_large_image",
-    title: "Tokalator 3.4.0 — Give Your Agents a Map of Your Code",
-    description:
-      "Generate GLOSSARY.md and SITE-MAP.md locally, with Claude Code review and stop hooks. Source-linked context for coding agents, plus token and pricing tools.",
+    title: "Tokalator: Context Engineering for AI Coding",
+    description: "Context engineering for AI coding: living code maps (GLOSSARY.md and SITE-MAP.md) for agents, a VS Code extension that tracks context budgets and Claude Code turns with API-equivalent cost, and token and pricing tools for 32 Claude, GPT, and Gemini models. Free and open source.",
   },
   icons: {
     icon: [
@@ -103,6 +114,7 @@ export const metadata: Metadata = {
   robots: {
     index: true,
     follow: true,
+    googleBot: { index: true, follow: true, "max-snippet": -1, "max-image-preview": "large", "max-video-preview": -1 },
   },
 };
 
@@ -117,12 +129,9 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Recursive:CASL,CRSV,MONO,slnt,wght@0,0,0..1,0,300..1000&amp;family=Sora:wght@100..800&amp;display=swap" />
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd).replace(/</g, "\\u003c") }}
         />
-        <link
-          rel="stylesheet"
-          href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:wght@400;700&family=Instrument+Serif:ital@0;1&display=swap"
-        />
+        <link rel="alternate" type="text/plain" title="LLM summary" href="/llms.txt" />
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('theme');if(t==='dark'){document.documentElement.setAttribute('data-theme','dark');}else{document.documentElement.setAttribute('data-theme','light');}}catch(e){document.documentElement.setAttribute('data-theme','light');}})();`,
@@ -132,7 +141,7 @@ export default function RootLayout({
       <body>
         <div className="layout">
           <SideNav />
-          <main className="main-content">{children}</main>
+          <main className="main-content">{children}<SiteFooter /></main>
         </div>
         <div className="pixel-grid-bg" aria-hidden="true" />
         <WebVitals />

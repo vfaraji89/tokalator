@@ -48,9 +48,8 @@
     "reference-material",
     "user-content",
     "examples",
-    "prisma",
-    "lib/db.ts",
     "scripts",
-    "tokalator-mcp"
+    "tokalator-mcp",
+    "prisma/archive"
   ]
 }

@@ -210,7 +210,7 @@ export function getStrategyDescription(strategy: ContextStrategy): {
       return {
         name: 'Sliding Window',
         description: 'Keep only the last N turns in context',
-        pros: ['Predictable costs', 'Never hits limits', 'Fast responses'],
+        pros: ['Predictable costs', 'Context size stays bounded', 'Fast responses'],
         cons: ['Loses old context', 'May forget earlier instructions', 'Abrupt cutoff'],
       };
     case 'summarize':

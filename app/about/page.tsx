@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/about" },
   title: "About",
   description: "Tokalator — token budget tools for AI coding assistants. Built by Vahid Faraji.",
 };
@@ -66,7 +67,7 @@ export default function AboutPage() {
             Vahid Farajijobehdar, İlknur Köseoğlu Sarı, Nazım Kemal Üre, Engin Zeydan
           </p>
           <p style={{ fontSize: "0.875rem", margin: "0 0 0.75rem" }}>
-            We present Tokalator, an open-source context engineering toolkit that provides real-time token budget monitoring, 11 slash commands, quality modeling calculators, and cost analysis tools for AI coding assistants. Supporting 17 large language models across three providers, the toolkit includes a VS Code extension, CLI, and usage tracker. Survey findings reveal that instruction-file injection and low-relevance open tabs are among the primary invisible budget consumers.
+            <span style={{ color: "var(--text-muted)" }}>Paper abstract (April 2026, describing extension 3.x): </span>We present Tokalator, an open-source context engineering toolkit that provides real-time token budget monitoring, 11 slash commands, quality modeling calculators, and cost analysis tools for AI coding assistants. Supporting 17 large language models across three providers, the toolkit includes a VS Code extension, CLI, and usage tracker. Survey findings reveal that instruction-file injection and low-relevance open tabs are among the primary invisible budget consumers.
           </p>
           <div style={{ display: "flex", gap: "1rem", fontSize: "0.8125rem" }}>
             <a href="https://arxiv.org/abs/2604.08290" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>arXiv:2604.08290</a>
@@ -79,7 +80,7 @@ export default function AboutPage() {
       <section>
         <h2>Project</h2>
         <p>
-          Tokalator&apos;s core is open source under the AGPL-3.0 License; the VS Code extension is distributed under the MIT License.{" "}
+          Tokalator is open source under the GNU Affero General Public License v3.0 or later: the website, the VS Code extension (4.1.1), and the MCP server. Commercial licences are available from the copyright holder.{" "}
           <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>
             View on GitHub →
           </a>

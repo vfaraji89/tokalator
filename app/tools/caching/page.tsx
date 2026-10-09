@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Caching ROI Calculator",
-  description: "Calculate prompt caching ROI — compare cached vs uncached costs across Claude, GPT-4, and Gemini models.",
+  description: "Find the break-even reuse count for prompt caching and compare cached and uncached cost for Claude, GPT and Gemini models.",
+  alternates: { canonical: "/tools/caching" },
 };
 
 export default function CachingPage() {
@@ -15,7 +16,7 @@ export default function CachingPage() {
             <ellipse cx="14" cy="8" rx="9" ry="4" stroke="currentColor" strokeWidth="1.5" fill="none" />
             <path d="M5 8V14C5 16.2 9 18 14 18C19 18 23 16.2 23 14V8" stroke="currentColor" strokeWidth="1.5" fill="none" />
             <path d="M5 14V20C5 22.2 9 24 14 24C19 24 23 22.2 23 20V14" stroke="currentColor" strokeWidth="1.5" fill="none" />
-            <ellipse cx="14" cy="14" rx="9" ry="4" stroke="#e3120b" strokeWidth="0.75" fill="none" />
+            <ellipse cx="14" cy="14" rx="9" ry="4" stroke="var(--accent)" strokeWidth="0.75" fill="none" />
           </svg>
         </div>
         <h1 className="hero-headline">

@@ -1,0 +1,105 @@
+.stage {
+  display: grid;
+  grid-template-columns: minmax(0, 1.25fr) minmax(0, 0.75fr);
+  gap: 14px;
+  max-width: 1010px;
+  margin: 0 auto;
+  text-align: left;
+}
+
+.terminal {
+  background: #1c1c1c;
+  color: #e6e6e6;
+  border-radius: 12px;
+  border: 1px solid #2c2c2c;
+  font: 13px/1.6 "Recursive", ui-monospace, "SF Mono", Menlo, monospace;
+  min-height: 430px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  box-shadow: 0 18px 50px -28px rgba(0, 0, 0, 0.55);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-bottom: 1px solid #2c2c2c;
+  color: #9a9a9a;
+  font-size: 12px;
+}
+
+.spark { color: #d97757; }
+
+.body { padding: 14px 16px; flex: 1; }
+
+.line { white-space: pre-wrap; word-break: break-word; }
+
+.prompt { color: #ffffff; }
+.prompt::before { content: "> "; color: #d97757; }
+
+.tool { color: #cfcfcf; }
+.dot { color: #6cc070; }
+.dotBusy { color: #d97757; }
+.toolName { font-weight: 700; color: #ffffff; }
+.result { color: #8f8f8f; padding-left: 18px; }
+.ok { color: #6cc070; }
+.say { color: #e6e6e6; margin-top: 4px; }
+.say::before { content: "⏺ "; color: #ffffff; }
+
+.cursor {
+  display: inline-block;
+  width: 8px;
+  height: 15px;
+  background: #d97757;
+  vertical-align: text-bottom;
+  animation: blink 1s steps(1) infinite;
+}
+
+.status {
+  border-top: 1px solid #2c2c2c;
+  padding: 8px 14px;
+  font-size: 11px;
+  color: #7d7d7d;
+  display: flex;
+  justify-content: space-between;
+}
+
+.panel {
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  overflow: hidden;
+  background: var(--bg-subtle);
+  display: flex;
+  flex-direction: column;
+}
+
+.panelBar {
+  padding: 9px 12px;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live { width: 7px; height: 7px; border-radius: 50%; background: #6cc070; animation: pulse 2s ease-in-out infinite; }
+
+.frame { width: 100%; height: 100%; min-height: 392px; border: 0; display: block; flex: 1; }
+
+.caption { max-width: 1010px; margin: 10px auto 0; font-size: 12px; color: var(--text-secondary); text-align: center; }
+
+@keyframes blink { 50% { opacity: 0; } }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+@media (max-width: 760px) {
+  .stage { grid-template-columns: 1fr; }
+  .terminal { min-height: 340px; font-size: 12px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cursor, .live { animation: none; }
+}

@@ -5,7 +5,8 @@ import { CalculatorClient } from './CalculatorClient';
 
 export const metadata: Metadata = {
   title: 'Token Cost Calculator',
-  description: 'Calculate and compare token costs across Claude, GPT, and Gemini models. Includes caching ROI, context window comparison, and pricing reference.',
+  description: 'Calculate per-request token cost for Claude, GPT and Gemini models, including cache reads, cache writes and long-context rates.',
+  alternates: { canonical: '/tools/calculator' },
 };
 
 function ToolSkeleton() {
@@ -24,7 +25,7 @@ function ToolSkeleton() {
       </header>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
         {[1, 2, 3].map(i => (
-          <div key={i} className="eco-card-flat" style={{ height: 80, background: 'var(--surface)', borderRadius: 6, opacity: 0.5 }} />
+          <div key={i} className="eco-card-flat" style={{ height: 80, background: 'var(--bg-subtle)', borderRadius: 6, opacity: 0.5 }} />
         ))}
       </div>
     </article>

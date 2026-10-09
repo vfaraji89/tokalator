@@ -1,249 +1,177 @@
 {
-  "version": "4.1.0",
-  "icon": "⬡",
-  "headline": "Real-time context monitoring.\nInside your editor.",
-  "highlightPhrase": "context monitoring",
-  "tagline": "Track token budgets, estimate costs per turn, score tab relevance, and manage context — available as a VS Code extension, MCP server, and CLI.",
+  "headline": "Context budget and Claude Code costs.\nInside your editor.",
+  "highlightPhrase": "Claude Code costs",
+  "tagline": "Context budgets, Claude Code costs, and secret-file safety for AI coding in VS Code.",
   "installCmd": "ext install vfaraji89.tokalator",
-  "vsCodeMinVersion": "1.99",
   "githubUrl": "https://github.com/vfaraji89/tokalator",
-  "license": "AGPL-3.0-or-later",
   "features": [
     {
-      "icon": "▣",
-      "name": "Token Budget Dashboard",
-      "description": "Activity bar sidebar panel showing real-time token usage, budget meter, per-file breakdown, cost estimation, and active tokenizer info.",
-      "command": "View via sidebar icon",
-      "number": 1
+      "name": "Context budget meter",
+      "description": "Tokens used against the model's window, with a clear breakdown.",
+      "command": "Sidebar: Token Budget",
+      "surface": "VS Code"
     },
     {
-      "icon": "◎",
-      "name": "@tokalator Chat Participant",
-      "description": "Chat commands for budget management, workspace security, generators, and price watch, directly in Copilot Chat.",
-      "command": "@tokalator /count, /breakdown, /optimize, /pin, /unpin, /instructions, /model, /compaction, /preview, /secure, /skill-gen, /settings-gen, /pricewatch, /reset, /exit",
-      "number": 2
+      "name": "Claude Code tracking",
+      "description": "Turns, cache hits, and API-equivalent cost from your Claude Code logs. Updates on its own.",
+      "command": "tokalator.claudeCode.enabled",
+      "surface": "VS Code"
     },
     {
-      "icon": "⬡",
-      "name": "Tab Relevance Scoring",
-      "description": "Ranks open tabs by relevance using import analysis, path similarity, edit recency, and diagnostics.",
-      "command": "tokalator.optimize",
-      "number": 3
+      "name": "Turn analytics",
+      "description": "Growth per turn and turns left before the window fills.",
+      "command": "/compaction  /preview",
+      "surface": "VS Code"
     },
     {
-      "icon": "⊕",
-      "name": "Model-Specific Tokenizers",
-      "description": "Real BPE tokenizers per provider — Claude BPE for Anthropic, o200k_base for OpenAI. No more guessing at 4 chars per token.",
-      "command": "@tokalator /model",
-      "number": 4
+      "name": "Tab relevance and cleanup",
+      "description": "Scores every open tab and closes the noise in one click.",
+      "command": "Tokalator: Optimize  /optimize",
+      "surface": "VS Code"
     },
     {
-      "icon": "◇",
-      "name": "17 Model Profiles",
-      "description": "Built-in profiles for Claude Opus/Sonnet/Haiku 4.x (incl. Opus 4.8), GPT-5.5, GPT-5.4 Mini, GPT-5.2/5.1 Codex, GPT-4.1, o3, o4-mini, Gemini 3.x Pro/Flash, Gemini 2.5 Pro. Context windows, rot thresholds, and per-MTok pricing auto-configured.",
-      "command": "Settings: tokalator.model",
-      "number": 5
+      "name": "Pinned files",
+      "description": "Keep key files at full relevance.",
+      "command": "/pin  /unpin  Tokalator: Clear All Pinned Files",
+      "surface": "VS Code"
     },
     {
-      "icon": "⚠",
-      "name": "Context Rot Warnings",
-      "description": "Warns when conversation turns exceed the model's threshold. Each model has its own rot limit based on benchmarks.",
-      "command": "Automatic",
-      "number": 6
+      "name": "Model catalog",
+      "description": "32 current models with verified prices. Detects your Copilot model.",
+      "command": "/model",
+      "surface": "VS Code"
     },
     {
-      "icon": "⊕",
-      "name": "Pinned Files",
-      "description": "Pin important files so they are always treated as high-relevance in context scoring.",
-      "command": "@tokalator /pin <file>",
-      "number": 7
+      "name": "Long-context pricing",
+      "description": "Rates switch above each provider's threshold.",
+      "command": "Turn Cost card",
+      "surface": "VS Code"
     },
     {
-      "icon": "◈",
-      "name": "Instruction File Scanner",
-      "description": "Detects and tokenizes instruction files silently injected into every prompt: .github/copilot-instructions.md, CLAUDE.md, AGENTS.md, .cursorrules, and .instructions.md. Reveals hidden per-file token cost.",
-      "command": "@tokalator /instructions",
-      "number": 8
+      "name": "Price watch and catalog sync",
+      "description": "Daily price sync, with alerts when a rate changes.",
+      "command": "/pricewatch  Tokalator: Refresh Pricing Catalog",
+      "surface": "VS Code"
     },
     {
-      "icon": "▹",
-      "name": "Next Turn Preview",
-      "description": "See estimated token cost of your next message before sending. Dashboard shows a live preview box with growth projections and overflow warnings.",
-      "command": "@tokalator /preview",
-      "number": 9
+      "name": "Secure Workspace",
+      "description": "Checks every secret file is hidden from agents, fixes gaps, and verifies.",
+      "command": "Tokalator: Secure Workspace  /secure",
+      "surface": "VS Code"
     },
     {
-      "icon": "$",
-      "name": "Price Estimation",
-      "description": "Live cost breakdown in the sidebar dashboard — input token cost, output token cost (at max capacity), and total estimated turn cost. Per-MTok rates shown for all 17 models. Also visible in /count and /model chat commands.",
-      "command": "Automatic in dashboard, @tokalator /count",
-      "number": 10
+      "name": "Instruction file audit",
+      "description": "Shows which instruction files load into every prompt and their cost.",
+      "command": "/instructions",
+      "surface": "VS Code"
     },
     {
-      "icon": "◉",
-      "name": "Session Management",
-      "description": "Track per-turn context growth with compaction analysis. Reset sessions, save summaries, and see last session stats on activation.",
-      "command": "@tokalator /compaction, /reset, /exit",
-      "number": 11
+      "name": "Generators",
+      "description": "Agent Skills, AGENTS.md, and Copilot settings from your project.",
+      "command": "/skill-gen  /settings-gen",
+      "surface": "VS Code"
     },
     {
-      "icon": "⬡",
-      "name": "MCP Server for Claude Code",
-      "description": "Brings real Claude BPE token counting into Claude Code and any MCP-capable agent via stdio transport. Four tools: count_tokens, estimate_budget, preview_turn, list_models. Zero API calls — fully offline.",
-      "command": "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js",
-      "number": 12
+      "name": "Code maps",
+      "description": "GLOSSARY.md and SITE-MAP.md so agents find the right files first.",
+      "command": "/codemap  Tokalator: Generate Code Maps",
+      "surface": "VS Code"
     },
     {
-      "icon": "◆",
-      "name": "CLI — tokalator count, budget, preview, models",
-      "description": "Standalone terminal tool for non-VS Code workflows. Count tokens in files, get full budget breakdowns, preview next-turn cost, and list Claude model profiles — all from the command line.",
-      "command": "npm install -g . (from tokalator-mcp/) · tokalator count src/main.ts · tokalator budget src/**/*.ts",
-      "number": 13
-    }
-  ],
-  "stats": {
-    "marketplaceAcquisitions": 156,
-    "marketplaceInstalls": 19,
-    "marketplacePageViews": 188,
-    "conversionRate": "82.98%",
-    "period": "First 30 days (Feb 4 – Mar 6, 2026)",
-    "communityDevelopers": 220,
-    "communitySessions": 3,
-    "communitySessionNames": [
-      "iLab / Kariyer.net",
-      "SaaS Bridge",
-      "TechCareer"
-    ],
-    "communitySessionDetails": [
-      {
-        "name": "iLab / Kariyer.net",
-        "attendees": 50,
-        "note": "Internal deployment — engineers used the extension for one week"
-      },
-      {
-        "name": "SaaS Bridge",
-        "attendees": 90,
-        "note": "Istanbul, March 4 2026"
-      },
-      {
-        "name": "TechCareer",
-        "attendees": 80,
-        "note": "Istanbul, March 5 2026"
-      }
-    ],
-    "unitTests": 124,
-    "testFiles": 6
-  },
-  "settings": [
-    {
-      "key": "tokalator.model",
-      "default": "claude-opus-4.8",
-      "description": "AI model to calculate context budget against. Sets tokenizer, context window, and rot threshold automatically."
+      "name": "Opt-in telemetry and feedback",
+      "description": "Off by default. Show, export, or delete your data anytime.",
+      "command": "Tokalator: Show Telemetry Data",
+      "surface": "VS Code"
     },
     {
-      "key": "tokalator.relevanceThreshold",
-      "default": "0.3",
-      "description": "Tabs below this relevance score are marked as distractors (0–1)"
+      "name": "MCP server",
+      "description": "Token counts, budgets, and Claude Code usage inside Claude Code.",
+      "command": "claude mcp add tokalator",
+      "surface": "MCP"
     },
     {
-      "key": "tokalator.windowSize",
-      "default": "1,000,000",
-      "description": "Override context window size in tokens. Leave at default to use the selected model's window."
-    },
-    {
-      "key": "tokalator.contextRotWarningTurns",
-      "default": "20",
-      "description": "Warn about context rot after this many chat turns"
-    },
-    {
-      "key": "tokalator.autoRefreshInterval",
-      "default": "2000",
-      "description": "Dashboard refresh interval in milliseconds"
+      "name": "CLI",
+      "description": "The same tools in your terminal, with a live usage view.",
+      "command": "tokalator count | budget | preview | models",
+      "surface": "CLI"
     }
   ],
   "architecture": [
     {
-      "layer": "Core Engine",
-      "purpose": "Subscribes to VS Code editor events (active editor, tab open/close, document edits, diagnostics). Builds ContextSnapshot records, manages pinned files and model selection via workspaceState. All handlers debounced 300 ms.",
-      "number": 1
+      "layer": "Context Monitor",
+      "purpose": "Subscribes to editor events (active editor, tabs, edits, diagnostics), debounced at 300 ms, and builds a snapshot with pinned files and the active model."
     },
     {
       "layer": "Tokenizer Service",
-      "purpose": "Provider-specific BPE tokenizers — claude-tokenizer for Anthropic, o200k_base (js-tiktoken) for OpenAI, heuristic (~4 chars/token) for Gemini. Lazy-loaded and cached per document URI + version.",
-      "number": 2
+      "purpose": "Anthropic's open tokenizer for Claude (an approximation for current models), o200k_base via js-tiktoken for OpenAI, and about 4 characters per token for Gemini. Cached per document version."
     },
     {
       "layer": "Relevance Scorer",
-      "purpose": "Scores each open tab R ∈ [0, 1]: language match (0.25), import analysis (0.30), path similarity (0.20), edit recency (0.15), diagnostics (0.10). Pinned and active tabs override to R = 1.0.",
-      "number": 3
+      "purpose": "Weights language match 0.25, imports 0.30, path similarity 0.20, edit recency 0.15, diagnostics 0.10. Pinned and active tabs score 1."
     },
     {
       "layer": "Cost Estimator",
-      "purpose": "Computes per-turn cost from model pricing (inputCostPerMTok, outputCostPerMTok) and current token counts. Input cost from files + overhead, output cost from model max output. Displayed in sidebar dashboard and /count command.",
-      "number": 4
+      "purpose": "Input-only turn cost at catalog rates, including long-context thresholds. Output and cache hits are not observable from the editor."
     },
     {
-      "layer": "Context Optimizer",
-      "purpose": "Identifies distractor tabs (R < 0.3) and closes them via /optimize or the Optimize Tabs button. Reduces attention dilution by removing files unlikely to contribute to the current task.",
-      "number": 5
+      "layer": "Claude Code Tracker",
+      "purpose": "Reads ~/.claude/projects logs for this workspace incrementally, dedupes by API message, counts human turns, and prices input, output, cache reads, and 5-minute and 1-hour cache writes."
     },
     {
       "layer": "Chat Participant",
-      "purpose": "@tokalator with 11 slash commands — /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /exit.",
-      "number": 6
+      "purpose": "@tokalator with 15 slash commands for counts, breakdowns, pins, models, compaction advice, previews, security, generators, and price watch."
     },
     {
-      "layer": "MCP Server & CLI (tokalator-mcp)",
-      "purpose": "Separate component: exposes count_tokens, estimate_budget, preview_turn, list_models to Claude Code via stdio MCP transport. Also ships a standalone CLI binary for terminal workflows.",
-      "number": 7
+      "layer": "Dashboard",
+      "purpose": "A webview with keyed section updates, animated values, collapsible sections, keyboard support, and a nonce-locked content security policy."
+    },
+    {
+      "layer": "Telemetry",
+      "purpose": "Opt-in only and gated by VS Code's telemetry setting. Daily aggregates with restricted event names; export and delete commands."
     }
   ],
   "tokenizers": [
     {
       "provider": "Anthropic",
-      "models": "Opus 4.6, Opus 4.5, Sonnet 4.6, Sonnet 4.5, Sonnet 4, Haiku 4.5",
-      "tokenizer": "Claude BPE",
-      "source": "@anthropic-ai/tokenizer"
+      "models": "Claude Fable, Mythos, Opus, Sonnet, Haiku",
+      "tokenizer": "@anthropic-ai/tokenizer",
+      "source": "Approximate for Claude 3 and later; Claude Opus 4.7 and newer tokenize the same text into roughly 1.0 to 1.35 times as many tokens"
     },
     {
       "provider": "OpenAI",
-      "models": "GPT-5.4, GPT-5.4 Mini, GPT-5.2 Codex, GPT-5.1 Codex, GPT-4.1, o3, o4-mini",
-      "tokenizer": "o200k_base",
-      "source": "js-tiktoken"
+      "models": "GPT-6, GPT-5.6, GPT-5.5, GPT-5.4, GPT-5.3-Codex",
+      "tokenizer": "o200k_base (js-tiktoken)",
+      "source": "OpenAI's published encoding"
     },
     {
       "provider": "Google",
-      "models": "Gemini 3.1 Pro, Gemini 3 Pro, Gemini 3 Flash, Gemini 2.5 Pro",
-      "tokenizer": "Heuristic",
-      "source": "~4 chars/token (no official JS tokenizer)"
+      "models": "Gemini 3.8, 3.6, 3.5 Flash, 3.1 Pro, 3 Flash, 2.5 Pro",
+      "tokenizer": "~4 characters per token",
+      "source": "Heuristic; Gemini's tokenizer is not published for local use"
     }
   ],
   "installMethods": {
     "marketplace": {
       "title": "Marketplace",
-      "icon": "◉",
       "command": "ext install vfaraji89.tokalator",
-      "note": "Requires VS Code 1.99+"
+      "note": "VS Code 1.99 or later. Paste into Quick Open (Cmd+P or Ctrl+P)."
     },
     "vsix": {
       "title": "VSIX",
-      "icon": "◇",
       "steps": [
-        "Download tokalator-4.1.0.vsix from releases",
-        "Cmd+Shift+P → Extensions: Install from VSIX...",
-        "Select the downloaded .vsix file"
+        "Build it: cd tokalator-extension-vs && npm install && npm run package",
+        "Command Palette: Extensions: Install from VSIX...",
+        "Pick the generated tokalator-<version>.vsix"
       ],
-      "command": "code --install-extension tokalator-4.1.0.vsix"
+      "command": "code --install-extension tokalator-extension-vs/tokalator-4.1.1.vsix"
     },
     "source": {
-      "title": "Build from Source",
-      "icon": "◆",
+      "title": "Build from source",
       "command": "git clone https://github.com/vfaraji89/tokalator.git\ncd tokalator/tokalator-extension-vs\nnpm install\nnpm run compile"
     },
     "cli": {
-      "title": "CLI (npm)",
-      "icon": "◆",
-      "note": "Requires Node.js 18+",
+      "title": "CLI",
+      "note": "Node.js 18 or later",
       "steps": [
         "git clone https://github.com/vfaraji89/tokalator.git",
         "cd tokalator/tokalator-mcp && npm install && npm run build",
@@ -252,15 +180,14 @@
       "command": "tokalator count src/main.ts\ntokalator budget src/**/*.ts\ntokalator preview 42000\ntokalator models"
     },
     "mcp": {
-      "title": "MCP Server (Claude Code)",
-      "icon": "⬡",
-      "note": "Requires Node.js 18+ and Claude Code",
+      "title": "MCP server (Claude Code)",
+      "note": "Node.js 18 or later and Claude Code",
       "steps": [
         "Build the CLI first (see above)",
-        "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js",
-        "In Claude Code: /mcp → verify tokalator is listed"
+        "Register it with an absolute path to build/index.js",
+        "In Claude Code run /mcp and check that tokalator is listed"
       ],
-      "command": "claude mcp add --transport stdio tokalator -- node tokalator-mcp/build/index.js"
+      "command": "claude mcp add --transport stdio tokalator -- node \"$PWD/build/index.js\""
     }
   }
 }

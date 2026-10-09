@@ -3,7 +3,7 @@
  * Helps visualize and optimize context budget usage
  */
 
-import { MODEL_LIMITS } from './pricing';
+import { MODEL_LIMITS, MODEL_PRICING } from './pricing';
 
 // ============================================
 // TYPES
@@ -22,7 +22,7 @@ export interface ContextAnalysis {
   remaining: number;
   usagePercent: number;
   isOverLimit: boolean;
-  isInExtendedPricing: boolean; // For Sonnet >200K
+  isInExtendedPricing: boolean;
   breakdown: {
     systemPrompt: { tokens: number; percent: number };
     userInput: { tokens: number; percent: number };
@@ -73,9 +73,9 @@ export function analyzeContextBudget(budget: ContextBudget): ContextAnalysis {
   const remaining = Math.max(0, totalAvailable - totalUsed);
   const usagePercent = (totalUsed / totalAvailable) * 100;
 
-  // Check for Sonnet extended pricing threshold
-  const isInExtendedPricing = budget.model === 'claude-sonnet-4.6' &&
-    (budget.systemPromptTokens + budget.userInputTokens) > 200_000;
+  const { threshold, standard, extended } = MODEL_PRICING[budget.model];
+  const isInExtendedPricing = threshold !== undefined && extended !== undefined &&
+    budget.systemPromptTokens + budget.userInputTokens > threshold;
 
   // Generate warnings
   const warnings: string[] = [];
@@ -89,7 +89,9 @@ export function analyzeContextBudget(budget: ContextBudget): ContextAnalysis {
   }
 
   if (isInExtendedPricing) {
-    warnings.push('Extended context pricing applies (>200K tokens) - 2x input cost');
+    const im = extended.inputCostPerMTok / standard.inputCostPerMTok;
+    const om = extended.outputCostPerMTok / standard.outputCostPerMTok;
+    warnings.push(`Long-context pricing applies above ${formatTokenCount(threshold)} prompt tokens: ${im}x input, ${om}x output for the whole request`);
   }
 
   if (totalUsed > totalAvailable) {

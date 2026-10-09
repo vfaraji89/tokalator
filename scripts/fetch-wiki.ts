@@ -2,46 +2,13 @@
  * Build-time script to fetch context engineering content from external sources.
  * Run: npm run fetch-wiki (or npx tsx scripts/fetch-wiki.ts)
  *
- * Sources: arXiv, OpenAI Cookbook, Anthropic Docs, Google AI Docs
+ * Sources: arXiv API, OpenAI Cookbook, HTML documentation pages
  * Output: content/wiki/articles.json
  */
 
 import { readFileSync, writeFileSync, mkdirSync } from "fs";
 import { resolve } from "path";
-
-// ── Types ──────────────────────────────────────────────────────
-
-interface WikiArticle {
-  slug: string;
-  title: string;
-  description: string;
-  source: string;
-  sourceLabel: string;
-  sourceColor: string;
-  url: string;
-  content: string;
-  authors?: string[];
-  date?: string;
-  tags: string[];
-  category: string;
-}
-
-interface WikiSource {
-  id: string;
-  name: string;
-  color: string;
-  queries?: string[];
-  maxResults?: number;
-  repoFiles?: string[];
-  pages?: { url: string; title: string; tags?: string[]; category?: string }[];
-}
-
-interface BuiltinTerm {
-  term: string;
-  definition: string;
-  category: string;
-  tags: string[];
-}
+import type { BuiltinTerm, WikiArticle, WikiSource } from "../lib/wiki/types";
 
 // ── Helpers ────────────────────────────────────────────────────
 
@@ -58,74 +25,105 @@ function truncate(text: string, max: number): string {
   return text.slice(0, max).replace(/\s\S*$/, "") + "...";
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function extractText(html: string, tag: string): string {
-  const re = new RegExp(`<${tag}[^>]*>([\\s\\S]*?)</${tag}>`, "gi");
-  const matches: string[] = [];
-  let m;
-  while ((m = re.exec(html)) !== null) {
-    matches.push(m[1].replace(/<[^>]+>/g, "").trim());
-  }
-  return matches.join("\n\n");
-}
-
-function htmlToMarkdown(html: string): string {
-  return html
-    .replace(/<h1[^>]*>(.*?)<\/h1>/gi, "# $1\n\n")
-    .replace(/<h2[^>]*>(.*?)<\/h2>/gi, "## $1\n\n")
-    .replace(/<h3[^>]*>(.*?)<\/h3>/gi, "### $1\n\n")
-    .replace(/<h4[^>]*>(.*?)<\/h4>/gi, "#### $1\n\n")
-    .replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, "`$1`")
-    .replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, "\n```\n$1\n```\n")
-    .replace(/<strong[^>]*>(.*?)<\/strong>/gi, "**$1**")
-    .replace(/<em[^>]*>(.*?)<\/em>/gi, "*$1*")
-    .replace(/<a[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "[$2]($1)")
-    .replace(/<li[^>]*>(.*?)<\/li>/gi, "- $1\n")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, "$1\n\n")
-    .replace(/<[^>]+>/g, "")
-    .replace(/&amp;/g, "&")
+function decodeEntities(text: string): string {
+  return text
     .replace(/&lt;/g, "<")
     .replace(/&gt;/g, ">")
     .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'")
     .replace(/&nbsp;/g, " ")
+    .replace(/&#x([0-9a-f]+);/gi, (_, h: string) => String.fromCodePoint(parseInt(h, 16)))
+    .replace(/&#(\d+);/g, (_, d: string) => String.fromCodePoint(Number(d)))
+    .replace(/&amp;/g, "&");
+}
+
+function htmlToMarkdown(html: string): string {
+  return decodeEntities(
+    html
+      .replace(/<pre[^>]*>([\s\S]*?)<\/pre>/gi, (_, code: string) => "\n```\n" + code.replace(/<[^>]+>/g, "") + "\n```\n")
+      .replace(/<h([1-4])[^>]*>([\s\S]*?)<\/h\1>/gi, (_, n: string, t: string) => `${"#".repeat(Number(n))} ${t.replace(/\s+/g, " ").trim()}\n\n`)
+      .replace(/<code[^>]*>([\s\S]*?)<\/code>/gi, "`$1`")
+      .replace(/<strong[^>]*>([\s\S]*?)<\/strong>/gi, "**$1**")
+      .replace(/<em[^>]*>([\s\S]*?)<\/em>/gi, "*$1*")
+      .replace(/<a[^>]*href="([^"]*)"[^>]*>([\s\S]*?)<\/a>/gi, "[$2]($1)")
+      .replace(/<li[^>]*>([\s\S]*?)<\/li>/gi, "- $1\n")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<p[^>]*>([\s\S]*?)<\/p>/gi, "$1\n\n")
+      .replace(/<[^>]+>/g, ""),
+  )
+    .replace(/[ \t]+\n/g, "\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
 
-function categorizeByKeywords(text: string, tags: string[]): string {
-  const lower = (text + " " + tags.join(" ")).toLowerCase();
-  if (lower.includes("cach")) return "caching";
-  if (lower.includes("token") && (lower.includes("optim") || lower.includes("count")))
-    return "token-optimization";
-  if (lower.includes("retrieval") || lower.includes("rag")) return "rag";
-  if (lower.includes("context") && (lower.includes("window") || lower.includes("manag") || lower.includes("rot")))
-    return "context-management";
-  if (lower.includes("prompt") || lower.includes("chain") || lower.includes("xml tag"))
-    return "prompt-engineering";
-  if (lower.includes("tool") || lower.includes("function call")) return "tool-use";
+function notebookToMarkdown(raw: string): string {
+  const nb = JSON.parse(raw) as { cells: { cell_type: string; source: string | string[] }[] };
+  return nb.cells
+    .map((c) => {
+      const src = (Array.isArray(c.source) ? c.source.join("") : c.source).trim();
+      return c.cell_type === "code" ? "```python\n" + src + "\n```" : src;
+    })
+    .filter(Boolean)
+    .join("\n\n");
+}
+
+function isJunk(text: string): boolean {
+  const cssRules = text.match(/[\w\]\)-]\s*\{[^{}]*:[^{}]*;[^{}]*\}/g)?.length ?? 0;
+  return (
+    /^\s*[{[]\s*["{[]/.test(text) ||
+    /(Loading\.\.\.\s*){2,}/.test(text) ||
+    /"cell_type"\s*:/.test(text) ||
+    cssRules > 3 ||
+    text.split(/\s+/).length < 150
+  );
+}
+
+const CATEGORY_RULES: [RegExp, string][] = [
+  [/\bcach/, "caching"],
+  [/\bcontext\b|\blong-context|lost.in.the.middle/, "context-management"],
+  [/\btokens?\b|token-|\bcompress/, "token-optimization"],
+  [/\bagent|\bcoding\b/, "agents"],
+  [/\bretrieval|\brag\b/, "rag"],
+  [/\bprompt/, "prompt-engineering"],
+  [/\btool|function call/, "tool-use"],
+];
+
+function categorize(title: string, text: string): string {
+  for (const s of [title.toLowerCase(), text.toLowerCase()]) {
+    const hit = CATEGORY_RULES.find(([re]) => re.test(s));
+    if (hit) return hit[1];
+  }
   return "general";
 }
+
+const AI_TERMS = /\b(LLMs?|language models?|transformers?|AI|agents?|agentic)\b/i;
 
 // ── arXiv Fetcher ──────────────────────────────────────────────
 
 async function fetchArxiv(source: WikiSource): Promise<WikiArticle[]> {
   const articles: WikiArticle[] = [];
   const seenIds = new Set<string>();
+  const queries = source.queries || [];
+  const maxResults = Math.ceil((source.maxResults || 15) / (queries.length || 1));
+  const requests = [
+    ...(source.ids?.length
+      ? [{ query: `ids ${source.ids.join(",")}`, url: `https://export.arxiv.org/api/query?id_list=${source.ids.join(",")}&max_results=${source.ids.length}` }]
+      : []),
+    ...queries.map((query) => ({
+      query,
+      url: `https://export.arxiv.org/api/query?search_query=${encodeURIComponent(query)}&start=0&max_results=${maxResults}&sortBy=relevance&sortOrder=descending`,
+    })),
+  ];
 
-  for (const query of source.queries || []) {
-    const maxResults = Math.ceil((source.maxResults || 15) / (source.queries?.length || 1));
-    const url = `https://export.arxiv.org/api/query?search_query=all:${encodeURIComponent(query)}&start=0&max_results=${maxResults}&sortBy=relevance&sortOrder=descending`;
-
-    console.log(`  arXiv: "${query}" (max ${maxResults})...`);
+  for (const { query, url } of requests) {
+    console.log(`  arXiv: ${query}...`);
 
     try {
       let res: Response | undefined;
       for (let attempt = 0; attempt < 4; attempt++) {
         if (attempt > 0) await new Promise((r) => setTimeout(r, 3000 * attempt));
         res = await fetch(url, {
-          headers: { "User-Agent": "tokalator-wiki/1.0 (+https://tokalator.wiki)" },
+          headers: { "User-Agent": "tokalator-wiki/1.0 (+https://tokalator.ai)" },
         });
         if (res.status !== 429) break;
         console.warn(`  arXiv 429, backing off (attempt ${attempt + 1}/4)...`);
@@ -136,46 +134,23 @@ async function fetchArxiv(source: WikiSource): Promise<WikiArticle[]> {
       }
       const xml = await res.text();
 
-      // Parse entries from Atom XML
-      const entryRegex = /<entry>([\s\S]*?)<\/entry>/gi;
-      let match;
-      while ((match = entryRegex.exec(xml)) !== null) {
-        const entry = match[1];
+      for (const [, entry] of xml.matchAll(/<entry>([\s\S]*?)<\/entry>/gi)) {
+        const id = entry.match(/<id>(.*?)<\/id>/)?.[1];
+        const rawTitle = entry.match(/<title>([\s\S]*?)<\/title>/)?.[1];
+        const rawAbstract = entry.match(/<summary>([\s\S]*?)<\/summary>/)?.[1];
+        const published = entry.match(/<published>(.*?)<\/published>/)?.[1]?.slice(0, 10);
+        if (!id || !rawTitle || !rawAbstract || !published) continue;
 
-        const idMatch = entry.match(/<id>(.*?)<\/id>/);
-        const titleMatch = entry.match(/<title>([\s\S]*?)<\/title>/);
-        const summaryMatch = entry.match(/<summary>([\s\S]*?)<\/summary>/);
-        const publishedMatch = entry.match(/<published>(.*?)<\/published>/);
-        const linkMatch = entry.match(/<link[^>]*href="(https:\/\/arxiv\.org\/abs\/[^"]*)"[^>]*\/>/);
-
-        if (!idMatch || !titleMatch) continue;
-
-        const arxivId = idMatch[1].replace("http://arxiv.org/abs/", "").replace(/v\d+$/, "");
+        const arxivId = id.replace(/^https?:\/\/arxiv\.org\/abs\//, "").replace(/v\d+$/, "");
         if (seenIds.has(arxivId)) continue;
+
+        const title = decodeEntities(rawTitle.replace(/\s+/g, " ").trim());
+        const abstract = decodeEntities(rawAbstract.replace(/\s+/g, " ").trim());
+        const authors = [...entry.matchAll(/<author>\s*<name>(.*?)<\/name>/gi)].map((m) => decodeEntities(m[1].trim()));
+        const tags = [...entry.matchAll(/<category[^>]*term="([^"]*)"[^>]*\/>/gi)].map((m) => m[1]);
+
+        if (!authors.length || !AI_TERMS.test(`${title} ${abstract}`)) continue;
         seenIds.add(arxivId);
-
-        const title = titleMatch[1].replace(/\s+/g, " ").trim();
-        const abstract = summaryMatch
-          ? summaryMatch[1].replace(/\s+/g, " ").trim()
-          : "";
-        const published = publishedMatch ? publishedMatch[1].slice(0, 10) : undefined;
-        const paperUrl = linkMatch ? linkMatch[1] : `https://arxiv.org/abs/${arxivId}`;
-
-        // Authors
-        const authorRegex = /<author>\s*<name>(.*?)<\/name>/gi;
-        const authors: string[] = [];
-        let am;
-        while ((am = authorRegex.exec(entry)) !== null) {
-          authors.push(am[1].trim());
-        }
-
-        // Category tags
-        const catRegex = /<category[^>]*term="([^"]*)"[^>]*\/>/gi;
-        const tags: string[] = [];
-        let cm;
-        while ((cm = catRegex.exec(entry)) !== null) {
-          tags.push(cm[1]);
-        }
 
         articles.push({
           slug: `arxiv-${slugify(title)}`,
@@ -184,19 +159,18 @@ async function fetchArxiv(source: WikiSource): Promise<WikiArticle[]> {
           source: source.id,
           sourceLabel: source.name,
           sourceColor: source.color,
-          url: paperUrl,
+          url: `https://arxiv.org/abs/${arxivId}`,
           content: `## Abstract\n\n${abstract}`,
-          authors: authors.slice(0, 5),
+          authors,
           date: published,
           tags: tags.slice(0, 5),
-          category: categorizeByKeywords(title + " " + abstract, tags),
+          category: categorize(title, abstract),
         });
       }
 
-      // Rate limit politeness (arXiv recommends ~3s between requests)
       await new Promise((r) => setTimeout(r, 3000));
     } catch (err) {
-      console.warn(`  arXiv error for "${query}":`, err);
+      console.warn(`  arXiv error for ${query}:`, err);
     }
   }
 
@@ -218,28 +192,28 @@ async function fetchOpenAICookbook(source: WikiSource): Promise<WikiArticle[]> {
         console.warn(`  OpenAI fetch failed (${res.status}): ${filePath}`);
         continue;
       }
-      const content = await res.text();
+      const raw = await res.text();
+      const content = filePath.endsWith(".ipynb") ? notebookToMarkdown(raw) : raw;
+      if (isJunk(content)) {
+        console.warn(`  OpenAI skipped (no usable text): ${filePath}`);
+        continue;
+      }
 
-      // Extract title from first heading
-      const titleMatch = content.match(/^#\s+(.+)$/m);
-      const title = titleMatch ? titleMatch[1].trim() : filePath.split("/").pop()?.replace(/\.\w+$/, "") || filePath;
+      const title = content.match(/^#\s+(.+)$/m)?.[1].trim() || filePath.split("/").pop()!.replace(/\.\w+$/, "");
 
-      // Extract description from first paragraph after title
-      const lines = content.split("\n");
       let description = "";
       let foundTitle = false;
-      for (const line of lines) {
+      for (const line of content.split("\n")) {
         if (line.startsWith("# ")) {
           foundTitle = true;
           continue;
         }
-        if (foundTitle && line.trim() && !line.startsWith("#") && !line.startsWith("```")) {
+        if (foundTitle && line.trim() && !/^(#|```|!\[|<)/.test(line)) {
           description = truncate(line.trim(), 200);
           break;
         }
       }
 
-      // Auto-tag from content
       const tags: string[] = [];
       const lower = content.toLowerCase();
       if (lower.includes("token")) tags.push("tokens");
@@ -259,19 +233,19 @@ async function fetchOpenAICookbook(source: WikiSource): Promise<WikiArticle[]> {
         url: `https://github.com/openai/openai-cookbook/blob/main/${filePath}`,
         content,
         tags: tags.length ? tags : ["openai", "cookbook"],
-        category: categorizeByKeywords(title + " " + content.slice(0, 500), tags),
+        category: categorize(title, content.slice(0, 500)),
       });
 
       await new Promise((r) => setTimeout(r, 300));
     } catch (err) {
-      console.warn(`  OpenAI error for "${filePath}":`, err);
+      console.warn(`  OpenAI error for ${filePath}:`, err);
     }
   }
 
   return articles;
 }
 
-// ── HTML Docs Fetcher (Anthropic & Google) ─────────────────────
+// ── HTML Docs Fetcher ──────────────────────────────────────────
 
 async function fetchDocPages(source: WikiSource): Promise<WikiArticle[]> {
   const articles: WikiArticle[] = [];
@@ -282,68 +256,30 @@ async function fetchDocPages(source: WikiSource): Promise<WikiArticle[]> {
     try {
       const res = await fetch(page.url, {
         headers: {
-          "User-Agent": "Tokalator-WikiBot/1.0 (context engineering wiki builder)",
+          "User-Agent": "tokalator-wiki/1.0 (+https://tokalator.ai)",
           Accept: "text/html,application/xhtml+xml",
+          "Accept-Language": "en-US,en;q=0.9",
         },
       });
-
       if (!res.ok) {
         console.warn(`  ${source.name} fetch failed (${res.status}): ${page.url}`);
-        // Create a stub article with just the title and link
-        articles.push({
-          slug: `${source.id}-${slugify(page.title)}`,
-          title: page.title,
-          description: `${page.title} — from ${source.name} documentation. Visit the original page for full content.`,
-          source: source.id,
-          sourceLabel: source.name,
-          sourceColor: source.color,
-          url: page.url,
-          content: `# ${page.title}\n\nThis article is available at [${source.name}](${page.url}). Visit the original documentation for the full content.`,
-          tags: page.tags || [source.id],
-          category: page.category || categorizeByKeywords(page.title, page.tags || []),
-        });
         continue;
       }
 
       const html = await res.text();
+      const cleaned = html.replace(/<(script|style|noscript|svg|nav|header|footer|template)\b[\s\S]*?<\/\1>/gi, "");
+      const main =
+        cleaned.match(/<article[^>]*>([\s\S]*?)<\/article>/i) ||
+        cleaned.match(/<main[^>]*>([\s\S]*?)<\/main>/i);
+      const content = main ? htmlToMarkdown(main[1]) : "";
 
-      // Try to extract main content area
-      let mainContent = "";
-
-      // Look for <main>, <article>, or content div
-      const mainMatch =
-        html.match(/<main[^>]*>([\s\S]*?)<\/main>/i) ||
-        html.match(/<article[^>]*>([\s\S]*?)<\/article>/i) ||
-        html.match(/<div[^>]*class="[^"]*content[^"]*"[^>]*>([\s\S]*?)<\/div>/i);
-
-      if (mainMatch) {
-        mainContent = htmlToMarkdown(mainMatch[1]);
-      } else {
-        // Fallback: extract body content, strip scripts/styles
-        const bodyMatch = html.match(/<body[^>]*>([\s\S]*?)<\/body>/i);
-        if (bodyMatch) {
-          let body = bodyMatch[1];
-          body = body.replace(/<script[\s\S]*?<\/script>/gi, "");
-          body = body.replace(/<style[\s\S]*?<\/style>/gi, "");
-          body = body.replace(/<nav[\s\S]*?<\/nav>/gi, "");
-          body = body.replace(/<footer[\s\S]*?<\/footer>/gi, "");
-          body = body.replace(/<header[\s\S]*?<\/header>/gi, "");
-          mainContent = htmlToMarkdown(body);
-        }
+      if (isJunk(content)) {
+        console.warn(`  ${source.name} skipped (no usable text): ${page.url}`);
+        continue;
       }
 
-      // If we got very little content, create a stub
-      if (mainContent.length < 100) {
-        mainContent = `# ${page.title}\n\nThis article is available at [${source.name}](${page.url}). Visit the original documentation for the full content.`;
-      }
-
-      // Extract description
-      const metaDescMatch = html.match(
-        /<meta[^>]*name="description"[^>]*content="([^"]*)"[^>]*>/i
-      );
-      const description = metaDescMatch
-        ? metaDescMatch[1]
-        : truncate(mainContent.replace(/[#`*\->\[\]()]/g, " ").trim(), 200);
+      const metaDesc = html.match(/<meta[^>]*name="description"[^>]*content="([^"]*)"[^>]*>/i)?.[1];
+      const description = metaDesc ? decodeEntities(metaDesc) : truncate(content.replace(/[#`*\->\[\]()]/g, " ").trim(), 200);
 
       articles.push({
         slug: `${source.id}-${slugify(page.title)}`,
@@ -353,27 +289,14 @@ async function fetchDocPages(source: WikiSource): Promise<WikiArticle[]> {
         sourceLabel: source.name,
         sourceColor: source.color,
         url: page.url,
-        content: mainContent.slice(0, 10000), // Cap at ~10k chars
+        content: content.length > 10000 ? content.slice(0, content.lastIndexOf("\n\n", 10000)) : content,
         tags: page.tags || [source.id],
-        category: page.category || categorizeByKeywords(page.title + " " + description, page.tags || []),
+        category: page.category || categorize(page.title, description),
       });
 
       await new Promise((r) => setTimeout(r, 500));
     } catch (err) {
-      console.warn(`  ${source.name} error for "${page.title}":`, err);
-      // Create stub on error too
-      articles.push({
-        slug: `${source.id}-${slugify(page.title)}`,
-        title: page.title,
-        description: `${page.title} — from ${source.name} documentation.`,
-        source: source.id,
-        sourceLabel: source.name,
-        sourceColor: source.color,
-        url: page.url,
-        content: `# ${page.title}\n\nVisit [${source.name}](${page.url}) for the full content.`,
-        tags: page.tags || [source.id],
-        category: page.category || "general",
-      });
+      console.warn(`  ${source.name} error for ${page.title}:`, err);
     }
   }
 
@@ -391,7 +314,7 @@ function builtinToArticles(terms: BuiltinTerm[]): WikiArticle[] {
     sourceLabel: "Built-in",
     sourceColor: "#e3120b",
     url: "",
-    content: `# ${t.term}\n\n${t.definition}`,
+    content: t.definition,
     tags: t.tags,
     category: t.category,
   }));
@@ -405,14 +328,13 @@ async function main() {
   const outputDir = resolve(root, "content/wiki");
   const outputPath = resolve(outputDir, "articles.json");
 
-  console.log("📖 Fetching context engineering wiki content...\n");
+  console.log("Fetching context engineering wiki content...\n");
 
   const config = JSON.parse(readFileSync(configPath, "utf-8"));
   const allArticles: WikiArticle[] = [];
 
-  // Fetch from each source
   for (const source of config.sources as WikiSource[]) {
-    console.log(`\n🔍 ${source.name}:`);
+    console.log(`\n${source.name}:`);
 
     let articles: WikiArticle[] = [];
 
@@ -421,22 +343,19 @@ async function main() {
     } else if (source.id === "openai") {
       articles = await fetchOpenAICookbook(source);
     } else {
-      // Anthropic, Google, or any HTML doc source
       articles = await fetchDocPages(source);
     }
 
-    console.log(`  → ${articles.length} articles fetched`);
+    console.log(`  -> ${articles.length} articles fetched`);
     allArticles.push(...articles);
   }
 
-  // Add builtin terms
   if (config.builtinTerms) {
     const builtin = builtinToArticles(config.builtinTerms);
-    console.log(`\n📝 Built-in terms: ${builtin.length}`);
+    console.log(`\nBuilt-in terms: ${builtin.length}`);
     allArticles.push(...builtin);
   }
 
-  // Dedupe by slug
   const seen = new Set<string>();
   const deduped = allArticles.filter((a) => {
     if (seen.has(a.slug)) return false;
@@ -444,7 +363,6 @@ async function main() {
     return true;
   });
 
-  // Compute stats
   const bySource: Record<string, number> = {};
   const byCategory: Record<string, number> = {};
   for (const a of deduped) {
@@ -454,19 +372,19 @@ async function main() {
 
   const output = {
     articles: deduped,
-    fetchedAt: new Date().toISOString(),
+    fetchedAt: new Date().toLocaleDateString("en-CA"),
     stats: { total: deduped.length, bySource, byCategory },
   };
 
   mkdirSync(outputDir, { recursive: true });
-  writeFileSync(outputPath, JSON.stringify(output, null, 2));
+  writeFileSync(outputPath, JSON.stringify(output, null, 2) + "\n");
 
-  console.log(`\n✅ Done! ${deduped.length} articles written to content/wiki/articles.json`);
+  console.log(`\nDone. ${deduped.length} articles written to content/wiki/articles.json`);
   console.log(`   Sources: ${JSON.stringify(bySource)}`);
   console.log(`   Categories: ${JSON.stringify(byCategory)}`);
 }
 
 main().catch((err) => {
-  console.error("❌ Fatal error:", err);
+  console.error("Fatal error:", err);
   process.exit(1);
 });

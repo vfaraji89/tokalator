@@ -13,6 +13,8 @@ export interface WikiArticle {
   category: string;
 }
 
+export type WikiIndexEntry = Omit<WikiArticle, "content" | "url">;
+
 export interface WikiData {
   articles: WikiArticle[];
   fetchedAt: string;
@@ -32,6 +34,7 @@ export interface WikiSource {
   id: string;
   name: string;
   color: string;
+  ids?: string[];
   queries?: string[];
   maxResults?: number;
   repoFiles?: string[];

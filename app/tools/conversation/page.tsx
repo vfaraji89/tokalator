@@ -3,7 +3,8 @@ import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
   title: "Conversation Cost Estimator",
-  description: "Estimate the total token cost of multi-turn AI conversations across different models and turn counts.",
+  description: "Estimate the token cost of multi-turn conversations under full history, sliding window and summarization strategies.",
+  alternates: { canonical: "/tools/conversation" },
 };
 
 export default function ConversationPage() {
@@ -13,7 +14,7 @@ export default function ConversationPage() {
         <div className="hero-outline-icon" aria-hidden>
           <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
             <path d="M4 6C4 5 5 4 6 4H18C19 4 20 5 20 6V14C20 15 19 16 18 16H10L6 20V16H6C5 16 4 15 4 14V6Z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-            <path d="M22 10V18C22 19 21 20 20 20H18L15 23V20H14C13 20 12 19 12 18V16" stroke="#e3120b" strokeWidth="1.5" fill="none" />
+            <path d="M22 10V18C22 19 21 20 20 20H18L15 23V20H14C13 20 12 19 12 18V16" stroke="var(--accent)" strokeWidth="1.5" fill="none" />
           </svg>
         </div>
         <h1 className="hero-headline">

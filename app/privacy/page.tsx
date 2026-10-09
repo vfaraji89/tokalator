@@ -3,10 +3,12 @@ import Link from "next/link";
 
 export const metadata: Metadata = {
   title: "Privacy Policy",
-  description: "How Tokalator collects and handles data. We keep it simple: no accounts, no cookies, anonymous analytics only.",
+  description: "What Tokalator's website and VS Code extension process, the opt-in telemetry and its controls, and your rights under GDPR, UK GDPR, and KVKK.",
+  alternates: { canonical: "/privacy" },
 };
 
-const LAST_UPDATED = "March 22, 2026";
+const LAST_UPDATED = "October 10, 2026";
+const CONTACT = "vfaraji89@gmail.com";
 
 export default function PrivacyPage() {
   return (
@@ -15,7 +17,7 @@ export default function PrivacyPage() {
         <div className="hero-outline-icon" aria-hidden>
           <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
             <path d="M14 3L5 7v7c0 5 4 9 9 10 5-1 9-5 9-10V7L14 3z" stroke="currentColor" strokeWidth="1.5" fill="none" />
-            <path d="M10 14l2.5 2.5L18 11" stroke="#e3120b" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M10 14l2.5 2.5L18 11" stroke="var(--accent)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </div>
         <h1 className="hero-headline"><span className="hero-marker">Privacy Policy</span></h1>
@@ -23,156 +25,115 @@ export default function PrivacyPage() {
       </header>
 
       <div className="eco-prose">
-
         <section>
           <h2>The short version</h2>
-          <p>
-            Tokalator does not collect personal information. There are no accounts, no login, no cookies,
-            and no tracking pixels. We use Vercel Analytics to understand aggregate page traffic — it
-            records <em>what pages were visited</em>, not who visited them.
-          </p>
-        </section>
-
-        <section>
-          <h2>What we collect</h2>
-
-          <h3>Vercel Analytics</h3>
-          <p>
-            This site uses{" "}
-            <a href="https://vercel.com/docs/analytics" target="_blank" rel="noopener noreferrer">
-              Vercel Analytics
-            </a>{" "}
-            and Vercel Speed Insights. These services collect:
-          </p>
           <ul>
-            <li>Page URL visited</li>
-            <li>Referrer URL (where you came from)</li>
-            <li>Country and region (derived from IP address — IP is not stored)</li>
-            <li>Device type, operating system, browser</li>
-            <li>Web performance metrics (LCP, FCP, CLS, INP)</li>
-          </ul>
-          <p>
-            No cookies are set. No personal identifiers are stored. Data is aggregated and
-            cannot be used to identify individual users. Vercel&apos;s data processing is
-            described in their{" "}
-            <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">
-              Privacy Policy
-            </a>
-            .
-          </p>
-
-          <h3>Calculator and tools</h3>
-          <p>
-            All calculations (token counts, cost estimates, Cobb-Douglas quality model) happen
-            entirely in your browser. No token counts, model selections, or usage inputs are
-            sent to any server.
-          </p>
-
-          <h3>VS Code extension</h3>
-          <p>
-            The Tokalator VS Code extension has an opt-in research logging feature
-            (<code>tokalator.researchLogging</code>). When enabled, it sends anonymised aggregate
-            counts (number of tabs open, estimated total tokens) to help improve the scoring
-            algorithm. No file names, code content, or editor content is ever transmitted.
-            This feature is <strong>disabled by default</strong>.
-          </p>
-        </section>
-
-        <section>
-          <h2>What we do not collect</h2>
-          <ul>
-            <li>Names, email addresses, or any contact information</li>
-            <li>API keys or authentication tokens</li>
-            <li>Code content or file contents</li>
-            <li>IP addresses (Vercel derives country from IP but does not store it)</li>
-            <li>Persistent identifiers or fingerprints</li>
+            <li>No accounts, no cookies, no advertising, and nothing is sold.</li>
+            <li>The website uses cookieless Vercel Web Analytics for aggregate page statistics.</li>
+            <li>The website tools, including the Claude Code log import, run entirely in your browser. Your files are never uploaded.</li>
+            <li>The VS Code extension works locally. It fetches the public pricing catalog from GitHub and nothing else, unless you turn on telemetry.</li>
+            <li>Telemetry is <strong>off by default</strong>. If you opt in, the extension sends anonymous daily counts. It never sends code, file names, paths, or prompts. You can see, export, and delete that data at any time.</li>
           </ul>
         </section>
 
         <section>
-          <h2>Third-party services</h2>
-          <table className="eco-table">
-            <thead>
-              <tr>
-                <th>Service</th>
-                <th>Purpose</th>
-                <th>Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Vercel Analytics</td>
-                <td>Page view statistics</td>
-                <td>Anonymous — no cookies</td>
-              </tr>
-              <tr>
-                <td>Vercel Speed Insights</td>
-                <td>Web performance monitoring</td>
-                <td>Performance metrics only</td>
-              </tr>
-              <tr>
-                <td>GitHub</td>
-                <td>Source code hosting</td>
-                <td>Subject to GitHub&apos;s privacy policy</td>
-              </tr>
-              <tr>
-                <td>VS Code Marketplace</td>
-                <td>Extension distribution</td>
-                <td>Subject to Microsoft&apos;s privacy policy</td>
-              </tr>
-            </tbody>
-          </table>
+          <h2>Who is responsible</h2>
+          <p>
+            The data controller is Vahid Farajijobehdar, Istanbul, Turkey, the maintainer of Tokalator. Contact: <a href={`mailto:${CONTACT}`}>{CONTACT}</a>.
+          </p>
         </section>
 
         <section>
-          <h2>Data retention</h2>
+          <h2>Website (tokalator.ai)</h2>
+          <h3>Vercel Web Analytics and Speed Insights</h3>
           <p>
-            Vercel retains analytics data for 90 days on the free plan. No other data is stored by
-            Tokalator.
+            We use <a href="https://vercel.com/docs/analytics/privacy-policy" target="_blank" rel="noopener noreferrer">Vercel Web Analytics</a> and Speed Insights to understand aggregate traffic and performance. They record the page visited, the referrer, country, device and browser type, and performance metrics. No cookies are set, visitors are not tracked across sites, and the data cannot identify you. The legal basis is our legitimate interest in running and improving the site (GDPR Art. 6(1)(f)).
+          </p>
+          <h3>Tools and the Claude Code log import</h3>
+          <p>
+            Calculators, price comparisons, and the <Link href="/tools/usage">Claude Code usage import</Link> run in your browser. When you choose Claude Code log files, they are read locally to compute token, turn, and cost totals. They are not uploaded or stored anywhere.
+          </p>
+          <h3>Hosting logs</h3>
+          <p>
+            Our host, Vercel, processes IP addresses in short-lived request logs to deliver the site and protect it from abuse. We do not store IP addresses in our database.
+          </p>
+        </section>
+
+        <section>
+          <h2>VS Code extension</h2>
+          <h3>Local by default</h3>
+          <p>
+            Token counting, tab relevance, budget tracking, and Secure Workspace run on your machine. The Claude Code card reads Claude Code session logs from <code>~/.claude/projects</code> on your machine to show turns and API-equivalent cost. It never sends that content anywhere, and you can turn it off with <code>tokalator.claudeCode.enabled</code>. Optional session logging (<code>tokalator.enableSessionLogging</code>) also writes aggregate counts to local files only.
+          </p>
+          <h3>Pricing catalog</h3>
+          <p>
+            Once a day the extension downloads the public model catalog from <code>raw.githubusercontent.com</code>. Like any web request, this exposes your IP address to GitHub. No usage data is sent.
+          </p>
+
+          <h3 id="telemetry">Opt-in telemetry</h3>
+          <p>
+            Telemetry helps decide what to improve next. It is only active when <strong>both</strong> of these are true: you turned on <code>tokalator.telemetry.enabled</code> (the extension asks once, and the answer defaults to no), and VS Code&apos;s own telemetry setting is on. The legal basis is your consent (GDPR Art. 6(1)(a)). You can withdraw it at any time by turning the setting off. Doing so stops sending immediately and deletes anything buffered locally.
+          </p>
+          <p>When telemetry is on, the extension sends one record per day containing:</p>
+          <ul>
+            <li>A random installation ID, generated on your machine and not linked to your name, email, account, or IP address</li>
+            <li>The date, extension version, VS Code version, and operating system family (for example, <code>darwin</code>)</li>
+            <li>How many times each feature was used (for example, <code>cmd:optimize: 2</code>, <code>chat:count: 5</code>) and the catalog model IDs selected</li>
+            <li>Claude Code daily totals: number of turns, requests, and sessions, cache hit rate, and the split between the CLI and the VS Code extension</li>
+            <li>Answers to short fixed-choice questions (for example, &ldquo;what do you mainly use Tokalator for?&rdquo;), only if you answer them</li>
+          </ul>
+          <p>It never sends source code, file or folder names, paths, repository names, prompts or chat content, environment variables, or credentials. Event names are restricted by the extension so that paths cannot be included.</p>
+          <p>
+            Run <strong>Tokalator: Show Telemetry Data</strong> to see exactly what the next upload contains, <strong>Tokalator: Export My Telemetry Data</strong> to download everything stored for your installation, and <strong>Tokalator: Delete My Telemetry Data</strong> to erase it from the server and start over with a new ID.
+          </p>
+          <h3>Storage and retention</h3>
+          <p>
+            Telemetry and survey answers are stored in a Prisma Postgres database operated by Prisma Data, Inc., reached through our API on Vercel. Both act as processors on our behalf. Records are deleted automatically 13 months after their last update, or immediately when you use the delete command. Where data is processed outside your country, including in the United States, transfers rely on the providers&apos; standard contractual clauses.
+          </p>
+          <h3>Feedback through GitHub</h3>
+          <p>
+            &ldquo;Suggest an improvement&rdquo; opens a prefilled GitHub issue that you review and submit yourself. What you post is public and governed by <a href="https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub&apos;s privacy statement</a>.
           </p>
         </section>
 
         <section>
           <h2>Your rights</h2>
           <p>
-            Because we do not collect personal data, there is nothing to access, correct, or delete.
-            If you want to prevent even anonymous analytics, you can use a content blocker that
-            blocks <code>va.vercel-scripts.com</code> and <code>vitals.vercel-insights.com</code>.
+            Under the GDPR, UK GDPR, and Turkey&apos;s KVKK, you can access, export, correct, or delete your data, object to processing, and withdraw consent at any time without affecting earlier processing. The extension commands above handle access, portability, and erasure directly. You can also email <a href={`mailto:${CONTACT}`}>{CONTACT}</a> with your installation ID, which is shown by Show Telemetry Data. You may lodge a complaint with your local data protection authority; in Turkey, that is the Personal Data Protection Authority (KVKK). We do not sell or share personal information, and we make no automated decisions or profiles about you.
           </p>
         </section>
 
         <section>
+          <h2>Third-party services</h2>
+          <div style={{ overflowX: "auto" }}>
+            <table className="settings-table">
+              <thead>
+                <tr><th>Service</th><th>Purpose</th><th>Data</th></tr>
+              </thead>
+              <tbody>
+                <tr><td>Vercel</td><td>Website hosting, API, Web Analytics, Speed Insights</td><td>Aggregate page metrics; short-lived request logs</td></tr>
+                <tr><td>Prisma Data (Prisma Postgres)</td><td>Storage for opt-in telemetry and survey answers</td><td>Anonymous daily counts keyed by a random ID</td></tr>
+                <tr><td>GitHub</td><td>Source code, issues, pricing catalog file</td><td>Governed by GitHub&apos;s privacy statement</td></tr>
+                <tr><td>Visual Studio Marketplace</td><td>Extension distribution</td><td>Governed by Microsoft&apos;s privacy statement</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section>
           <h2>Children</h2>
-          <p>
-            Tokalator is not directed at children under 13. We do not knowingly collect any
-            information from children.
-          </p>
+          <p>Tokalator is a developer tool and is not directed at children under 16.</p>
         </section>
 
         <section>
           <h2>Changes</h2>
           <p>
-            If this policy changes materially, the &ldquo;Last updated&rdquo; date at the top of this
-            page will be updated. Continued use of the site after changes constitutes acceptance.
-          </p>
-        </section>
-
-        <section>
-          <h2>Contact</h2>
-          <p>
-            Questions? Open an issue on{" "}
-            <a href="https://github.com/vfaraji89/tokalator" target="_blank" rel="noopener noreferrer">
-              GitHub
-            </a>{" "}
-            or reach out via{" "}
-            <a href="https://www.linkedin.com/in/vahid-faraji-jobehdar/" target="_blank" rel="noopener noreferrer">
-              LinkedIn
-            </a>.
+            Material changes will be announced in the extension changelog and reflected in the date at the top of this page. Telemetry stays off unless you turn it on, and a change in what is collected will ask for your consent again.
           </p>
         </section>
 
         <div style={{ marginTop: "2rem", paddingTop: "1rem", borderTop: "1px solid var(--border)", fontSize: "0.8125rem", color: "var(--text-muted)" }}>
-          Also see our <Link href="/terms">Terms of Service</Link>.
+          Also see the <Link href="/terms">Terms of Service</Link>.
         </div>
       </div>
     </article>

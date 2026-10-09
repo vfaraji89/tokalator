@@ -80,9 +80,9 @@ AGENTS.md
 GLOSSARY.md
 SITE-MAP.md
 
-# Database (not used yet) and local data
-prisma/
-prisma.config.ts
+# Database: generated client and archived local schemas
+lib/generated/
+prisma/archive/
 *.db
 *.sqlite
 *.sqlite3

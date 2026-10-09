@@ -1,8 +1,7 @@
 """
 Tokalator Python API — FastAPI backend for econometric computation & CSV parsing.
 
-Run:  uvicorn api.main:app --port 8000 --reload
-Docs: http://localhost:8000/docs
+
 """
 
 from fastapi import FastAPI
@@ -25,6 +24,7 @@ app.add_middleware(
     allow_origins=[
         "http://localhost:3000",
         "http://localhost:3001",
+        "https://tokalator.ai",
         "https://tokalator.wiki",
     ],
     allow_methods=["*"],

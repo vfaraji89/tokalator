@@ -38,15 +38,15 @@ function CodeBlock({
   lang?: string;
 }) {
   return (
-    <div className="learn-code learn-code-dark">
-      <div className="learn-code-header" style={{ background: P.black, borderBottom: `1px solid ${P.g7}` }}>
+    <div className="learn-code" style={{ background: P.g05, border: `1px solid ${P.g2}` }}>
+      <div className="learn-code-header" style={{ background: P.g1, borderBottom: `1px solid ${P.g2}` }}>
         <span className="learn-code-lang" style={{ color: P.g5 }}>{lang}</span>
       </div>
-      <pre className="learn-code-pre" style={{ background: "#0a0a0a" }}>
+      <pre className="learn-code-pre" style={{ background: P.g05, color: P.black }}>
         {lines.map((line, i) => (
           <div key={i} className="learn-code-line">
-            <span className="learn-code-num" style={{ color: P.g6 }}>{i + 1}</span>
-            <span style={{ color: line.dim ? P.g5 : P.white }}>{line.text}</span>
+            <span className="learn-code-num" style={{ color: "var(--text-muted)" }}>{i + 1}</span>
+            <span style={{ color: line.dim ? "var(--text-muted)" : P.black }}>{line.text}</span>
           </div>
         ))}
       </pre>
@@ -110,6 +110,22 @@ function CompareTable({ headers, rows }: { headers: string[]; rows: string[][] }
   );
 }
 
+function Sources({ links }: { links: [string, string][] }) {
+  return (
+    <p style={{ fontSize: "0.75rem", color: "var(--text-muted)", marginTop: "0.75rem" }}>
+      Sources:{" "}
+      {links.map(([label, href], i) => (
+        <span key={href}>
+          {i > 0 && " · "}
+          <a href={href} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "underline" }}>
+            {label}
+          </a>
+        </span>
+      ))}
+    </p>
+  );
+}
+
 /* ── Stat card ── */
 function StatCard({ value, label }: { value: string; label: string }) {
   return (
@@ -129,7 +145,7 @@ const lessons = [
     title: "What Is a Prompt?",
     subtitle: "Instructions made of tokens",
     description:
-      "A prompt is an instruction \u2014 a series of tokens you send to an LLM. Every character, word, and punctuation mark is tokenized. Understanding this is the foundation: prompts are not magic strings, they are measured, budgeted, and optimized sequences of tokens.",
+      "A prompt is an instruction: a series of tokens you send to an LLM. Every character, word, and punctuation mark is tokenized. Understanding this is the foundation: prompts are not magic strings, they are measured, budgeted, and optimized sequences of tokens.",
   },
   {
     id: "context-window",
@@ -137,7 +153,7 @@ const lessons = [
     title: "Context Window",
     subtitle: "The finite token budget",
     description:
-      "Every LLM has a finite context window \u2014 the maximum number of tokens it can process in a single request. Think of it as a desk: your prompt (instructions), conversation history, retrieved context, and response space must all fit. When the desk is full, something must go.",
+      "Every LLM has a finite context window, the maximum number of tokens it can process in a single request. Think of it as a desk: your prompt (instructions), conversation history, retrieved context, and response space must all fit. When the desk is full, something must go.",
   },
   {
     id: "trimming",
@@ -145,7 +161,7 @@ const lessons = [
     title: "Trimming (Last-N)",
     subtitle: "Delete the oldest, keep the recent",
     description:
-      "The simplest token optimization strategy. When the context window fills up, delete the oldest conversation turns and keep only the last N. Like tearing pages from the front of a notebook \u2014 fast and predictable, but you lose all early context.",
+      "The simplest token optimization strategy. When the context window fills up, delete the oldest conversation turns and keep only the last N. Like tearing pages from the front of a notebook: fast and predictable, but you lose all early context.",
   },
   {
     id: "summarisation",
@@ -161,7 +177,7 @@ const lessons = [
     title: "Context Management",
     subtitle: "Token optimization and economy",
     description:
-      "Context management is the economy of tokens \u2014 deciding what goes into the window and what stays out. You allocate a token budget across system prompt, user message, retrieved context, and response space. Every token has a cost, and every token must earn its place.",
+      "Context management is the economy of tokens: deciding what goes into the window and what stays out. You allocate a token budget across system prompt, user message, retrieved context, and response space. Every token has a cost, and every token must earn its place.",
   },
   {
     id: "context-engineering",
@@ -169,7 +185,7 @@ const lessons = [
     title: "Context Engineering",
     subtitle: "IDE-driven, JIT context delivery",
     description:
-      "Modern IDEs don\u2019t dump everything into the context window. They use just-in-time (JIT) context delivery \u2014 pulling in only the files, functions, and docs relevant to the current task. For long-horizon tasks spanning hundreds of tool calls, this intelligent context selection is essential.",
+      "Modern IDEs don\u2019t dump everything into the context window. They use just-in-time (JIT) context delivery, pulling in only the files, functions, and docs relevant to the current task. For long-horizon tasks spanning hundreds of tool calls, this intelligent context selection is essential.",
   },
   {
     id: "context-pollution",
@@ -177,15 +193,15 @@ const lessons = [
     title: "Context Pollution",
     subtitle: "When tokens work against you",
     description:
-      "Not all tokens are equal. Irrelevant search results, stale tool outputs, and verbose error logs pollute the context \u2014 pushing out useful information and confusing the model. In a 200K token window processing 5 tickets, data from Ticket #1 clutters processing of Ticket #5.",
+      "Not all tokens are equal. Irrelevant search results, stale tool outputs, and verbose error logs pollute the context, pushing out useful information and confusing the model. In a 200K token window processing 5 tickets, data from Ticket #1 clutters processing of Ticket #5.",
   },
   {
     id: "compaction",
     number: 8,
     title: "Automatic Context Compaction",
-    subtitle: "API-level token optimization",
+    subtitle: "Server-side summarization",
     description:
-      "Anthropic\u2019s compaction_control parameter automatically summarizes conversation history when token usage exceeds a threshold. In real-world tests processing 5 customer service tickets: 208K tokens \u2192 86K tokens \u2014 a 58.6% reduction, transparently, with no code changes.",
+      "Server-side compaction summarizes earlier conversation history inside the API. Threshold mode (compact_20260112, beta compact-2026-01-12) runs when input tokens pass a trigger, 150K by default with a 50K minimum. On-demand mode (compaction: {type: \"summarize\"}, beta compact-2026-09-04) compacts when you ask. Anthropic\u2019s cookbook measured 208K \u2192 86K tokens (58.6%) on 5 support tickets with the older SDK helper compaction_control, which is now deprecated in the TypeScript and Ruby SDKs and removed in Python SDK v1.0.",
   },
   {
     id: "editing-memory",
@@ -193,7 +209,7 @@ const lessons = [
     title: "Context Editing & Memory Tool",
     subtitle: "Auto-cleaner + filing cabinet",
     description:
-      "Context Editing uses a secondary model to remove stale information (the auto-cleaner tidying the desk \u2014 up to 84% token reduction). Memory Tool provides persistent external storage (a filing cabinet) that survives across sessions. Together they improve complex task performance by 39%.",
+      "Context editing clears stale content by rule before the request reaches the model, with no secondary model involved: clear_tool_uses_20250919 removes old tool results and clear_thinking_20251015 removes old thinking blocks (beta context-management-2025-06-27). The memory tool provides persistent external storage (a filing cabinet) that survives across sessions. In Anthropic\u2019s evaluation, context editing alone improved agentic task performance by 29%, editing plus memory by 39%, and editing cut token use by 84% in a 100-turn web search run.",
   },
   {
     id: "real-world",
@@ -201,7 +217,15 @@ const lessons = [
     title: "Real-World: Customer Service",
     subtitle: "Compaction in production",
     description:
-      "A complete walkthrough using Anthropic\u2019s cookbook: 5 support tickets, 35+ tool calls, 208K tokens without compaction vs 86K with. See exactly when compaction triggers, what the summaries contain, and how to configure thresholds, custom prompts, and model selection.",
+      "A walkthrough based on Anthropic\u2019s cookbook: 5 support tickets, 35+ tool calls, 208K tokens without compaction vs 86K with (measured with the deprecated compaction_control helper). The same ideas map to server-side compaction: a trigger for when to compact and instructions for what the summary must keep.",
+  },
+  {
+    id: "api-levers",
+    number: 11,
+    title: "Current API Levers",
+    subtitle: "Caching, effort, thinking, tool search",
+    description:
+      "Four settings decide most of what a Claude request costs today: prompt caching for repeated prefixes, effort for how hard the model works, adaptive thinking instead of fixed thinking budgets, and tool search so large tool catalogs stay out of context until needed.",
   },
 ];
 
@@ -227,8 +251,8 @@ export default function LearnPage() {
           <span className="hero-underline">From prompt to production.</span>
         </h1>
         <p className="hero-description">
-          <span className="accent-highlight">10 lessons</span>{" "}
-          &mdash; a prompt is instructions made of tokens. Context management is the
+          <span className="accent-highlight">{lessons.length} lessons.</span>{" "}
+          A prompt is instructions made of tokens. Context management is the
           economy of those tokens. Learn to optimize every one.
         </p>
       </header>
@@ -275,7 +299,7 @@ export default function LearnPage() {
             { text: "# Every prompt is a series of tokens", dim: true },
             { text: 'import tiktoken' },
             { text: '' },
-            { text: 'enc = tiktoken.encoding_for_model("gpt-5.2")' },
+            { text: 'enc = tiktoken.get_encoding("o200k_base")' },
             { text: '' },
             { text: 'system = "You are a helpful assistant."' },
             { text: 'user = "Fix the auth bug."' },
@@ -301,7 +325,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[1].description}</p>
 
-        <Frame title="Context Window \u2014 128K tokens">
+        <Frame title="Context Window: 1M tokens">
           <div className="learn-window-visual" style={{ padding: "20px" }}>
             <div className="learn-window-segments">
               {[
@@ -321,9 +345,9 @@ export default function LearnPage() {
               ))}
             </div>
             <div style={{ display: "flex", gap: "1.5rem", marginTop: "0.75rem", fontSize: "0.75rem" }}>
-              <span style={{ color: P.white }}>Total: <strong>128,000 tokens</strong></span>
-              <span style={{ color: P.g5 }}>Model: <strong>GPT-4o</strong></span>
-              <span style={{ color: P.red }}>Cost: ~$0.30/req</span>
+              <span style={{ color: P.white }}>Total: <strong>1,000,000 tokens</strong></span>
+              <span style={{ color: P.g5 }}>Model: <strong>Claude Sonnet 5.5</strong></span>
+              <span style={{ color: P.red }}>Input cost: ~$1.50/req</span>
             </div>
           </div>
         </Frame>
@@ -331,15 +355,17 @@ export default function LearnPage() {
         <CodeBlock
           lines={[
             { text: "# Context Window = Your Token Budget", dim: true },
-            { text: 'import tiktoken' },
-            { text: '' },
-            { text: 'enc = tiktoken.encoding_for_model("gpt-5.2")' },
-            { text: 'WINDOW = 256_000  # max tokens' },
-            { text: '' },
-            { text: 'system = "You are a helpful assistant."' },
-            { text: "system_tokens = len(enc.encode(system))" },
-            { text: '' },
-            { text: "remaining = WINDOW - system_tokens" },
+            { text: "import anthropic" },
+            { text: "" },
+            { text: "client = anthropic.Anthropic()" },
+            { text: "WINDOW = 1_000_000  # Claude Sonnet 5.5" },
+            { text: "" },
+            { text: "count = client.messages.count_tokens(" },
+            { text: '    model="claude-sonnet-5-5",' },
+            { text: '    system="You are a helpful assistant.",' },
+            { text: '    messages=[{"role": "user", "content": "Fix the auth bug."}],' },
+            { text: ")" },
+            { text: "remaining = WINDOW - count.input_tokens" },
             { text: 'print(f"Budget remaining: {remaining:,} tokens")' },
           ]}
         />
@@ -356,7 +382,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[2].description}</p>
 
-        <Frame title="Trimming \u2014 Last-N Strategy">
+        <Frame title="Trimming: Last-N Strategy">
           <div style={{ padding: "16px 20px" }}>
             <div className="learn-turns-row">
               {["Turn 1", "Turn 2", "Turn 3", "Turn 4", "Turn 5", "Turn 6", "Turn 7", "Turn 8"].map((t, i) => (
@@ -388,7 +414,7 @@ export default function LearnPage() {
 
         <CodeBlock
           lines={[
-            { text: "# Trimming \u2014 Last-N Strategy", dim: true },
+            { text: "# Trimming: Last-N Strategy", dim: true },
             { text: "def trim_history(messages, n=3):" },
             { text: '    """Keep only the last N turns."""' },
             { text: "    system = [m for m in messages if m['role'] == 'system']" },
@@ -413,7 +439,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[3].description}</p>
 
-        <Frame title="Summarisation \u2014 Snapshot Strategy">
+        <Frame title="Summarisation: Snapshot Strategy">
           <div style={{ padding: "16px 20px" }}>
             <div className="learn-side-by-side">
               <div style={{ flex: 1 }}>
@@ -455,7 +481,7 @@ export default function LearnPage() {
 
         <CodeBlock
           lines={[
-            { text: "# Summarisation \u2014 Token Economy", dim: true },
+            { text: "# Summarisation: Token Economy", dim: true },
             { text: "import anthropic" },
             { text: "" },
             { text: "def summarise_history(messages, client):" },
@@ -464,7 +490,7 @@ export default function LearnPage() {
             { text: '        f"{m[\'role\']}: {m[\'content\']}" for m in messages' },
             { text: "    )" },
             { text: "    response = client.messages.create(" },
-            { text: '        model="claude-sonnet-4-20250514",' },
+            { text: '        model="claude-sonnet-5-5",' },
             { text: "        max_tokens=500," },
             { text: "        messages=[{" },
             { text: '            "role": "user",' },
@@ -506,7 +532,7 @@ export default function LearnPage() {
           lines={[
             { text: "# Token Budget Manager", dim: true },
             { text: "class TokenBudget:" },
-            { text: '    def __init__(self, limit=128_000):' },
+            { text: '    def __init__(self, limit=1_000_000):  # Claude Sonnet 5.5' },
             { text: "        self.limit = limit" },
             { text: "        self.allocations = {}" },
             { text: "" },
@@ -536,7 +562,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[5].description}</p>
 
-        <Frame title="JIT Context \u2014 Pull Only What You Need">
+        <Frame title="JIT Context: Pull Only What You Need">
           <div style={{ padding: "20px" }}>
             <div style={{ display: "flex", gap: "8px", flexWrap: "wrap", marginBottom: "16px" }}>
               {[
@@ -562,7 +588,7 @@ export default function LearnPage() {
             </div>
             <div style={{ borderTop: `1px solid ${P.g7}`, paddingTop: "12px", fontSize: "0.75rem" }}>
               <span style={{ color: P.red, fontWeight: 600 }}>3 sources active</span>
-              <span style={{ color: P.g5 }}> &mdash; IDE pulls context just-in-time, not all-at-once</span>
+              <span style={{ color: P.g5 }}>: IDE pulls context just-in-time, not all-at-once</span>
             </div>
           </div>
         </Frame>
@@ -590,7 +616,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[6].description}</p>
 
-        <Frame title="Context Pollution \u2014 Token Waste">
+        <Frame title="Context Pollution: Token Waste">
           <div style={{ padding: "20px" }}>
             <div style={{ display: "flex", gap: "8px", marginBottom: "16px", flexWrap: "wrap" }}>
               {[
@@ -612,7 +638,7 @@ export default function LearnPage() {
                 }}>
                   <div style={{ color: item.useful ? P.red : P.g5, fontWeight: 600 }}>{item.label}</div>
                   <div style={{ color: item.useful ? P.white : P.g5, fontSize: "0.625rem", marginTop: "2px" }}>
-                    {item.tokens.toLocaleString()} tokens {!item.useful && "\u2014 wasted"}
+                    {item.tokens.toLocaleString()} tokens {!item.useful && "(wasted)"}
                   </div>
                 </div>
               ))}
@@ -652,7 +678,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[7].description}</p>
 
-        <Frame title="Compaction Results \u2014 5 Tickets">
+        <Frame title="Cookbook Results: 5 Tickets">
           <div style={{ padding: "20px" }}>
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: "2rem" }}>
               <div style={{ textAlign: "center" }}>
@@ -687,37 +713,35 @@ export default function LearnPage() {
         <CodeBlock
           lang="python"
           lines={[
-            { text: "# Anthropic Automatic Context Compaction", dim: true },
+            { text: "# Server-side compaction (threshold mode)", dim: true },
             { text: "import anthropic" },
             { text: "" },
             { text: "client = anthropic.Anthropic()" },
             { text: "" },
-            { text: "runner = client.beta.messages.tool_runner(" },
-            { text: '    model="claude-sonnet-4-5",' },
-            { text: "    max_tokens=4096," },
-            { text: "    tools=tools," },
+            { text: "response = client.beta.messages.create(" },
+            { text: '    model="claude-sonnet-5-5",' },
+            { text: "    max_tokens=16000," },
+            { text: '    betas=["compact-2026-01-12"],' },
+            { text: "    context_management={\"edits\": [{" },
+            { text: '        "type": "compact_20260112",' },
+            { text: '        "trigger": {"type": "input_tokens", "value": 150_000},' },
+            { text: "    }]}," },
             { text: "    messages=messages," },
-            { text: "    compaction_control={" },
-            { text: '        "enabled": True,' },
-            { text: '        "context_token_threshold": 5000,' },
-            { text: "    }," },
             { text: ")" },
             { text: "" },
-            { text: "for message in runner:" },
-            { text: "    total_input += message.usage.input_tokens" },
-            { text: "    total_output += message.usage.output_tokens" },
+            { text: "# Keep the compaction block: append the full content", dim: true },
+            { text: 'messages.append({"role": "assistant", "content": response.content})' },
           ]}
         />
 
         <CompareTable
-          headers={["Threshold", "When to use", "Compaction frequency"]}
+          headers={["Mode", "When it runs", "Beta header"]}
           rows={[
-            ["5K\u201320K", "Sequential entity processing", "Frequent, minimal accumulation"],
-            ["50K\u2013100K", "Multi-phase workflows", "Balanced retention"],
-            ["100K\u2013150K", "Tasks needing full history", "Rare, preserves detail"],
-            ["Default 100K", "General long-running tasks", "Standard balance"],
+            ["compact_20260112 (threshold)", "Input tokens pass the trigger (default 150K, minimum 50K)", "compact-2026-01-12"],
+            ["compaction: {type: \"summarize\"} (on-demand)", "When your code asks for it", "compact-2026-09-04"],
           ]}
         />
+        <Sources links={[["Compaction", "https://platform.claude.com/docs/en/build-with-claude/compaction"]]} />
       </section>
 
       {/* ── Lesson 9: Context Editing & Memory Tool ── */}
@@ -765,30 +789,35 @@ export default function LearnPage() {
           rows={[
             ["What it does", "Removes stale clutter", "Saves key facts permanently"],
             ["Where", "On the desk (context)", "In the cabinet (external)"],
-            ["Token saving", "Up to 84%", "Offloads to storage"],
+            ["Token saving", "84% in a 100-turn web search run", "Offloads to storage"],
             ["Persistence", "In-session only", "Across all sessions"],
-            ["Combined", "39% better on complex tasks", "39% better on complex tasks"],
+            ["Performance", "29% better alone", "39% better combined with editing"],
           ]}
         />
 
         <CodeBlock
           lines={[
-            { text: "# Context Editing Example", dim: true },
-            { text: "def edit_context(messages, client):" },
-            { text: '    """Remove stale info from context."""' },
-            { text: '    prompt = "Review this conversation. Remove"' },
-            { text: '    prompt += " outdated or redundant information."' },
-            { text: '    prompt += " Keep decisions and current state."' },
-            { text: "" },
-            { text: "    response = client.messages.create(" },
-            { text: '        model="claude-sonnet-4-20250514",' },
-            { text: "        max_tokens=4000," },
-            { text: "        messages=[{" },
-            { text: '            "role": "user",' },
-            { text: '            "content": f"{prompt}\\n\\n{format_msgs(messages)}"' },
-            { text: "        }]" },
-            { text: "    )" },
-            { text: "    return parse_edited_messages(response.content[0].text)" },
+            { text: "# Context editing: clear old tool results by rule", dim: true },
+            { text: "response = client.beta.messages.create(" },
+            { text: '    model="claude-sonnet-5-5",' },
+            { text: "    max_tokens=16000," },
+            { text: '    betas=["context-management-2025-06-27"],' },
+            { text: "    context_management={\"edits\": [{" },
+            { text: '        "type": "clear_tool_uses_20250919",' },
+            { text: '        "trigger": {"type": "input_tokens", "value": 100_000},' },
+            { text: '        "keep": {"type": "tool_uses", "value": 3},' },
+            { text: '        "clear_at_least": {"type": "input_tokens", "value": 10_000},' },
+            { text: '        "exclude_tools": ["memory"],' },
+            { text: "    }]}," },
+            { text: "    tools=tools," },
+            { text: "    messages=messages," },
+            { text: ")" },
+          ]}
+        />
+        <Sources
+          links={[
+            ["Context editing", "https://platform.claude.com/docs/en/build-with-claude/context-editing"],
+            ["Context management results", "https://claude.com/resources/articles/context-management"],
           ]}
         />
       </section>
@@ -804,7 +833,7 @@ export default function LearnPage() {
         </div>
         <p className="learn-lesson-desc">{lessons[9].description}</p>
 
-        <Frame title="Customer Service Workflow \u2014 5 Tickets">
+        <Frame title="Customer Service Workflow: 5 Tickets">
           <div style={{ padding: "20px" }}>
             <div style={{ fontSize: "0.75rem", color: P.g5, marginBottom: "12px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Per-ticket workflow (7 steps each)</div>
             <div style={{ display: "flex", gap: "4px", flexWrap: "wrap", marginBottom: "16px" }}>
@@ -854,29 +883,80 @@ export default function LearnPage() {
             ["Output tokens", "4,422", "4,275"],
             ["Total tokens", "208,838", "86,446"],
             ["Compactions", "N/A", "2"],
-            ["Token savings", "\u2014", "122,392 (58.6%)"],
+            ["Token savings", "N/A", "122,392 (58.6%)"],
           ]}
         />
 
         <CodeBlock
           lang="python"
           lines={[
-            { text: "# Custom summary prompt for domain needs", dim: true },
-            { text: "compaction_control={" },
-            { text: '    "enabled": True,' },
-            { text: '    "context_token_threshold": 5000,' },
-            { text: '    "summary_prompt": (' },
+            { text: "# Custom summary instructions for domain needs", dim: true },
+            { text: "context_management={\"edits\": [{" },
+            { text: '    "type": "compact_20260112",' },
+            { text: '    "trigger": {"type": "input_tokens", "value": 50_000},' },
+            { text: '    "instructions": (' },
             { text: '        "Preserve: ticket IDs, categories, "' },
             { text: '        "priorities, teams, outcomes. "' },
             { text: '        "Discard: full KB articles, draft text."' },
             { text: "    )," },
-            { text: "}" },
-            { text: "" },
-            { text: "# Use cheaper model for summaries", dim: true },
-            { text: "compaction_control={" },
-            { text: '    "enabled": True,' },
-            { text: '    "model": "claude-haiku-4-5",' },
-            { text: "}" },
+            { text: "}]}" },
+          ]}
+        />
+      </section>
+
+      {/* ── Lesson 11: Current API Levers ── */}
+      <section className="learn-lesson" id={lessons[10].id}>
+        <div className="learn-lesson-header">
+          <span className="learn-lesson-num">{lessons[10].number}</span>
+          <div>
+            <h2 className="learn-lesson-title">{lessons[10].title}</h2>
+            <p className="learn-lesson-sub">{lessons[10].subtitle}</p>
+          </div>
+        </div>
+        <p className="learn-lesson-desc">{lessons[10].description}</p>
+
+        <CompareTable
+          headers={["Prompt caching", "Rate or limit"]}
+          rows={[
+            ["5-minute cache write", "1.25x base input"],
+            ["1-hour cache write", "2x base input"],
+            ["Cache read", "0.1x base input (0.05x on Opus 5.5 and Sonnet 5.5, 0.025x on Fable 5.1)"],
+            ["Breakpoints", "Up to 4 per request"],
+            ["Minimum prefix", "512 tokens on most 5.x models; 1,024 on Opus 4.8, Sonnet 4.x, and Sonnet 5; 2,048 on Opus 4.7; 4,096 on Opus 4.5, Opus 4.6, and Haiku 4.5"],
+            ["Invalidation", "Changing tool definitions invalidates the whole cache"],
+          ]}
+        />
+
+        <CompareTable
+          headers={["Lever", "What to know"]}
+          rows={[
+            ["Effort", "output_config.effort: low, medium, high, xhigh, max. Default high, except medium on Opus 5.5 and Haiku 5.5"],
+            ["Adaptive thinking", "thinking: {type: \"adaptive\"} replaces budget_tokens, which returns a 400 error on Opus 4.7 and later and on 5.x models"],
+            ["Tool search", "Tools marked defer_loading: true stay out of context until the model searches for and loads them"],
+          ]}
+        />
+
+        <CodeBlock
+          lang="python"
+          lines={[
+            { text: "# Effort, adaptive thinking, and caching in one request", dim: true },
+            { text: "response = client.messages.create(" },
+            { text: '    model="claude-opus-5-5",' },
+            { text: "    max_tokens=16000," },
+            { text: '    thinking={"type": "adaptive"},' },
+            { text: '    output_config={"effort": "high"},' },
+            { text: '    cache_control={"type": "ephemeral"},' },
+            { text: "    system=STABLE_SYSTEM_PROMPT," },
+            { text: "    messages=messages," },
+            { text: ")" },
+          ]}
+        />
+        <Sources
+          links={[
+            ["Prompt caching", "https://platform.claude.com/docs/en/build-with-claude/prompt-caching"],
+            ["Effort", "https://platform.claude.com/docs/en/build-with-claude/effort"],
+            ["Thinking", "https://platform.claude.com/docs/en/build-with-claude/thinking"],
+            ["Tool search", "https://platform.claude.com/docs/en/agents-and-tools/tool-use/tool-search-tool"],
           ]}
         />
       </section>

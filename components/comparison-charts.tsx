@@ -11,265 +11,108 @@ import {
   ResponsiveContainer,
   Cell,
 } from 'recharts';
-import { PROVIDER_MODELS, getProviderColor, Provider, estimateModelCost } from '@/lib/providers';
+import {
+  PROVIDER_MODELS,
+  PROVIDERS,
+  estimateModelCost,
+  fitsContext,
+  formatTokenCount,
+  getProviderColor,
+  getProviderName,
+} from '@/lib/providers';
+import { themePalette as P } from '@/lib/theme-palette';
 
-// ============================================
-// COST COMPARISON CHART
-// ============================================
+const ROW = 24;
+const tooltip = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
+const axis = { stroke: P.g7, tick: { fontSize: 11, fill: P.g7 }, tickLine: false };
+const shortName = (name: string) => name.replace('Claude ', '');
+
+function ProviderLegend() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '1.5rem', marginTop: '1rem', paddingTop: '1rem', borderTop: `1px solid ${P.g3}` }}>
+      {PROVIDERS.map(p => (
+        <span key={p} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.75rem', color: P.g7 }}>
+          <span aria-hidden style={{ width: 12, height: 12, background: getProviderColor(p), display: 'inline-block' }} />
+          {getProviderName(p)}
+        </span>
+      ))}
+    </div>
+  );
+}
 
 interface CostComparisonProps {
   inputTokens?: number;
   outputTokens?: number;
 }
 
-export function CostComparisonChart({ 
-  inputTokens = 100000, 
-  outputTokens = 10000 
+export function CostComparisonChart({
+  inputTokens = 100000,
+  outputTokens = 10000,
 }: CostComparisonProps) {
-  // Calculate costs for each model
-  const data = PROVIDER_MODELS
+  const fitting = PROVIDER_MODELS.filter(m => fitsContext(m, inputTokens, outputTokens));
+  const data = fitting
     .map(model => ({
-      name: model.name.replace('Claude ', '').replace('Gemini ', ''),
+      name: shortName(model.name),
       cost: estimateModelCost(model, inputTokens, outputTokens),
       provider: model.provider,
       fullName: model.name,
     }))
     .sort((a, b) => a.cost - b.cost);
-  
+  const excluded = PROVIDER_MODELS.length - fitting.length;
+
   return (
     <div className="eco-card-flat">
-      <div className="mb-4">
-        <h3 className="section-title">Cost Comparison</h3>
-        <p className="text-xs text-muted">
-          {(inputTokens / 1000).toFixed(0)}K input + {(outputTokens / 1000).toFixed(0)}K output tokens
-        </p>
-      </div>
-      
-      <ResponsiveContainer width="100%" height={400}>
-        <BarChart
-          data={data}
-          layout="vertical"
-          margin={{ top: 0, right: 30, left: 100, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
-          <XAxis 
-            type="number"
-            stroke="#666"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            tickFormatter={(v) => `$${v.toFixed(2)}`}
-          />
-          <YAxis 
-            type="category"
-            dataKey="name"
-            stroke="#666"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            width={90}
-          />
+      <p style={{ fontSize: '0.75rem', color: P.g7, marginBottom: '1rem' }}>
+        {formatTokenCount(inputTokens)} input + {formatTokenCount(outputTokens)} output tokens, uncached, long-context rates applied where they trigger.
+        {excluded > 0 && ` ${excluded} model${excluded > 1 ? 's' : ''} excluded: request exceeds the context window or max output.`}
+      </p>
+      <ResponsiveContainer width="100%" height={data.length * ROW + 40}>
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 30, left: 8, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={P.g3} horizontal={false} />
+          <XAxis type="number" {...axis} tickFormatter={(v) => `$${Number(v).toFixed(2)}`} />
+          <YAxis type="category" dataKey="name" {...axis} width={110} interval={0} />
           <Tooltip
-            contentStyle={{
-              background: '#fff',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              fontSize: 12,
-              color: '#111',
-            }}
-            formatter={(value, name, props) => [
+            {...tooltip}
+            formatter={(value, _name, props) => [
               `$${Number(value).toFixed(4)}`,
-              (props?.payload as { fullName: string })?.fullName ?? ''
+              (props?.payload as { fullName: string })?.fullName ?? '',
             ]}
           />
           <Bar dataKey="cost" radius={[0, 2, 2, 0]}>
-            {data.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={getProviderColor(entry.provider)}
-                fillOpacity={0.9}
-              />
+            {data.map((entry) => (
+              <Cell key={entry.fullName} fill={getProviderColor(entry.provider)} />
             ))}
           </Bar>
         </BarChart>
       </ResponsiveContainer>
-      
-      {/* Legend */}
-      <div className="flex justify-center gap-6 mt-4 pt-4 border-t border-eco-gray-800">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-eco-red" />
-          <span className="text-xs text-muted">Anthropic</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-eco-black border border-eco-gray-600" />
-          <span className="text-xs text-muted">OpenAI</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 bg-[#991b1b]" />
-          <span className="text-xs text-muted">Google</span>
-        </div>
-      </div>
+      <ProviderLegend />
     </div>
   );
 }
-
-// ============================================
-// CONTEXT WINDOW COMPARISON
-// ============================================
 
 export function ContextWindowChart() {
   const data = PROVIDER_MODELS
     .map(model => ({
-      name: model.name.replace('Claude ', '').replace('Gemini ', ''),
-      context: model.contextWindow / 1000,
-      maxOutput: model.maxOutput / 1000,
-      provider: model.provider,
+      name: shortName(model.name),
+      context: model.contextWindow,
+      maxOutput: model.maxOutput,
     }))
     .sort((a, b) => b.context - a.context);
-  
+
   return (
     <div className="eco-card-flat">
-      <h3 className="section-title">Context Window Size (K tokens)</h3>
-      
-      <ResponsiveContainer width="100%" height={350}>
-        <BarChart
-          data={data}
-          layout="vertical"
-          margin={{ top: 0, right: 30, left: 100, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
-          <XAxis 
-            type="number"
-            stroke="#666"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            tickFormatter={(v) => `${v}K`}
-          />
-          <YAxis 
-            type="category"
-            dataKey="name"
-            stroke="#666"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            width={90}
-          />
-          <Tooltip
-            contentStyle={{
-              background: '#fff',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              fontSize: 12,
-              color: '#111',
-            }}
-            formatter={(value) => [`${Number(value)}K tokens`]}
-          />
-          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 20 }} />
-          <Bar 
-            dataKey="context" 
-            name="Context Window"
-            fill="#e3120b"
-            fillOpacity={0.9}
-            radius={[0, 2, 2, 0]}
-          />
-          <Bar 
-            dataKey="maxOutput" 
-            name="Max Output"
-            fill="#333"
-            radius={[0, 2, 2, 0]}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
-  );
-}
-
-// ============================================
-// PRICE PER QUALITY METRIC
-// ============================================
-
-interface PriceQualityData {
-  name: string;
-  pricePerToken: number;
-  qualityScore: number;
-  provider: Provider;
-}
-
-export function PriceQualityChart() {
-  // Quality scores based on latest benchmarks (Feb 2026)
-  const data: PriceQualityData[] = [
-    { name: 'Opus 4.6', pricePerToken: 5.0, qualityScore: 99, provider: 'anthropic' },
-    { name: 'Sonnet 5', pricePerToken: 3.0, qualityScore: 94, provider: 'anthropic' },
-    { name: 'Opus 4.8', pricePerToken: 5.0, qualityScore: 96, provider: 'anthropic' },
-    { name: 'Haiku 4.5', pricePerToken: 1.0, qualityScore: 86, provider: 'anthropic' },
-    { name: 'GPT-5.6 Terra', pricePerToken: 8.0, qualityScore: 99, provider: 'openai' },
-    { name: 'GPT-5.6 Sol', pricePerToken: 5.0, qualityScore: 97, provider: 'openai' },
-    { name: 'GPT-5.5', pricePerToken: 5.0, qualityScore: 96, provider: 'openai' },
-    { name: 'GPT-5.4', pricePerToken: 2.5, qualityScore: 93, provider: 'openai' },
-    { name: 'Gemini 3.7 Flash', pricePerToken: 2.0, qualityScore: 95, provider: 'google' },
-    { name: 'Gemini 3.1 Pro', pricePerToken: 2.0, qualityScore: 96, provider: 'google' },
-    { name: 'Gemini 3.5 Flash', pricePerToken: 1.50, qualityScore: 92, provider: 'google' },
-    { name: 'Gemini 2.5 Pro', pricePerToken: 1.25, qualityScore: 94, provider: 'google' },
-  ];
-  
-  // Calculate efficiency (quality per dollar)
-  const efficiencyData = data
-    .map(d => ({
-      ...d,
-      efficiency: d.qualityScore / d.pricePerToken,
-    }))
-    .sort((a, b) => b.efficiency - a.efficiency);
-  
-  return (
-    <div className="eco-card-flat">
-      <h3 className="section-title">Quality per Dollar (Efficiency)</h3>
-      <p className="text-xs text-muted mb-4">
-        Higher = better value. Quality score / Input cost per MTok
+      <p style={{ fontSize: '0.75rem', color: P.g7, marginBottom: '1rem' }}>
+        Hover for exact counts. 1M-class windows are 1,000,000 (Anthropic), 1,050,000 (OpenAI) and 1,048,576 (Gemini) tokens.
       </p>
-      
-      <ResponsiveContainer width="100%" height={350}>
-        <BarChart
-          data={efficiencyData}
-          layout="vertical"
-          margin={{ top: 0, right: 30, left: 100, bottom: 0 }}
-        >
-          <CartesianGrid strokeDasharray="3 3" stroke="#333" horizontal={false} />
-          <XAxis 
-            type="number"
-            stroke="#666"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-          />
-          <YAxis 
-            type="category"
-            dataKey="name"
-            stroke="#666"
-            tick={{ fontSize: 11 }}
-            tickLine={false}
-            width={90}
-          />
-          <Tooltip
-            contentStyle={{
-              background: '#fff',
-              border: '1px solid #ccc',
-              borderRadius: 4,
-              fontSize: 12,
-              color: '#111',
-            }}
-            formatter={(value, name, props) => {
-              const payload = props?.payload as PriceQualityData & { efficiency: number };
-              return [
-                `${Number(value).toFixed(1)} quality/$`,
-                `Quality: ${payload?.qualityScore ?? 0}, Price: $${payload?.pricePerToken ?? 0}/MTok`
-              ];
-            }}
-          />
-          <Bar dataKey="efficiency" radius={[0, 2, 2, 0]}>
-            {efficiencyData.map((entry, index) => (
-              <Cell 
-                key={`cell-${index}`} 
-                fill={getProviderColor(entry.provider)}
-                fillOpacity={0.9}
-              />
-            ))}
-          </Bar>
+      <ResponsiveContainer width="100%" height={data.length * ROW * 1.5 + 60}>
+        <BarChart data={data} layout="vertical" margin={{ top: 0, right: 30, left: 8, bottom: 0 }}>
+          <CartesianGrid strokeDasharray="3 3" stroke={P.g3} horizontal={false} />
+          <XAxis type="number" {...axis} tickFormatter={(v) => formatTokenCount(Number(v))} />
+          <YAxis type="category" dataKey="name" {...axis} width={110} interval={0} />
+          <Tooltip {...tooltip} formatter={(value) => `${Number(value).toLocaleString()} tokens`} />
+          <Legend wrapperStyle={{ fontSize: 11, paddingTop: 20, color: P.g7 }} />
+          <Bar dataKey="context" name="Context window" fill="var(--accent)" radius={[0, 2, 2, 0]} />
+          <Bar dataKey="maxOutput" name="Max output" fill={P.g7} radius={[0, 2, 2, 0]} />
         </BarChart>
       </ResponsiveContainer>
     </div>

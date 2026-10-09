@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Events & Talks",
+  title: { default: "Events & Talks", template: "%s | Tokalator" },
   description:
-    "Talks, workshops, and events on context engineering, token economics, and AI-native software development by the Tokalator team.",
+    "Talks and workshops on context engineering, token economics, and AI-native software development, with slides and full guides.",
   alternates: { canonical: "/events" },
 };
 

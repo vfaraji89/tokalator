@@ -11,14 +11,16 @@ import {
   analyzeContextBudget, estimateTokens, formatTokenCount,
   calculateRemainingTurns, getModelLimits,
 } from "@/lib/context";
-import { getModelInfo, formatCost, calculateCost } from "@/lib/pricing";
+import { formatCost, calculateCost, MODEL_PRICING } from "@/lib/pricing";
+import { PROVIDER_MODELS, PROVIDERS, fitsContext, getProviderColor, getProviderName } from "@/lib/providers";
+import { CATALOG_MODELS, DEFAULT_MODEL_ID } from "@/lib/models";
 
-const models = ["claude-fable-5", "claude-opus-5", "claude-sonnet-5", "claude-opus-4.8", "claude-haiku-4.5"] as const;
+const FEATURED = CATALOG_MODELS.filter(m => m.featured).map(m => m.id);
 
 const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
 
 export function ContextOptimizer() {
-  const [selectedModel, setSelectedModel] = useState<string>("claude-sonnet-5");
+  const [selectedModel, setSelectedModel] = useState<string>(DEFAULT_MODEL_ID);
   const [systemPrompt, setSystemPrompt] = useState<string>("");
   const [userMessage, setUserMessage] = useState<string>("");
   const [reservedOutput, setReservedOutput] = useState<number>(4000);
@@ -28,9 +30,15 @@ export function ContextOptimizer() {
   const userTokens = useMemo(() => estimateTokens(userMessage), [userMessage]);
   const analysis = useMemo(() => analyzeContextBudget({ systemPromptTokens: systemTokens, userInputTokens: userTokens, reservedOutputTokens: reservedOutput, model: selectedModel }), [systemTokens, userTokens, reservedOutput, selectedModel]);
   const remainingTurns = calculateRemainingTurns(systemTokens + userTokens, userTokens + reservedOutput, selectedModel);
-  const estimatedCost = useMemo(() => calculateCost(selectedModel, { inputTokens: systemTokens + userTokens, outputTokens: reservedOutput, promptLength: systemTokens + userTokens }), [selectedModel, systemTokens, userTokens, reservedOutput]);
+  const estimatedCost = useMemo(() => calculateCost(selectedModel, { inputTokens: systemTokens + userTokens, outputTokens: reservedOutput }), [selectedModel, systemTokens, userTokens, reservedOutput]);
+  const tierThreshold = MODEL_PRICING[selectedModel].threshold;
 
-  // Pie chart data for context budget
+  const selectModel = (id: string) => {
+    setSelectedModel(id);
+    const max = getModelLimits(id)?.maxOutput;
+    if (max) setReservedOutput(r => Math.min(r, max));
+  };
+
   const budgetPie = useMemo(() => [
     { name: "System", value: analysis.breakdown.systemPrompt.tokens, color: P.black },
     { name: "User", value: analysis.breakdown.userInput.tokens, color: P.red },
@@ -38,59 +46,55 @@ export function ContextOptimizer() {
     { name: "Free", value: analysis.breakdown.free.tokens, color: P.g3 },
   ], [analysis]);
 
-  // Cross-model cost comparison
   const crossModelCost = useMemo(() => {
-    return models.map(m => {
-      const c = calculateCost(m, { inputTokens: systemTokens + userTokens, outputTokens: reservedOutput, promptLength: systemTokens + userTokens });
-      return { name: m.replace("claude-", "").split("-").map(w => w[0].toUpperCase() + w.slice(1)).join(" "), cost: c.totalCost };
-    });
-  }, [systemTokens, userTokens, reservedOutput]);
+    const ids = FEATURED.includes(selectedModel) ? FEATURED : [...FEATURED, selectedModel];
+    return PROVIDER_MODELS
+      .filter(m => ids.includes(m.id) && fitsContext(m, systemTokens + userTokens, reservedOutput))
+      .map(m => ({ name: m.name.replace("Claude ", ""), provider: m.provider, cost: calculateCost(m.id, { inputTokens: systemTokens + userTokens, outputTokens: reservedOutput }).totalCost }))
+      .sort((a, b) => a.cost - b.cost);
+  }, [selectedModel, systemTokens, userTokens, reservedOutput]);
 
-  const inputStyle = { width: "100%", padding: "0.5rem", border: `1px solid ${P.g3}`, borderRadius: "4px", fontFamily: "monospace", fontSize: "0.875rem" };
+  const inputStyle = { width: "100%", padding: "0.5rem", border: `1px solid ${P.g3}`, borderRadius: "4px", fontFamily: "monospace", fontSize: "0.875rem", background: P.white, color: P.black };
 
   return (
-    <div className="feature-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+    <div className="feature-grid">
       {/* Input Panel */}
       <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
         {/* Model Selection */}
         <div className="eco-card-flat">
-          <h2 className="section-header">Model Selection</h2>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "0.5rem" }}>
-            {models.map((model) => {
-              const info = getModelInfo(model);
-              return (
-                <button key={model} onClick={() => setSelectedModel(model)}
-                  style={{ padding: "0.75rem", border: selectedModel === model ? `2px solid ${P.red}` : `2px solid ${P.g3}`, borderRadius: "8px", background: selectedModel === model ? P.g1 : P.white, cursor: "pointer", fontSize: "0.8125rem", fontWeight: 500 }}>
-                  {info.displayName.split(" ").slice(1).join(" ")}
-                </button>
-              );
-            })}
-          </div>
+          <h2 className="section-header"><label htmlFor="ctx-model">Model Selection</label></h2>
+          <select id="ctx-model" value={selectedModel} onChange={(e) => selectModel(e.target.value)} style={{ ...inputStyle, fontFamily: "inherit" }}>
+            {PROVIDERS.map(p => (
+              <optgroup key={p} label={getProviderName(p)}>
+                {PROVIDER_MODELS.filter(m => m.provider === p).map(m => <option key={m.id} value={m.id}>{m.name}</option>)}
+              </optgroup>
+            ))}
+          </select>
           {limits && <p style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: P.g5 }}>Context: {formatTokenCount(limits.contextWindow)} | Max Output: {formatTokenCount(limits.maxOutput)}</p>}
         </div>
 
         <div className="eco-card-flat">
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-            <label style={{ fontSize: "0.8125rem", color: P.g7 }}>System Prompt</label>
+            <label htmlFor="ctx-system" style={{ fontSize: "0.8125rem", color: P.g7 }}>System Prompt</label>
             <span style={{ fontSize: "0.8125rem", color: P.g5 }}>~{formatTokenCount(systemTokens)} tokens</span>
           </div>
-          <textarea value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={6} style={inputStyle} placeholder="Enter your system prompt..." />
+          <textarea id="ctx-system" value={systemPrompt} onChange={(e) => setSystemPrompt(e.target.value)} rows={6} style={inputStyle} placeholder="Enter your system prompt..." />
         </div>
 
         <div className="eco-card-flat">
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-            <label style={{ fontSize: "0.8125rem", color: P.g7 }}>User Message</label>
+            <label htmlFor="ctx-user" style={{ fontSize: "0.8125rem", color: P.g7 }}>User Message</label>
             <span style={{ fontSize: "0.8125rem", color: P.g5 }}>~{formatTokenCount(userTokens)} tokens</span>
           </div>
-          <textarea value={userMessage} onChange={(e) => setUserMessage(e.target.value)} rows={4} style={inputStyle} placeholder="Enter a typical user message..." />
+          <textarea id="ctx-user" value={userMessage} onChange={(e) => setUserMessage(e.target.value)} rows={4} style={inputStyle} placeholder="Enter a typical user message..." />
         </div>
 
         <div className="eco-card-flat">
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.25rem" }}>
-            <label style={{ fontSize: "0.8125rem", color: P.g7 }}>Reserved Output Tokens</label>
+            <label htmlFor="ctx-output" style={{ fontSize: "0.8125rem", color: P.g7 }}>Reserved Output Tokens</label>
             <span style={{ fontSize: "0.8125rem", color: P.g5 }}>{formatTokenCount(reservedOutput)}</span>
           </div>
-          <input type="range" min={100} max={limits?.maxOutput || 64000} step={100} value={reservedOutput} onChange={(e) => setReservedOutput(Number(e.target.value))} style={{ width: "100%", accentColor: P.red }} />
+          <input id="ctx-output" type="range" min={100} max={limits?.maxOutput || 64000} step={100} value={reservedOutput} onChange={(e) => setReservedOutput(Number(e.target.value))} style={{ width: "100%", accentColor: P.red }} />
           <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: P.g5, marginTop: "0.25rem" }}>
             <span>100</span><span>{formatTokenCount(limits?.maxOutput || 64000)}</span>
           </div>
@@ -124,14 +128,14 @@ export function ContextOptimizer() {
         </div>
 
         {/* Stats */}
-        <div className="feature-grid" style={{ gridTemplateColumns: "1fr 1fr" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(8rem, 1fr))", gap: "1rem" }}>
           {[
             ["Remaining", formatTokenCount(analysis.remaining), "tokens available"],
             ["Est. Cost", formatCost(estimatedCost.totalCost), "per request"],
             ["More Turns", remainingTurns > 100 ? "100+" : String(remainingTurns), "before limit"],
-            ["Pricing Tier", analysis.isInExtendedPricing ? "Extended" : "Standard", selectedModel === "claude-sonnet-4.6" ? "(200K threshold)" : "N/A"],
+            ["Pricing Tier", analysis.isInExtendedPricing ? "Long context" : "Standard", tierThreshold !== undefined ? `long context above ${formatTokenCount(tierThreshold)}` : "no long-context tier"],
           ].map(([label, value, sub]) => (
-            <div key={label} className="feature-card" style={{ textAlign: "center", padding: "1rem" }}>
+            <div key={label} className="feature-item" style={{ textAlign: "center", padding: "1rem" }}>
               <div style={{ fontSize: "0.8125rem", color: P.g5 }}>{label}</div>
               <div style={{ fontSize: "1.5rem", fontWeight: 700 }}>{value}</div>
               <div style={{ fontSize: "0.6875rem", color: P.g5 }}>{sub}</div>
@@ -141,15 +145,15 @@ export function ContextOptimizer() {
 
         {/* Cross-model cost */}
         <div className="eco-card-flat">
-          <h3 className="section-header">Cost Across Models</h3>
-          <ResponsiveContainer width="100%" height={150}>
-            <BarChart data={crossModelCost} layout="vertical" margin={{ top: 0, right: 20, left: 80, bottom: 0 }}>
+          <h3 className="section-header">Cost Across Featured Models</h3>
+          <ResponsiveContainer width="100%" height={crossModelCost.length * 24 + 30}>
+            <BarChart data={crossModelCost} layout="vertical" margin={{ top: 0, right: 20, left: 8, bottom: 0 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={P.g3} horizontal={false} />
-              <XAxis type="number" stroke={P.g7} tick={{ fontSize: 10 }} tickFormatter={(v) => `$${v.toFixed(3)}`} />
-              <YAxis type="category" dataKey="name" stroke={P.g7} tick={{ fontSize: 10 }} width={70} />
+              <XAxis type="number" stroke={P.g7} tick={{ fontSize: 10, fill: P.g7 }} tickFormatter={(v) => `$${v.toFixed(3)}`} />
+              <YAxis type="category" dataKey="name" stroke={P.g7} tick={{ fontSize: 10, fill: P.g7 }} width={100} interval={0} />
               <Tooltip {...tt} formatter={(v) => [formatCost(Number(v)), "Cost"]} />
               <Bar dataKey="cost" radius={[0, 3, 3, 0]}>
-                {crossModelCost.map((_, i) => (<Cell key={i} fill={[P.black, P.red, P.g5][i]} />))}
+                {crossModelCost.map((m) => (<Cell key={m.name} fill={getProviderColor(m.provider)} />))}
               </Bar>
             </BarChart>
           </ResponsiveContainer>

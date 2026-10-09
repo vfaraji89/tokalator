@@ -155,6 +155,18 @@ describe('calculateCost', () => {
     expect(result.totalCost).toBeGreaterThan(0);
   });
 
+  it('applies long-context rates to the whole request strictly above the threshold', () => {
+    const at = calculateCost('claude-haiku-5-5', { inputTokens: 100_000, outputTokens: 1_000 });
+    const above = calculateCost('claude-haiku-5-5', { inputTokens: 100_001, outputTokens: 1_000 });
+    expect(at.totalCost).toBeCloseTo((100_000 * 0.1 + 1_000 * 0.5) / 1_000_000, 9);
+    expect(above.totalCost).toBeCloseTo((100_001 * 0.1 + 1_000 * 0.5) * 5 / 1_000_000, 9);
+  });
+
+  it('cached prompt tokens count toward the threshold', () => {
+    const result = calculateCost('claude-haiku-5-5', { inputTokens: 50_000, outputTokens: 0, cacheReadTokens: 60_000 });
+    expect(result.cacheReadCost).toBeCloseTo(60_000 * 0.01 * 5 / 1_000_000, 9);
+  });
+
   it('does not surcharge long prompts (1M window is standard-priced)', () => {
     const short = calculateCost(
       'claude-opus-4.6',
@@ -244,6 +256,13 @@ describe('calculateMinCostForQuality', () => {
 
   it('throws for unknown model', () => {
     expect(() => calculateMinCostForQuality(5.0, 'unknown')).toThrow();
+  });
+
+  it('works for every catalog model', () => {
+    for (const id of Object.keys(MODEL_LIMITS)) {
+      expect(MODEL_PARAMS[id]).toBeDefined();
+      expect(calculateMinCostForQuality(5.0, id).cost).toBeGreaterThan(0);
+    }
   });
 });
 
