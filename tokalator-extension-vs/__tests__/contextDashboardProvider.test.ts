@@ -108,12 +108,6 @@ describe('ContextDashboardProvider', () => {
       expect(monitor.optimizeTabs).toHaveBeenCalled();
     });
 
-    test('terminologyGen command opens the chat with /terminology-gen', async () => {
-      const exec = vscode.commands.executeCommand as jest.Mock;
-      await mockView.simulateMessage({ command: 'terminologyGen' });
-      expect(exec).toHaveBeenCalledWith('workbench.action.chat.open', { query: '@tokalator /terminology-gen' });
-    });
-
     test('secure command opens the workspace security scan', async () => {
       const exec = vscode.commands.executeCommand as jest.Mock;
       exec.mockClear();
@@ -134,7 +128,7 @@ describe('ContextDashboardProvider', () => {
       expect(html).not.toContain('ondblclick=');
       expect(html).not.toContain('onchange=');
       expect(html).toContain('data-action="openFile"');
-      expect(html).toContain('data-action="terminologyGen"');
+      expect(html).toContain('data-action="skillGen"');
       expect(html).toContain('data-action="secure"');
     });
 
@@ -153,19 +147,22 @@ describe('ContextDashboardProvider', () => {
 
     test('renders budget, cost and conversation stats', () => {
       const html = mockView.webview.html;
-      expect(html).toContain('Context used');
       expect(html).toContain('Next turn estimate');
       expect(html).toContain('Budget Breakdown');
       expect(html).toContain('Conversation');
-      expect(html).toContain('Cache savings');
+      expect(html).toContain('Turn Cost');
+      expect(html).not.toContain('Cache savings');
     });
 
-    test('renders the pro feature panel', () => {
+    test('renders the workspace tools panel and the open-source badge', () => {
       const html = mockView.webview.html;
-      expect(html).toContain('Pro Features');
-      expect(html).toContain('Generate Glossary');
+      expect(html).toContain('Workspace tools');
       expect(html).toContain('Secure Workspace');
       expect(html).toContain('Generate AI Settings');
+      expect(html).toContain('OPEN SOURCE');
+      for (const gone of ['Generate Glossary', 'GitHub AI Credits', 'Enterprise', '>PRO<']) {
+        expect(html).not.toContain(gone);
+      }
     });
 
     test('contains CSP with nonce', () => {

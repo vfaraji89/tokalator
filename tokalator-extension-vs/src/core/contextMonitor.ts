@@ -529,28 +529,19 @@ export class ContextMonitor implements vscode.Disposable {
 
     const activeFile = tabs.find(t => t.isActive) || null;
 
-    // 10. Estimate cost for this turn
+    // 10. Estimate cost (input only: output tokens and cache hits are not observable from the editor)
     const inputTokens = budget.used;
-    const outputTokens = this.activeModel.maxOutput;
     const inputCost = (inputTokens / 1_000_000) * this.activeModel.inputCostPerMTok;
-    const outputCost = (outputTokens / 1_000_000) * this.activeModel.outputCostPerMTok;
-    const cachedInputCostPerMTok =
-      this.activeModel.cachedInputCostPerMTok ?? this.activeModel.inputCostPerMTok;
-    // After the first turn the stable prefix is served from cache, so the
-    // realistic per-turn spend uses the cache-read rate on input.
-    const cachedInputCost = (inputTokens / 1_000_000) * cachedInputCostPerMTok;
     const costEstimate: CostEstimate = {
       inputTokens,
-      outputTokens,
+      outputTokens: 0,
       inputCost,
-      outputCost,
-      totalCost: inputCost + outputCost,
-      effectiveCost: this.chatTurnCount > 0
-        ? cachedInputCost + outputCost
-        : inputCost + outputCost,
+      outputCost: 0,
+      totalCost: inputCost,
+      effectiveCost: inputCost,
       inputCostPerMTok: this.activeModel.inputCostPerMTok,
       outputCostPerMTok: this.activeModel.outputCostPerMTok,
-      cachedInputCostPerMTok,
+      cachedInputCostPerMTok: this.activeModel.cachedInputCostPerMTok ?? this.activeModel.inputCostPerMTok,
     };
 
     return {

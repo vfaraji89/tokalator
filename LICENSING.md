@@ -13,7 +13,7 @@ Tokalator, but if they modify it and offer it to others over a network
 same license. This keeps the free version genuinely open while preventing a
 competitor from taking the code closed into a hosted product.
 
-## 2. Commercial license (Pro / Enterprise)
+## 2. Commercial license
 
 The AGPL's network-copyleft obligation does not fit every commercial use.
 Organizations that want to embed Tokalator in a closed-source or proprietary
@@ -26,18 +26,13 @@ As the sole copyright holder, Tokalator can offer the same code under both
 the AGPL and a commercial license. Contributors are asked to agree to the
 contribution terms below so this remains possible.
 
-## What is "free" vs "Pro"
+## What is open source
 
-The free version is everything in this repository: the token/context
-calculator, the catalog, the VS Code extension, and the MCP server.
-
-Pro/Enterprise features (Secure Workspace, SKILL.md generation, AI Settings,
-and future additions) are **not protected by keeping code secret** — code
-shipped to a browser or to a VS Code install is always extractable. They are
-protected by running their defensible logic **server-side on tokalator.ai
-behind authentication**, and by the commercial license above. The open client
-may call those gated endpoints with a valid license key; it does not contain
-the server logic.
+Everything in this repository is open source: the token and context
+calculator, the catalog, the VS Code extension (including the features
+formerly sold as Pro), and the MCP server. Tokalator Bead, the behavioral
+analytics extension at tokalator.ai, is a separate proprietary product and is
+not part of this repository.
 
 ## Contributions
 
