@@ -1,7 +1,7 @@
 /**
  * Tokalator MCP Server
  *
- * Exposes real Claude BPE token counting and budget analysis to Claude Code.
+ * Exposes token counting, budget analysis, and Claude Code usage to Claude Code.
  * Uses stdio transport — all logging goes to stderr (stdout is reserved for JSON-RPC).
  *
  * Tools:
@@ -9,6 +9,7 @@
  *  estimate_budget — Full budget breakdown for a list of files
  *  preview_turn    — Preview estimated cost of next chat turn
  *  list_models     — List available Claude model profiles
+ *  claude_code_usage — Turns, tokens, cache hits, and API-equivalent cost from local Claude Code logs
  */
 
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
@@ -20,12 +21,13 @@ import { countTokens, countTokensSchema } from './tools/countTokens.js';
 import { estimateBudget, estimateBudgetSchema } from './tools/estimateBudget.js';
 import { previewTurn, previewTurnSchema } from './tools/previewTurn.js';
 import { listModels } from './tools/listModels.js';
+import { claudeCodeUsage, claudeCodeUsageSchema, formatUsage } from './tools/claudeCodeUsage.js';
 
 const tokenizer = new TokenizerService();
 
 const server = new McpServer({
   name: 'tokalator',
-  version: '3.1.1',
+  version: '3.1.8',
 });
 
 // ── count_tokens ──────────────────────────────────────────────────────────────
@@ -80,6 +82,20 @@ server.registerTool(
   },
   async () => {
     const result = listModels();
+    return { content: [{ type: 'text', text: result }] };
+  },
+);
+
+// ── claude_code_usage ─────────────────────────────────────────────────────────
+
+server.registerTool(
+  'claude_code_usage',
+  {
+    description: 'Summarize Claude Code usage from local session logs (CLI and VS Code extension): turns, requests, input, output, and cache tokens, cache hit rate, and API-equivalent cost by model, project, and client. Defaults to the current project and the last 7 days. API-equivalent means API list prices; subscription plans are not billed per token.',
+    inputSchema: claudeCodeUsageSchema,
+  },
+  async (args) => {
+    const result = formatUsage(await claudeCodeUsage(args));
     return { content: [{ type: 'text', text: result }] };
   },
 );

@@ -1,7 +1,8 @@
 /**
- * Claude model profiles for Tokalator MCP.
- * Scoped to Anthropic models only.
+ * Claude model profiles for Tokalator MCP, generated from the extension catalog (npm run sync).
  */
+
+import { CLAUDE_CATALOG, DEFAULT_MODEL_ID } from './catalog.generated.js';
 
 export interface ModelProfile {
   id: string;
@@ -12,19 +13,16 @@ export interface ModelProfile {
   rotThreshold: number;
 }
 
-export const MODEL_PROFILES: ModelProfile[] = [
-  { id: 'claude-fable-5-1',  label: 'Claude Fable 5.1',  provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 52 },
-  { id: 'claude-fable-5',    label: 'Claude Fable 5',    provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 50 },
-  { id: 'claude-opus-5',     label: 'Claude Opus 5',     provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 48 },
-  { id: 'claude-opus-4.8',   label: 'Claude Opus 4.8',   provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 45 },
-  { id: 'claude-opus-4.7',   label: 'Claude Opus 4.7',   provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 43 },
-  { id: 'claude-opus-4.6',   label: 'Claude Opus 4.6',   provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 42 },
-  { id: 'claude-sonnet-5',   label: 'Claude Sonnet 5',   provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 35 },
-  { id: 'claude-sonnet-4.6', label: 'Claude Sonnet 4.6', provider: 'anthropic', contextWindow: 1_000_000, maxOutput: 128_000, rotThreshold: 30 },
-  { id: 'claude-haiku-4.5',  label: 'Claude Haiku 4.5',  provider: 'anthropic', contextWindow:   200_000, maxOutput:  64_000, rotThreshold: 25 },
-];
+export const MODEL_PROFILES: ModelProfile[] = CLAUDE_CATALOG.map(m => ({
+  id: m.id,
+  label: m.label,
+  provider: 'anthropic',
+  contextWindow: m.contextWindow,
+  maxOutput: m.maxOutput,
+  rotThreshold: m.rotThreshold,
+}));
 
-export const DEFAULT_MODEL_ID = 'claude-opus-5';
+export { DEFAULT_MODEL_ID };
 
 /**
  * Find a model by partial ID or label match.
