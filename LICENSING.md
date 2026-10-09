@@ -22,7 +22,7 @@ separate commercial license.
 
 Contact: vfaraji89@gmail.com
 
-As the sole copyright holder, Tokalator can offer the same code under both
+As the sole copyright holder (Vahid Farajijobehdar, see [NOTICE](./NOTICE)), Tokalator can offer the same code under both
 the AGPL and a commercial license. Contributors are asked to agree to the
 contribution terms below so this remains possible.
 
@@ -30,9 +30,7 @@ contribution terms below so this remains possible.
 
 Everything in this repository is open source: the token and context
 calculator, the catalog, the VS Code extension (including the features
-formerly sold as Pro), and the MCP server. Tokalator Bead, the behavioral
-analytics extension at tokalator.ai, is a separate proprietary product and is
-not part of this repository.
+formerly sold as Pro), and the MCP server.
 
 ## Contributions
 
@@ -45,5 +43,7 @@ By submitting a contribution (pull request, patch, etc.) you agree that:
 
 ## Trademarks
 
-The "Tokalator" name and logo are not licensed under the AGPL. Forks must use
-a different name and branding.
+The "Tokalator" name and logo are trademarks of the copyright holder and are not
+licensed under the AGPL. Forks must use a different name and branding.
+
+SPDX-License-Identifier: AGPL-3.0-or-later

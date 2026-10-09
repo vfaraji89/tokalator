@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import eventsData from "../../content/events.json";
+import { EventStatusBadge, useToday } from "./event-status";
+import { EventBanner, eventStatus, formatEventDate } from "./event-utils";
 
 type EventItem = (typeof eventsData.events)[number];
 
@@ -60,10 +62,11 @@ export default function EventsPage() {
   const [typeFilter, setTypeFilter] = useState("all");
 
   const events = eventsData.events as EventItem[];
+  const today = useToday();
 
   const filtered = useMemo(() => {
     return events.filter((e) => {
-      if (statusFilter !== "all" && e.status !== statusFilter) return false;
+      if (statusFilter !== "all" && (!today || eventStatus(e.date, today) !== statusFilter)) return false;
       if (typeFilter !== "all" && e.type !== typeFilter) return false;
       if (search) {
         const q = search.toLowerCase();
@@ -76,7 +79,7 @@ export default function EventsPage() {
       }
       return true;
     });
-  }, [events, search, statusFilter, typeFilter]);
+  }, [events, today, search, statusFilter, typeFilter]);
 
   return (
     <article className="article">
@@ -96,45 +99,48 @@ export default function EventsPage() {
           Events &amp; Talks
         </h1>
         <p className="hero-description">
-          <span className="accent-highlight">{eventsData.stats.total} event{eventsData.stats.total !== 1 ? "s" : ""}</span>{" "}
-          — talks, workshops, and panels on context engineering, token economics, and AI-native development.
+          <span className="accent-highlight">{events.length} event{events.length !== 1 ? "s" : ""}</span>:{" "}
+          talks, workshops, and panels on context engineering, token economics, and AI-native development.
         </p>
       </header>
 
       {/* Search */}
       <div className="wiki-search">
         <input
-          type="text"
+          type="search"
+          aria-label="Search events"
           placeholder="Search events, speakers, tags..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="wiki-search-input"
         />
-        <span className="wiki-search-count">
+        <span className="wiki-search-count" aria-live="polite">
           {filtered.length} of {events.length}
         </span>
       </div>
 
       {/* Filters */}
       <div className="wiki-filters">
-        <div className="wiki-filter-row">
+        <div className="wiki-filter-row" role="group" aria-label="Filter by status">
           {STATUS_FILTERS.map((s) => (
             <button
               key={s.id}
               className={`source-pill ${statusFilter === s.id ? "active" : ""}`}
+              aria-pressed={statusFilter === s.id}
               onClick={() => setStatusFilter(s.id)}
             >
               {s.label}
             </button>
           ))}
         </div>
-        <div className="wiki-filter-row">
+        <div className="wiki-filter-row" role="group" aria-label="Filter by type">
           {TYPE_FILTERS.filter(
             (t) => t.id === "all" || events.some((e) => e.type === t.id)
           ).map((t) => (
             <button
               key={t.id}
               className={`category-pill ${typeFilter === t.id ? "active" : ""}`}
+              aria-pressed={typeFilter === t.id}
               onClick={() => setTypeFilter(t.id)}
             >
               {t.label}
@@ -172,26 +178,19 @@ export default function EventsPage() {
 function EventCard({ event }: { event: EventItem }) {
   return (
     <div className="event-card">
-      {/* Event Image / Banner */}
-      {event.series && (
+      {event.subtitle && (
         <div className="event-banner">
-          <div className="event-banner-content">
-            <span className="event-banner-title">AI-NATIVE</span>
-            <span className="event-banner-subtitle">SOFTWARE DEV.</span>
-            <span className="event-banner-badge">ONLY BUILDERS CLUB</span>
-          </div>
+          <EventBanner subtitle={event.subtitle} />
         </div>
       )}
 
       {/* Header */}
       <div className="event-card-header">
-        <span className={`event-status-badge event-status--${event.status}`}>
-          {event.status === "upcoming" ? "Upcoming" : "Past"}
-        </span>
+        <EventStatusBadge date={event.date} />
         <span className="category-badge">{event.type}</span>
         {event.series && (
           <span className="event-series-badge">
-            Part {event.part} — {event.series}
+            Part {event.part} · {event.series}
           </span>
         )}
       </div>
@@ -210,12 +209,7 @@ function EventCard({ event }: { event: EventItem }) {
       <div className="event-card-meta">
         <span className="event-meta-item">
           <CalendarIcon />
-          {new Date(event.date).toLocaleDateString("en-US", {
-            weekday: "long",
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
+          {formatEventDate(event.date)}
           {event.time && ` · ${event.time}`}
         </span>
         <span className="event-meta-item">

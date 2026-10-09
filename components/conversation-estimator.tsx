@@ -16,21 +16,31 @@ import {
   getStrategyDescription,
   type ContextStrategy,
 } from '@/lib/conversation';
-import { getModelInfo, formatCost } from '@/lib/pricing';
+import { formatCost } from '@/lib/pricing';
 import { formatTokenCount } from '@/lib/context';
-
-const models = [
-  'claude-fable-5',
-  'claude-opus-5',
-  'claude-sonnet-5',
-  'claude-opus-4.8',
-  'claude-haiku-4.5',
-] as const;
+import { PROVIDER_MODELS, PROVIDERS, getProviderName } from '@/lib/providers';
+import { DEFAULT_MODEL_ID } from '@/lib/models';
+import { themePalette as P } from '@/lib/theme-palette';
 
 const strategies: ContextStrategy[] = ['full', 'sliding-window', 'summarize'];
+const MAX_TURNS = 200;
+const card = 'rounded-xl border border-(--border) bg-(--bg-subtle) p-6';
+const subheading = 'text-sm font-medium text-(--text-secondary) mb-3';
+const heading = 'text-lg font-semibold mb-4 text-(--text-primary)';
+const fieldLabel = 'text-xs text-(--text-secondary)';
+const field = 'w-full px-3 py-2 rounded-lg border border-(--border) bg-(--bg) text-(--text-primary) text-sm';
+const hint = 'text-xs text-(--text-muted) mt-1';
+const tt = { contentStyle: { background: P.white, border: `1px solid ${P.g3}`, borderRadius: 4, fontSize: 12, color: P.black } };
+const LINES = [
+  { key: 'full', name: 'Full Context', color: P.g7 },
+  { key: 'slidingWindow', name: 'Sliding Window', color: 'var(--accent)' },
+  { key: 'summarize', name: 'Summarize', color: 'var(--cyan)' },
+];
+const nonNegative = (value: string) => Math.max(0, Number(value) || 0);
+const clampTurns = (value: number) => Math.min(MAX_TURNS, Math.max(1, Math.round(value) || 1));
 
 export function ConversationEstimator() {
-  const [selectedModel, setSelectedModel] = useState<string>('claude-sonnet-5');
+  const [selectedModel, setSelectedModel] = useState<string>(DEFAULT_MODEL_ID);
   const [systemPromptTokens, setSystemPromptTokens] = useState<number>(5000);
   const [avgUserTokens, setAvgUserTokens] = useState<number>(500);
   const [avgAssistantTokens, setAvgAssistantTokens] = useState<number>(1500);
@@ -95,126 +105,128 @@ export function ConversationEstimator() {
     <div className="space-y-8">
       {/* Input Section */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Model Selection */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
-            Model
-          </h3>
-          <div className="space-y-2">
-            {models.map((model) => {
-              const info = getModelInfo(model);
-              return (
-                <button
-                  key={model}
-                  onClick={() => setSelectedModel(model)}
-                  className={`w-full p-2 rounded-lg border-2 transition-all text-left ${
-                    selectedModel === model
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-sm font-medium text-gray-900 dark:text-white">
-                    {info.displayName.split(' ').slice(1).join(' ')}
-                  </div>
-                </button>
-              );
-            })}
-          </div>
+        <div className={card}>
+          <label htmlFor="conv-model" className={`block ${subheading}`}>Model</label>
+          <select id="conv-model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className={field}>
+            {PROVIDERS.map(p => (
+              <optgroup key={p} label={getProviderName(p)}>
+                {PROVIDER_MODELS.filter(m => m.provider === p).map(m => (
+                  <option key={m.id} value={m.id}>{m.name}</option>
+                ))}
+              </optgroup>
+            ))}
+          </select>
         </div>
 
         {/* Token Inputs */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <div className={card}>
+          <h3 className={subheading}>
             Token Sizes
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-500">System Prompt</label>
+              <label htmlFor="conv-system" className={fieldLabel}>System Prompt</label>
               <input
+                id="conv-system"
                 type="number"
+                min={0}
                 value={systemPromptTokens}
-                onChange={(e) => setSystemPromptTokens(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+                onChange={(e) => setSystemPromptTokens(nonNegative(e.target.value))}
+                className={field}
               />
             </div>
             <div>
-              <label className="text-xs text-gray-500">Avg User Message</label>
+              <label htmlFor="conv-user" className={fieldLabel}>Avg User Message</label>
               <input
+                id="conv-user"
                 type="number"
+                min={0}
                 value={avgUserTokens}
-                onChange={(e) => setAvgUserTokens(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+                onChange={(e) => setAvgUserTokens(nonNegative(e.target.value))}
+                className={field}
               />
             </div>
             <div>
-              <label className="text-xs text-gray-500">Avg Assistant Response</label>
+              <label htmlFor="conv-assistant" className={fieldLabel}>Avg Assistant Response</label>
               <input
+                id="conv-assistant"
                 type="number"
+                min={0}
                 value={avgAssistantTokens}
-                onChange={(e) => setAvgAssistantTokens(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+                onChange={(e) => setAvgAssistantTokens(nonNegative(e.target.value))}
+                className={field}
               />
             </div>
           </div>
         </div>
 
         {/* Turn Count */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <div className={card}>
+          <h3 className={subheading}>
             Conversation Length
           </h3>
           <div className="space-y-4">
             <div>
               <div className="flex justify-between mb-1">
-                <label className="text-xs text-gray-500">Number of Turns</label>
-                <span className="text-xs text-gray-500">{turns}</span>
+                <label htmlFor="conv-turns" className={fieldLabel}>Number of Turns</label>
+                <span className={fieldLabel}>{turns}</span>
               </div>
               <input
                 type="range"
+                aria-label="Number of turns"
                 min={1}
-                max={50}
+                max={MAX_TURNS}
                 value={turns}
-                onChange={(e) => setTurns(Number(e.target.value))}
+                onChange={(e) => setTurns(clampTurns(Number(e.target.value)))}
                 className="w-full"
+                style={{ accentColor: 'var(--accent)' }}
               />
             </div>
             <input
+              id="conv-turns"
               type="number"
+              min={1}
+              max={MAX_TURNS}
               value={turns}
-              onChange={(e) => setTurns(Math.max(1, Number(e.target.value)))}
-              className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+              onChange={(e) => setTurns(clampTurns(Number(e.target.value)))}
+              className={field}
             />
+            <p className={hint}>Up to {MAX_TURNS} turns</p>
           </div>
         </div>
 
         {/* Strategy Settings */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">
+        <div className={card}>
+          <h3 className={subheading}>
             Strategy Settings
           </h3>
           <div className="space-y-4">
             <div>
-              <label className="text-xs text-gray-500">Sliding Window Size</label>
+              <label htmlFor="conv-window" className={fieldLabel}>Sliding Window Size</label>
               <input
+                id="conv-window"
                 type="number"
+                min={1}
+                max={MAX_TURNS}
                 value={windowSize}
-                onChange={(e) => setWindowSize(Math.max(1, Number(e.target.value)))}
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+                onChange={(e) => setWindowSize(clampTurns(Number(e.target.value)))}
+                className={field}
               />
-              <p className="text-xs text-gray-400 mt-1">Keep last N turns</p>
+              <p className={hint}>Keep last N turns</p>
             </div>
             <div>
-              <label className="text-xs text-gray-500">Compression Ratio</label>
+              <label htmlFor="conv-compression" className={fieldLabel}>Compression Ratio</label>
               <input
+                id="conv-compression"
                 type="number"
                 value={compressionRatio}
                 step={0.05}
-                min={0.05}
-                max={0.5}
-                onChange={(e) => setCompressionRatio(Number(e.target.value))}
-                className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 text-sm"
+                min={0}
+                max={1}
+                onChange={(e) => setCompressionRatio(Math.min(1, nonNegative(e.target.value)))}
+                className={field}
               />
-              <p className="text-xs text-gray-400 mt-1">{(compressionRatio * 100).toFixed(0)}% of original</p>
+              <p className={hint}>{(compressionRatio * 100).toFixed(0)}% of original</p>
             </div>
           </div>
         </div>
@@ -236,62 +248,60 @@ export function ConversationEstimator() {
           return (
             <div
               key={strategy}
-              className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 ${
-                isLowest ? 'ring-2 ring-green-500' : ''
-              }`}
+              className={`${card} ${isLowest ? 'ring-2 ring-(--green)' : ''}`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
+                  <h3 className="text-lg font-semibold text-(--text-primary)">
                     {desc.name}
                   </h3>
-                  <p className="text-xs text-gray-500">{desc.description}</p>
+                  <p className="text-xs text-(--text-secondary)">{desc.description}</p>
                 </div>
                 {isLowest && (
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
+                  <span className="border border-(--green) text-(--green) text-xs px-2 py-1 rounded-full">
                     Cheapest
                   </span>
                 )}
               </div>
 
-              <div className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
+              <div className="text-3xl font-bold text-(--text-primary) mb-4">
                 {formatCost(analysis.totalCost)}
               </div>
 
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Final Context</span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-(--text-secondary)">Final Context</span>
+                  <span className="text-(--text-primary)">
                     {formatTokenCount(analysis.finalContextSize)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Peak Context</span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-(--text-secondary)">Peak Context</span>
+                  <span className="text-(--text-primary)">
                     {formatTokenCount(analysis.peakContextSize)}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Avg Cost/Turn</span>
-                  <span className="text-gray-900 dark:text-white">
+                  <span className="text-(--text-secondary)">Avg Cost/Turn</span>
+                  <span className="text-(--text-primary)">
                     {formatCost(analysis.avgCostPerTurn)}
                   </span>
                 </div>
                 {analysis.exceedsLimit && (
-                  <div className="text-red-500 text-xs mt-2">
+                  <div className="text-(--accent) text-xs mt-2">
                     Exceeds limit at turn {analysis.limitExceededAtTurn}
                   </div>
                 )}
               </div>
 
-              <div className="mt-4 pt-4 border-t dark:border-gray-700">
-                <div className="text-xs text-gray-500 mb-2">Pros & Cons</div>
+              <div className="mt-4 pt-4 border-t border-(--border)">
+                <div className="text-xs text-(--text-secondary) mb-2">Pros & Cons</div>
                 <div className="space-y-1">
                   {desc.pros.slice(0, 2).map((pro, i) => (
-                    <div key={i} className="text-xs text-green-600">+ {pro}</div>
+                    <div key={i} className="text-xs text-(--green)">+ {pro}</div>
                   ))}
                   {desc.cons.slice(0, 1).map((con, i) => (
-                    <div key={i} className="text-xs text-red-500">- {con}</div>
+                    <div key={i} className="text-xs text-(--accent)">- {con}</div>
                   ))}
                 </div>
               </div>
@@ -303,90 +313,50 @@ export function ConversationEstimator() {
       {/* Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Context Growth Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <div className={card}>
+          <h3 className={heading}>
             Context Size Over Turns
           </h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={chartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis dataKey="turn" />
-                <YAxis tickFormatter={(v) => formatTokenCount(v)} />
+                <CartesianGrid strokeDasharray="3 3" stroke={P.g3} />
+                <XAxis dataKey="turn" stroke={P.g7} tick={{ fill: P.g7 }} />
+                <YAxis stroke={P.g7} tick={{ fill: P.g7 }} tickFormatter={(v) => formatTokenCount(v)} />
                 <Tooltip
+                  {...tt}
                   formatter={(value) => formatTokenCount(Number(value))}
                   labelFormatter={(label) => `Turn ${label}`}
                 />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="full"
-                  name="Full Context"
-                  stroke="#6B7280"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="slidingWindow"
-                  name="Sliding Window"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="summarize"
-                  name="Summarize"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={false}
-                />
+                {LINES.map(l => (
+                  <Line key={l.key} type="monotone" dataKey={l.key} name={l.name} stroke={l.color} strokeWidth={2} dot={false} />
+                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
         </div>
 
         {/* Cumulative Cost Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-          <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+        <div className={card}>
+          <h3 className={heading}>
             Cumulative Cost Over Turns
           </h3>
           <div className="h-72">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={costChartData}>
-                <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                <XAxis dataKey="turn" />
-                <YAxis tickFormatter={(v) => `$${v.toFixed(2)}`} />
+                <CartesianGrid strokeDasharray="3 3" stroke={P.g3} />
+                <XAxis dataKey="turn" stroke={P.g7} tick={{ fill: P.g7 }} />
+                <YAxis stroke={P.g7} tick={{ fill: P.g7 }} tickFormatter={(v) => `$${v.toFixed(2)}`} />
                 <Tooltip
+                  {...tt}
                   formatter={(value) => formatCost(Number(value))}
                   labelFormatter={(label) => `Turn ${label}`}
                 />
                 <Legend />
-                <Line
-                  type="monotone"
-                  dataKey="full"
-                  name="Full Context"
-                  stroke="#6B7280"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="slidingWindow"
-                  name="Sliding Window"
-                  stroke="#3B82F6"
-                  strokeWidth={2}
-                  dot={false}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="summarize"
-                  name="Summarize"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  dot={false}
-                />
+                {LINES.map(l => (
+                  <Line key={l.key} type="monotone" dataKey={l.key} name={l.name} stroke={l.color} strokeWidth={2} dot={false} />
+                ))}
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -394,14 +364,14 @@ export function ConversationEstimator() {
       </div>
 
       {/* Turn-by-Turn Breakdown */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
-        <h3 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">
+      <div className={card}>
+        <h3 className={heading}>
           Turn-by-Turn Breakdown (Full Context)
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="text-left text-gray-500 dark:text-gray-400 border-b dark:border-gray-700">
+              <tr className="text-left text-(--text-secondary) border-b border-(--border)">
                 <th className="pb-2 pr-4">Turn</th>
                 <th className="pb-2 pr-4">Input Tokens</th>
                 <th className="pb-2 pr-4">Output Tokens</th>
@@ -410,9 +380,9 @@ export function ConversationEstimator() {
                 <th className="pb-2">Cumulative</th>
               </tr>
             </thead>
-            <tbody className="text-gray-900 dark:text-white">
+            <tbody className="text-(--text-primary)">
               {comparison.full.turnBreakdown.slice(0, 10).map((turn) => (
-                <tr key={turn.turn} className="border-b dark:border-gray-700">
+                <tr key={turn.turn} className="border-b border-(--border)">
                   <td className="py-2 pr-4">{turn.turn}</td>
                   <td className="py-2 pr-4">{formatTokenCount(turn.inputTokens)}</td>
                   <td className="py-2 pr-4">{formatTokenCount(turn.outputTokens)}</td>
@@ -423,8 +393,8 @@ export function ConversationEstimator() {
               ))}
               {turns > 10 && (
                 <tr>
-                  <td colSpan={6} className="py-2 text-center text-gray-500">
-                    ... and {turns - 10} more turns
+                  <td colSpan={6} className="py-2 text-center text-(--text-secondary)">
+                    and {turns - 10} more turns
                   </td>
                 </tr>
               )}

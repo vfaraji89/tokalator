@@ -15,7 +15,7 @@ import json
 import os
 import re
 import sys
-from datetime import datetime, timezone
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -42,6 +42,7 @@ VALID_CATEGORIES = [
     "context-management",
     "prompt-engineering",
     "tool-use",
+    "agents",
     "general",
 ]
 
@@ -157,7 +158,7 @@ def fetch_builtin_terms(config: dict) -> list[dict]:
                 "sourceLabel": "Built-in",
                 "sourceColor": "#e3120b",
                 "url": "",
-                "content": f"# {t['term']}\n\n{t['definition']}",
+                "content": t["definition"],
                 "authors": [],
                 "date": None,
                 "tags": t.get("tags", []),
@@ -179,6 +180,13 @@ def fetch_openai_cookbook(source: dict) -> list[dict]:
             req = urllib.request.Request(url)
             with urllib.request.urlopen(req, timeout=15) as resp:
                 content = resp.read().decode("utf-8")
+            if file_path.endswith(".ipynb"):
+                cells = json.loads(content)["cells"]
+                content = "\n\n".join(
+                    f"```python\n{''.join(c['source']).strip()}\n```" if c["cell_type"] == "code" else "".join(c["source"]).strip()
+                    for c in cells
+                    if "".join(c["source"]).strip()
+                )
 
             title_match = re.search(r"^#\s+(.+)$", content, re.MULTILINE)
             title = title_match.group(1).strip() if title_match else file_path.split("/")[-1]
@@ -430,7 +438,7 @@ def main():
 
     output = {
         "articles": deduped,
-        "fetchedAt": datetime.now(timezone.utc).isoformat(),
+        "fetchedAt": datetime.now().date().isoformat(),
         "stats": {"total": len(deduped), "bySource": by_source, "byCategory": by_category},
     }
 

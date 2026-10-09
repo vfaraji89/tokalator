@@ -1,3 +1,4 @@
+import mcp from "../tokalator-mcp/package.json";
 import { motion } from "motion/react";
 
 // Pixel art red abacus mascot — 56×80 viewBox, each "pixel" ≈ 6–7px
@@ -76,7 +77,19 @@ export function PixelAbacus({ width = 72, height = 103 }: { width?: number; heig
   );
 }
 
+const SESSION = [
+  {
+    cmd: "tokalator count src/core/claudeCodeUsage.pure.ts",
+    out: "Model:      Claude Opus 5.5\nTokenizer:  Claude BPE tokenizer (approximate)\nTokens:     2,745\nCharacters: 9,315",
+  },
+  {
+    cmd: "tokalator preview 182000",
+    out: "Now:              ~182.0K  [████░░░░░░░░░░░░░░░░░░░░]\nAfter next turn:  ~182.8K  (18.3%)\nOutput reserve:   ~128.0K\nRemaining:        ~689.2K  (~861 turns left)",
+  },
+];
+
 export function CliTerminal() {
+  const mcpVersion = mcp.version;
   return (
     <div className="cli-terminal">
       {/* ── macOS-style title bar ── */}
@@ -89,37 +102,20 @@ export function CliTerminal() {
 
       {/* ── Terminal body ── */}
       <div className="cli-body">
-        {/* Shell prompt line */}
-        <div className="cli-shell-line">
-          <span className="cli-shell-user">user@machine</span>
-          <span className="cli-shell-sep"> ~/my-repo</span>
-          <span className="cli-shell-cmd"> $ tokalator</span>
-        </div>
-
-        {/* Brand row */}
         <div className="cli-brand">
           <PixelAbacus width={26} height={37} />
           <span className="cli-wordmark">tokalator</span>
-          <span className="cli-badge">v4.1.0</span>
+          <span className="cli-badge">CLI {mcpVersion}</span>
         </div>
-
-        {/* ── Status bar ── */}
-        <div className="cli-status-bar">
-          <span className="cli-status-path">~/my-repo</span>
-          <span className="cli-status-model cli-status-model--red">claude-opus-4.8</span>
-        </div>
-
-        {/* ── Prompt ── */}
-        <div className="cli-prompt-row">
-          <span className="cli-prompt-caret">&gt;</span>
-          <span className="cli-cursor" aria-hidden="true">▌</span>
-          <span className="cli-prompt-hint">
-            Type @ to mention files, / for commands, or ? for shortcuts
-          </span>
-        </div>
-        <div className="cli-hint-row">
-          <kbd>shift+tab</kbd> switch mode
-        </div>
+        {SESSION.map((block, i) => (
+          <div key={i} style={{ marginTop: i ? "0.75rem" : "0.25rem" }}>
+            <div className="cli-shell-line">
+              <span className="cli-shell-user">~/my-repo</span>
+              <span className="cli-shell-cmd"> $ {block.cmd}</span>
+            </div>
+            <pre style={{ margin: "0.25rem 0 0", background: "none", border: "none", padding: 0, fontSize: "0.75rem", lineHeight: 1.5, color: "var(--text-secondary)", whiteSpace: "pre-wrap" }}>{block.out}</pre>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -12,7 +12,12 @@ const nextConfig: NextConfig = {
     browserToTerminal: "error",
   },
   async redirects() {
-    return [{ source: '/pro', destination: '/extension', permanent: true }];
+    return [
+      { source: '/pro', destination: '/extension', permanent: true },
+      { source: '/calculator', destination: '/tools/calculator', permanent: true },
+      { source: '/context', destination: '/tools/context', permanent: true },
+      { source: '/tools/analysis', destination: '/tools/economics', permanent: true },
+    ];
   },
 };
 

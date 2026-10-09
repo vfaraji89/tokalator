@@ -2,7 +2,10 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { PROVIDER_MODELS } from '@/lib/providers';
+import {
+  PROVIDER_MODELS, PROVIDERS, estimateCostBreakdown, fitsContext, getProviderColor, getProviderName,
+} from '@/lib/providers';
+import { CATALOG_UPDATED_AT, DEFAULT_MODEL_ID } from '@/lib/models';
 
 // ── Palette ───────────────────────────────────────────────────────────────────
 const R = 'var(--accent)';
@@ -13,11 +16,8 @@ const G3 = 'var(--border)';
 const G5 = 'var(--text-secondary)';
 const G7 = 'var(--text-secondary)';
 
-const PROV_DOT: Record<string, string> = {
-  anthropic: K,
-  openai:    '#10a37f',
-  google:    '#4285f4',
-};
+const TWO_COL = 'repeat(auto-fit, minmax(min(100%, 18rem), 1fr))';
+const MAX_CONTEXT = Math.max(...PROVIDER_MODELS.map(m => m.contextWindow));
 
 // ── Formatters ─────────────────────────────────────────────────────────────────
 const fmtCost = (v: number) =>
@@ -26,16 +26,6 @@ const fmtTok = (n: number) =>
   n >= 1_000_000 ? `${(n / 1_000_000).toFixed(1)}M` : n >= 1000 ? `${(n / 1000).toFixed(0)}K` : String(n);
 const fmtMTok = (v: number) =>
   `$${v % 1 === 0 ? v.toFixed(0) : v < 1 ? v.toFixed(3) : v.toFixed(2)}`;
-
-// ── Cost engine ────────────────────────────────────────────────────────────────
-type M = typeof PROVIDER_MODELS[number];
-const calcCost = (m: M, inp: number, out: number, cw = 0, cr = 0) => {
-  const ic  = (inp / 1_000_000) * m.inputCostPerMTok;
-  const oc  = (out / 1_000_000) * m.outputCostPerMTok;
-  const cwc = (cw  / 1_000_000) * m.inputCostPerMTok * 1.25;
-  const crc = (cr  / 1_000_000) * m.inputCostPerMTok * 0.1;
-  return { input: ic, output: oc, cacheWrite: cwc, cacheRead: crc, total: ic + oc + cwc + crc };
-};
 
 // ── Economist horizontal bar ───────────────────────────────────────────────────
 // Single row: coloured dot + label | ████████████████  $0.0042
@@ -63,13 +53,13 @@ function EcoBar({
       </div>
       <div style={{ height: 14, background: G1, borderRadius: 2, overflow: 'hidden' }}>
         <motion.div
-          style={{ height: '100%', background: highlight ? R : color, borderRadius: 2, opacity: highlight ? 1 : 0.75 }}
+          style={{ height: '100%', background: highlight ? K : color, borderRadius: 2, opacity: highlight ? 1 : 0.75 }}
           initial={animate ? { width: 0 } : { width: `${pct}%` }}
           animate={{ width: `${pct}%` }}
           transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
         />
       </div>
-      <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: highlight ? R : G7, fontWeight: highlight ? 700 : 400, whiteSpace: 'nowrap' }}>
+      <div style={{ textAlign: 'right', fontFamily: 'var(--font-mono)', fontSize: '0.8125rem', color: highlight ? K : G7, fontWeight: highlight ? 700 : 400, whiteSpace: 'nowrap' }}>
         {sublabel ?? fmtCost(value)}
       </div>
     </div>
@@ -144,7 +134,7 @@ const tabAnim = {
 // ── Main component ─────────────────────────────────────────────────────────────
 export function CalculatorClient() {
   const [tab, setTab]                       = useState<Tab>('calculator');
-  const [selectedModel, setSelectedModel]   = useState('claude-sonnet-4.6');
+  const [selectedModel, setSelectedModel]   = useState(DEFAULT_MODEL_ID);
   const [inputTokens, setInputTokens]       = useState(50_000);
   const [outputTokens, setOutputTokens]     = useState(10_000);
   const [cacheWriteTokens, setCacheWrite]   = useState(0);
@@ -152,17 +142,28 @@ export function CalculatorClient() {
 
   const model = PROVIDER_MODELS.find(m => m.id === selectedModel) ?? PROVIDER_MODELS[0];
   const cost  = useMemo(
-    () => calcCost(model, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens),
+    () => estimateCostBreakdown(model, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens),
     [model, inputTokens, outputTokens, cacheWriteTokens, cacheReadTokens],
   );
+  const promptTokens = inputTokens + cacheWriteTokens + cacheReadTokens;
+  const fits = fitsContext(model, promptTokens, outputTokens);
 
   const allModelsCost = useMemo(() =>
     PROVIDER_MODELS
-      .map(m => ({ ...m, cost: calcCost(m, inputTokens, outputTokens).total }))
+      .filter(m => fitsContext(m, inputTokens, outputTokens))
+      .map(m => ({ ...m, cost: estimateCostBreakdown(m, inputTokens, outputTokens).total }))
       .sort((a, b) => a.cost - b.cost),
     [inputTokens, outputTokens],
   );
   const maxCost = allModelsCost[allModelsCost.length - 1]?.cost ?? 1;
+  const excluded = PROVIDER_MODELS.length - allModelsCost.length;
+
+  const selectModel = (id: string) => {
+    const next = PROVIDER_MODELS.find(m => m.id === id) ?? PROVIDER_MODELS[0];
+    setSelectedModel(next.id);
+    setOutputTokens(o => Math.min(o, next.maxOutput));
+    setInputTokens(i => Math.min(i, next.contextWindow));
+  };
 
   const byProvider = useMemo(() => {
     const g: Record<string, typeof PROVIDER_MODELS> = {};
@@ -173,8 +174,8 @@ export function CalculatorClient() {
   const presets = [
     { l: 'Quick chat',    i: 2_000,   o: 500 },
     { l: 'Code review',   i: 50_000,  o: 10_000 },
-    { l: 'Full codebase', i: 200_000, o: 32_000 },
-    { l: 'Max context',   i: 1_000_000, o: 64_000 },
+    { l: 'Full codebase', i: 150_000, o: 32_000 },
+    { l: 'Fill window',   i: model.contextWindow - 32_000, o: 32_000 },
   ];
 
   return (
@@ -189,13 +190,13 @@ export function CalculatorClient() {
           </svg>
         </div>
         <h1 className="hero-headline"><span className="hero-marker">Calculator</span></h1>
-        <p className="hero-description">Cost calculator for {PROVIDER_MODELS.length} models across 3 providers.</p>
+        <p className="hero-description">Cost calculator for {PROVIDER_MODELS.length} models across {PROVIDERS.length} providers, including cache and long-context rates.</p>
       </header>
 
       {/* ── Tab bar ── */}
-      <div style={{ display: 'flex', gap: 0, marginBottom: '1.75rem', borderBottom: `2px solid ${K}` }}>
+      <div role="tablist" aria-label="Calculator views" style={{ display: 'flex', gap: 0, marginBottom: '1.75rem', borderBottom: `2px solid ${K}`, overflowX: 'auto' }}>
         {(['calculator', 'compare', 'pricing'] as Tab[]).map(t => (
-          <button key={t} onClick={() => setTab(t)} style={{
+          <button key={t} id={`tab-${t}`} role="tab" aria-selected={tab === t} aria-controls={`panel-${t}`} onClick={() => setTab(t)} style={{
             padding: '0.5rem 1.25rem', fontSize: '0.8125rem', fontWeight: tab === t ? 700 : 400,
             textTransform: 'uppercase', letterSpacing: '0.05em',
             background: tab === t ? K : 'transparent',
@@ -213,22 +214,23 @@ export function CalculatorClient() {
 
         {/* ════════════════════════════════ CALCULATOR ════════════════════════════ */}
         {tab === 'calculator' && (
-          <motion.div key="calculator" {...tabAnim}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
+          <motion.div key="calculator" id="panel-calculator" role="tabpanel" aria-labelledby="tab-calculator" {...tabAnim}>
+            <div style={{ display: 'grid', gridTemplateColumns: TWO_COL, gap: '2rem' }}>
 
               {/* Left — inputs */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
 
                 {/* Model selector */}
                 <div>
-                  <EcoHeader>Model</EcoHeader>
+                  <EcoHeader><label htmlFor="calc-model">Model</label></EcoHeader>
                   <select
+                    id="calc-model"
                     value={selectedModel}
-                    onChange={e => setSelectedModel(e.target.value)}
+                    onChange={e => selectModel(e.target.value)}
                     style={{ width: '100%', padding: '0.5rem 0.75rem', border: `1px solid ${G3}`, borderRadius: 3, fontSize: '0.875rem', background: W, color: K, cursor: 'pointer' }}
                   >
-                    {(['anthropic', 'openai', 'google'] as const).map(prov => (
-                      <optgroup key={prov} label={prov.charAt(0).toUpperCase() + prov.slice(1)}>
+                    {PROVIDERS.map(prov => (
+                      <optgroup key={prov} label={getProviderName(prov)}>
                         {PROVIDER_MODELS.filter(m => m.provider === prov).map(m => (
                           <option key={m.id} value={m.id}>{m.name}</option>
                         ))}
@@ -236,7 +238,7 @@ export function CalculatorClient() {
                     ))}
                   </select>
                   <div style={{ marginTop: '0.4rem', fontSize: '0.75rem', color: G5, fontFamily: 'var(--font-mono)' }}>
-                    in {fmtMTok(model.inputCostPerMTok)}/MTok · out {fmtMTok(model.outputCostPerMTok)}/MTok · {fmtTok(model.contextWindow)} ctx
+                    in {fmtMTok(model.inputCostPerMTok)} · cached {fmtMTok(model.cachedInputCostPerMTok)} · out {fmtMTok(model.outputCostPerMTok)} per MTok · {model.contextWindow.toLocaleString()} ctx
                   </div>
                 </div>
 
@@ -244,17 +246,17 @@ export function CalculatorClient() {
                 <div>
                   <EcoHeader>Tokens</EcoHeader>
                   {[
-                    { l: 'Input',       v: inputTokens,     s: setInputTokens, mx: 1_000_000 },
-                    { l: 'Output',      v: outputTokens,    s: setOutputTokens, mx: 128_000 },
-                    { l: 'Cache write', v: cacheWriteTokens,s: setCacheWrite,  mx: 200_000 },
-                    { l: 'Cache read',  v: cacheReadTokens, s: setCacheRead,   mx: 200_000 },
+                    { id: 'calc-input',  l: 'Input',       v: inputTokens,     s: setInputTokens, mx: model.contextWindow },
+                    { id: 'calc-output', l: 'Output',      v: outputTokens,    s: setOutputTokens, mx: model.maxOutput },
+                    { id: 'calc-cw',     l: 'Cache write', v: cacheWriteTokens,s: setCacheWrite,  mx: 200_000 },
+                    { id: 'calc-cr',     l: 'Cache read',  v: cacheReadTokens, s: setCacheRead,   mx: 200_000 },
                   ].map(x => (
                     <div key={x.l} style={{ marginBottom: '0.875rem' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8125rem', color: G7, marginBottom: '0.2rem' }}>
-                        <span>{x.l}</span>
+                        <label htmlFor={x.id}>{x.l}</label>
                         <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: K }}>{fmtTok(x.v)}</span>
                       </div>
-                      <input type="range" min={0} max={x.mx} step={1000} value={x.v}
+                      <input id={x.id} type="range" min={0} max={x.mx} step={1000} value={x.v}
                         onChange={e => x.s(Number(e.target.value))}
                         style={{ width: '100%', accentColor: R }} />
                     </div>
@@ -266,7 +268,7 @@ export function CalculatorClient() {
                   <EcoHeader>Presets</EcoHeader>
                   <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
                     {presets.map(p => (
-                      <button key={p.l} onClick={() => { setInputTokens(p.i); setOutputTokens(p.o); setCacheWrite(0); setCacheRead(0); }}
+                      <button key={p.l} onClick={() => { setInputTokens(Math.min(p.i, model.contextWindow)); setOutputTokens(Math.min(p.o, model.maxOutput)); setCacheWrite(0); setCacheRead(0); }}
                         style={{ padding: '0.375rem 0.875rem', fontSize: '0.8125rem', background: G1, border: `1px solid ${G3}`, borderRadius: 3, cursor: 'pointer', color: G7 }}>
                         {p.l}
                       </button>
@@ -291,9 +293,17 @@ export function CalculatorClient() {
                     {fmtCost(cost.total)}
                   </motion.div>
                   <div style={{ fontSize: '0.75rem', opacity: 0.45, marginTop: '0.25rem' }}>
-                    {model.name} · {fmtTok(inputTokens + outputTokens)} tokens
+                    {model.name} · {fmtTok(promptTokens + outputTokens)} tokens{cost.longContext && model.longContext ? ` · long-context rates (prompt above ${fmtTok(model.longContext.threshold)})` : ''}
                   </div>
                 </div>
+
+                {!fits && (
+                  <div role="alert" style={{ border: `1px solid ${R}`, background: 'var(--accent-bg)', borderRadius: 4, padding: '0.75rem 1rem', fontSize: '0.8125rem' }}>
+                    {outputTokens > model.maxOutput
+                      ? `Output exceeds ${model.name}'s ${model.maxOutput.toLocaleString()} token maximum.`
+                      : `This request needs ${(promptTokens + outputTokens).toLocaleString()} tokens; ${model.name} has a ${model.contextWindow.toLocaleString()} token context window.`}
+                  </div>
+                )}
 
                 {/* Cost breakdown */}
                 <div>
@@ -325,7 +335,7 @@ export function CalculatorClient() {
                       <span style={{ fontFamily: 'var(--font-mono)', fontWeight: 600 }}>{fmtCost(cost.total * calls * 30)}<span style={{ fontWeight: 400, color: G5, fontSize: '0.75rem' }}>/mo</span></span>
                     </div>
                   ))}
-                  <EcoNote>Based on current token inputs · Caching not included</EcoNote>
+                  <EcoNote>Current request repeated daily over 30 days</EcoNote>
                 </div>
               </div>
             </div>
@@ -334,20 +344,20 @@ export function CalculatorClient() {
 
         {/* ════════════════════════════════ COMPARE ═══════════════════════════════ */}
         {tab === 'compare' && (
-          <motion.div key="compare" {...tabAnim}>
+          <motion.div key="compare" id="panel-compare" role="tabpanel" aria-labelledby="tab-compare" {...tabAnim}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
               {/* Controls */}
               <div>
                 <EcoHeader>Configure</EcoHeader>
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ display: 'grid', gridTemplateColumns: TWO_COL, gap: '1rem' }}>
                   {[
-                    { l: `Input: ${fmtTok(inputTokens)}`, v: inputTokens, s: setInputTokens, mx: 1_000_000 },
-                    { l: `Output: ${fmtTok(outputTokens)}`, v: outputTokens, s: setOutputTokens, mx: 128_000 },
+                    { id: 'cmp-input',  l: `Input: ${fmtTok(inputTokens)}`, v: inputTokens, s: setInputTokens, mx: MAX_CONTEXT },
+                    { id: 'cmp-output', l: `Output: ${fmtTok(outputTokens)}`, v: outputTokens, s: setOutputTokens, mx: model.maxOutput },
                   ].map(x => (
-                    <div key={x.l}>
-                      <div style={{ fontSize: '0.8125rem', color: G7, marginBottom: '0.25rem' }}>{x.l}</div>
-                      <input type="range" min={1000} max={x.mx} step={1000} value={x.v}
+                    <div key={x.id}>
+                      <label htmlFor={x.id} style={{ display: 'block', fontSize: '0.8125rem', color: G7, marginBottom: '0.25rem' }}>{x.l}</label>
+                      <input id={x.id} type="range" min={1000} max={x.mx} step={1000} value={x.v}
                         onChange={e => x.s(Number(e.target.value))}
                         style={{ width: '100%', accentColor: R }} />
                     </div>
@@ -363,22 +373,25 @@ export function CalculatorClient() {
                 {allModelsCost.map(m => (
                   <EcoBar
                     key={m.id}
-                    label={m.name.replace('Claude ', '').replace('GPT-', 'GPT-').replace('Gemini ', 'G-')}
+                    label={m.name.replace('Claude ', '').replace('Gemini ', 'G-')}
                     value={m.cost}
                     max={maxCost}
-                    color={PROV_DOT[m.provider]}
+                    color={getProviderColor(m.provider)}
                     highlight={m.id === selectedModel}
                   />
                 ))}
                 <div style={{ display: 'flex', gap: '1.25rem', marginTop: '0.75rem', flexWrap: 'wrap' }}>
-                  {Object.entries(PROV_DOT).map(([p, c]) => (
+                  {PROVIDERS.map(p => (
                     <span key={p} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem', fontSize: '0.75rem', color: G7 }}>
-                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: c, display: 'inline-block' }} />
-                      {p.charAt(0).toUpperCase() + p.slice(1)}
+                      <span style={{ width: 8, height: 8, borderRadius: '50%', background: getProviderColor(p), display: 'inline-block' }} />
+                      {getProviderName(p)}
                     </span>
                   ))}
                 </div>
-                <EcoNote>Highlighted row = currently selected model · Sorted cheapest to most expensive</EcoNote>
+                <EcoNote>
+                  Highlighted row = currently selected model · Sorted cheapest to most expensive · Uncached, long-context rates applied
+                  {excluded > 0 && ` · ${excluded} model${excluded > 1 ? 's' : ''} excluded (request exceeds context window or max output)`}
+                </EcoNote>
               </div>
 
               {/* Context windows */}
@@ -392,12 +405,12 @@ export function CalculatorClient() {
                       label={m.name.replace('Claude ', '').replace('Gemini ', 'G-')}
                       value={m.contextWindow}
                       max={Math.max(...PROVIDER_MODELS.map(x => x.contextWindow))}
-                      color={PROV_DOT[m.provider]}
+                      color={getProviderColor(m.provider)}
                       highlight={m.id === selectedModel}
-                      sublabel={fmtTok(m.contextWindow)}
+                      sublabel={m.contextWindow.toLocaleString()}
                     />
                   ))}
-                <EcoNote>Tokens · 1M = 1,048,576 · Source: provider documentation</EcoNote>
+                <EcoNote>Exact token counts · 1M means 1,000,000 for Anthropic and OpenAI; Gemini windows are 1,048,576 · Source: provider documentation</EcoNote>
               </div>
             </div>
           </motion.div>
@@ -405,7 +418,7 @@ export function CalculatorClient() {
 
         {/* ════════════════════════════════ PRICING ═══════════════════════════════ */}
         {tab === 'pricing' && (
-          <motion.div key="pricing" {...tabAnim}>
+          <motion.div key="pricing" id="panel-pricing" role="tabpanel" aria-labelledby="tab-pricing" {...tabAnim}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
 
               {/* Per-provider input/output comparison — horizontal bars */}
@@ -415,15 +428,15 @@ export function CalculatorClient() {
                   <div key={prov}>
                     <EcoHeader>
                       <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}>
-                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: PROV_DOT[prov], display: 'inline-block' }} />
-                        {prov.charAt(0).toUpperCase() + prov.slice(1)}
+                        <span style={{ width: 8, height: 8, borderRadius: '50%', background: getProviderColor(models[0].provider), display: 'inline-block' }} />
+                        {getProviderName(models[0].provider)}
                       </span>
                     </EcoHeader>
 
                     {/* Input bars */}
                     <div style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: G5, marginBottom: '0.25rem' }}>Input $/MTok</div>
                     {models.map(m => (
-                      <EcoBar key={`in-${m.id}`} label={m.name.replace('Claude ', '').replace('Gemini ', 'G-')} value={m.inputCostPerMTok} max={maxOut} color={PROV_DOT[prov]} highlight={m.id === selectedModel} sublabel={fmtMTok(m.inputCostPerMTok)} />
+                      <EcoBar key={`in-${m.id}`} label={m.name.replace('Claude ', '').replace('Gemini ', 'G-')} value={m.inputCostPerMTok} max={maxOut} color={getProviderColor(m.provider)} highlight={m.id === selectedModel} sublabel={fmtMTok(m.inputCostPerMTok)} />
                     ))}
 
                     <div style={{ fontSize: '0.6875rem', textTransform: 'uppercase', letterSpacing: '0.06em', color: G5, marginTop: '0.75rem', marginBottom: '0.25rem' }}>Output $/MTok</div>
@@ -458,7 +471,7 @@ export function CalculatorClient() {
                         </tbody>
                       </table>
                     </div>
-                    <EcoNote>$/MTok = US dollars per million tokens · Last updated {models[0]?.lastUpdated ?? '2026'}</EcoNote>
+                    <EcoNote>$/MTok = US dollars per million tokens · Last updated {CATALOG_UPDATED_AT}</EcoNote>
                   </div>
                 );
               })}

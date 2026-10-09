@@ -94,7 +94,7 @@ export default function Image() {
         </div>
 
         <div style={{ position: "absolute", bottom: 24, color: "#555", fontSize: 14 }}>
-          tokalator.wiki
+          tokalator.ai
         </div>
       </div>
     ),

@@ -1,44 +1,47 @@
 {
   "name": "tokalator",
-  "version": "3.4.0",
+  "version": "3.5.0",
   "private": true,
   "license": "AGPL-3.0-or-later",
   "scripts": {
     "dev": "next dev",
     "dev:api": "cd api && uvicorn main:app --port 8000 --reload",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "eslint",
     "fetch-wiki": "npx tsx scripts/fetch-wiki.ts",
     "fetch-wiki-agent": "python3 scripts/fetch-wiki-agent.py",
     "test": "jest --verbose",
-    "test:all": "jest --verbose && cd tokalator-extension-vs && npx jest --verbose"
+    "test:all": "jest --verbose && cd tokalator-extension-vs && npx jest --verbose",
+    "db:migrate": "prisma migrate deploy",
+    "db:push": "prisma db push"
   },
   "dependencies": {
-    "@prisma/client": "^7.8.0",
+    "@prisma/adapter-pg": "^7.10.0",
+    "@prisma/client": "^7.10.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "date-fns": "^4.4.0",
     "mathjs": "^15.2.0",
-    "motion": "^12.40.0",
-    "next": "^16.3.4",
-    "prisma": "^7.8.0",
-    "react": "^19.2.6",
-    "react-dom": "^19.2.6",
-    "recharts": "^3.8.1",
-    "yaml": "^2.9.0"
+    "motion": "^14.1.0",
+    "next": "^16.4.0",
+    "prisma": "^7.10.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "recharts": "^3.10.1",
+    "yaml": "^2.9.1"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "^4.3.3",
     "@types/jest": "^30.0.0",
     "@types/node": "^25.9.1",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "^16.2.6",
-    "jest": "^30.4.2",
-    "tailwindcss": "^4",
-    "ts-jest": "^29.4.11",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "eslint": "^10.12.0",
+    "eslint-config-next": "^16.4.0",
+    "jest": "^30.5.2",
+    "tailwindcss": "^4.3.3",
+    "ts-jest": "^29.4.14",
     "typescript": "^6"
   },
   "overrides": {
@@ -50,5 +53,6 @@
     "prisma": {
       "mysql2": "^3.24.3"
     }
-  }
+  },
+  "author": "Vahid Farajijobehdar"
 }

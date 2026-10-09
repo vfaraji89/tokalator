@@ -5,7 +5,8 @@ import { EconomicsClient } from './EconomicsClient';
 
 export const metadata: Metadata = {
   title: 'Token Economics & Cobb-Douglas Model',
-  description: 'Explore the Bergemann-Bonatti-Smolin Cobb-Douglas quality function and caching ROI for AI models.',
+  description: 'Illustrative Bergemann, Bonatti and Smolin Cobb-Douglas quality model and a prompt caching break-even view using catalog cache rates.',
+  alternates: { canonical: '/tools/economics' },
 };
 
 function ToolSkeleton() {
@@ -17,7 +18,7 @@ function ToolSkeleton() {
       </header>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginTop: '2rem' }}>
         {[1, 2, 3].map(i => (
-          <div key={i} className="eco-card-flat" style={{ height: 80, background: 'var(--surface)', borderRadius: 6, opacity: 0.5 }} />
+          <div key={i} className="eco-card-flat" style={{ height: 80, background: 'var(--bg-subtle)', borderRadius: 6, opacity: 0.5 }} />
         ))}
       </div>
     </article>

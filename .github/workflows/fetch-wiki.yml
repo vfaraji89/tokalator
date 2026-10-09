@@ -15,18 +15,15 @@ jobs:
     steps:
       - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-node@v6
         with:
-          python-version: "3.13"
+          node-version: "24"
 
       - name: Install dependencies
-        run: pip install -r scripts/requirements.txt
+        run: npm ci
 
-      - name: Run agentic wiki fetcher
-        env:
-          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: python scripts/fetch-wiki-agent.py
+      - name: Fetch arXiv papers and sources
+        run: npm run fetch-wiki
 
       - name: Commit updated articles
         run: |

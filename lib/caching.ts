@@ -27,60 +27,50 @@ export interface CachingScenario {
   cacheTokens: number;
   reuseCount: number;
   model: string;
+  uncachedTokens?: number; // Sent with every call, priced as input either way
 }
 
 // ============================================
 // CACHING CALCULATIONS
 // ============================================
 
+/** Reuses after the first call at which caching stops costing more: (write - input) / (input - read). */
+function breakEvenFor(rate: { inputCostPerMTok: number; cacheWriteCostPerMTok: number; cacheReadCostPerMTok: number }): number {
+  const savedPerRead = rate.inputCostPerMTok - rate.cacheReadCostPerMTok;
+  return savedPerRead > 0 ? (rate.cacheWriteCostPerMTok - rate.inputCostPerMTok) / savedPerRead : Infinity;
+}
+
 /**
- * Calculate comprehensive caching analysis
+ * Compare one cache write plus N cache reads with N + 1 uncached calls.
  */
 export function analyzeCaching(scenario: CachingScenario): CachingAnalysis {
-  const { cacheTokens, reuseCount, model } = scenario;
-  const pricing = getPricingTier(model);
+  const { cacheTokens, reuseCount, model, uncachedTokens = 0 } = scenario;
+  const pricing = getPricingTier(model, cacheTokens + uncachedTokens);
+  const perToken = (rate: number) => (rate * cacheTokens) / 1_000_000;
 
-  // Costs per million tokens
-  const inputCostPerMTok = pricing.inputCostPerMTok;
-  const cacheWriteCostPerMTok = pricing.cacheWriteCostPerMTok;
-  const cacheReadCostPerMTok = pricing.cacheReadCostPerMTok;
-
-  // Convert to actual costs for the given token count
-  const tokenMultiplier = cacheTokens / 1_000_000;
-
-  const cacheWriteCost = cacheWriteCostPerMTok * tokenMultiplier;
-  const cacheReadCostPerUse = cacheReadCostPerMTok * tokenMultiplier;
-  const inputCostPerUse = inputCostPerMTok * tokenMultiplier;
-
-  // Savings per reuse = input cost - cache read cost
+  const cacheWriteCost = perToken(pricing.cacheWriteCostPerMTok);
+  const cacheReadCostPerUse = perToken(pricing.cacheReadCostPerMTok);
+  const inputCostPerUse = perToken(pricing.inputCostPerMTok);
+  const uncachedCostPerCall = (uncachedTokens * pricing.inputCostPerMTok) / 1_000_000;
   const savingsPerReuse = inputCostPerUse - cacheReadCostPerUse;
+  const breakEvenReuses = breakEvenFor(pricing);
 
-  // Break-even: when cache write cost = cumulative savings
-  // cacheWriteCost = savingsPerReuse * breakEvenReuses
-  const breakEvenReuses = savingsPerReuse > 0
-    ? cacheWriteCost / savingsPerReuse
-    : Infinity;
-
-  // Total costs for the scenario
-  // With caching: write once + read N times
-  const totalWithCaching = cacheWriteCost + (cacheReadCostPerUse * reuseCount);
-
-  // Without caching: pay full input cost each time
-  const totalWithoutCaching = inputCostPerUse * (reuseCount + 1); // +1 for initial use
-
+  const calls = reuseCount + 1;
+  const totalWithCaching = cacheWriteCost + cacheReadCostPerUse * reuseCount + uncachedCostPerCall * calls;
+  const totalWithoutCaching = (inputCostPerUse + uncachedCostPerCall) * calls;
   const netSavings = totalWithoutCaching - totalWithCaching;
-  const savingsPercent = totalWithoutCaching > 0
-    ? (netSavings / totalWithoutCaching) * 100
-    : 0;
+  const savingsPercent = totalWithoutCaching > 0 ? (netSavings / totalWithoutCaching) * 100 : 0;
+  const shouldCache = cacheTokens > 0 && reuseCount > 0 && reuseCount >= breakEvenReuses;
 
-  const shouldCache = reuseCount >= breakEvenReuses;
-
-  // Generate recommendation
   let recommendation: string;
-  if (reuseCount === 0) {
-    recommendation = "No reuses planned - caching would only add cost";
+  if (cacheTokens <= 0) {
+    recommendation = 'No tokens to cache';
+  } else if (reuseCount === 0) {
+    recommendation = 'No reuses planned, so caching cannot save money';
   } else if (shouldCache) {
-    recommendation = `Cache it! You'll save ${formatCost(netSavings)} (${savingsPercent.toFixed(0)}%)`;
+    recommendation = `Cache it. You save ${formatCost(netSavings)} (${savingsPercent.toFixed(0)}%)`;
+  } else if (!Number.isFinite(breakEvenReuses)) {
+    recommendation = 'Cache reads are not cheaper than input for this model';
   } else {
     const reusesNeeded = Math.ceil(breakEvenReuses) - reuseCount;
     recommendation = `Not worth caching yet. Need ${reusesNeeded} more reuse${reusesNeeded > 1 ? 's' : ''} to break even`;
@@ -110,22 +100,10 @@ export function calculateBreakeven(model: string): {
   readMultiplier: number;
 } {
   const pricing = getPricingTier(model);
-
-  // Write costs writeMultiplier times input
-  const writeMultiplier = pricing.cacheWriteCostPerMTok / pricing.inputCostPerMTok;
-
-  // Read costs readMultiplier times input
-  const readMultiplier = pricing.cacheReadCostPerMTok / pricing.inputCostPerMTok;
-
-  // Break-even formula:
-  // writeMultiplier * input = (1 - readMultiplier) * input * reuses
-  // reuses = writeMultiplier / (1 - readMultiplier)
-  const breakEvenReuses = writeMultiplier / (1 - readMultiplier);
-
   return {
-    breakEvenReuses,
-    writeMultiplier,
-    readMultiplier,
+    breakEvenReuses: breakEvenFor(pricing),
+    writeMultiplier: pricing.cacheWriteCostPerMTok / pricing.inputCostPerMTok,
+    readMultiplier: pricing.cacheReadCostPerMTok / pricing.inputCostPerMTok,
   };
 }
 
@@ -135,20 +113,13 @@ export function calculateBreakeven(model: string): {
 export function generateCostComparisonData(
   cacheTokens: number,
   model: string,
-  maxReuses: number = 10
+  maxReuses: number = 10,
+  uncachedTokens: number = 0
 ): Array<{ reuses: number; withCaching: number; withoutCaching: number }> {
-  const data: Array<{ reuses: number; withCaching: number; withoutCaching: number }> = [];
-
-  for (let reuses = 0; reuses <= maxReuses; reuses++) {
-    const analysis = analyzeCaching({ cacheTokens, reuseCount: reuses, model });
-    data.push({
-      reuses,
-      withCaching: analysis.totalWithCaching,
-      withoutCaching: analysis.totalWithoutCaching,
-    });
-  }
-
-  return data;
+  return Array.from({ length: maxReuses + 1 }, (_, reuses) => {
+    const analysis = analyzeCaching({ cacheTokens, reuseCount: reuses, model, uncachedTokens });
+    return { reuses, withCaching: analysis.totalWithCaching, withoutCaching: analysis.totalWithoutCaching };
+  });
 }
 
 /**

@@ -1,25 +1,26 @@
 import { PROVIDER_MODELS, formatTokenCount, pricingSource, getProviderName } from '@/lib/providers';
 import { ANTHROPIC_PRICING } from '@/lib/pricing';
+import { CATALOG_UPDATED_AT } from '@/lib/models';
 
 export default function PricingPage() {
   return (
     <article className="article">
       <header className="hero">
         <h1 className="hero-headline"><span className="hero-marker">Pricing Reference</span></h1>
-        <p className="hero-description">Published API rates in USD per million text tokens. Each entry shows its catalog date and links to the provider. This is a pricing snapshot, not a live billing feed.</p>
+        <p className="hero-description">Published API rates in USD per million text tokens, checked {CATALOG_UPDATED_AT}. Each model links to its provider pricing page. This is a pricing snapshot, not a live billing feed.</p>
       </header>
       <section>
         <h2 className="section-header">{PROVIDER_MODELS.length} model profiles</h2>
-        <p>Base rates exclude caching, tool calls, regional surcharges and service-tier adjustments. Check each model’s conditions before estimating a request.</p>
+        <p>Input and output rates exclude cache discounts, tool calls, regional surcharges and service-tier adjustments. Check each model’s conditions before estimating a request.</p>
         <div style={{ overflowX: 'auto' }}>
           <table className="settings-table">
-            <thead><tr><th>Model</th><th>Input / MTok</th><th>Output / MTok</th><th>Context</th><th>Max output</th><th>Catalog date</th></tr></thead>
+            <thead><tr><th>Model</th><th>Input / MTok</th><th>Output / MTok</th><th>Context</th><th>Max output</th><th>Cached input / MTok</th></tr></thead>
             <tbody>{PROVIDER_MODELS.map(model => (
               <tr key={model.id}>
                 <td><a href={pricingSource(model)} target="_blank" rel="noopener noreferrer">{model.name}</a><br /><small>{getProviderName(model.provider)}</small></td>
                 <td>${model.inputCostPerMTok.toFixed(2)}</td><td>${model.outputCostPerMTok.toFixed(2)}</td>
                 <td>{formatTokenCount(model.contextWindow)}</td><td>{formatTokenCount(model.maxOutput)}</td>
-                <td>{model.lastUpdated}<br /><small>{model.pricingCheckedAt ? `Rates checked ${model.pricingCheckedAt}` : 'Carried-forward entry; recheck source'}</small></td>
+                <td>${model.cachedInputCostPerMTok.toFixed(3)}</td>
               </tr>
             ))}</tbody>
           </table>

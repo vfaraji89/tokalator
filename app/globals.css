@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 :root {
   --font-primary: "Sora", "Recursive", sans-serif;
   --font-mono: "Recursive", ui-monospace, SFMono-Regular, monospace;
@@ -71,7 +73,64 @@
   --color-background: var(--bg);
   --color-foreground: var(--text-primary);
   --font-sans: var(--font-primary);
+  --color-eco-red: var(--accent);
+  --color-eco-gray-100: var(--text-primary);
+  --color-eco-gray-200: var(--text-primary);
+  --color-eco-gray-300: var(--text-primary);
+  --color-eco-gray-400: var(--text-secondary);
+  --color-eco-gray-500: var(--text-secondary);
+  --color-eco-gray-600: var(--text-muted);
+  --color-eco-gray-700: var(--bg-muted);
+  --color-eco-gray-800: var(--border);
+  --color-eco-gray-900: var(--bg-subtle);
 }
+
+.eco-card, .eco-card-flat {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 1rem 1.25rem;
+  background: var(--bg-subtle);
+}
+.eco-card-flat { background: transparent; }
+.eco-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.eco-table th, .eco-table td { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 1px solid var(--border); }
+.eco-table th { color: var(--text-secondary); font-weight: 600; }
+.eco-badge {
+  display: inline-block;
+  font-size: 0.6875rem;
+  padding: 0.1rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text-secondary);
+}
+.headline { font-family: var(--font-display); font-weight: 700; letter-spacing: -0.01em; color: var(--text-primary); }
+.subheadline { color: var(--text-secondary); }
+
+@media (prefers-reduced-motion: no-preference) {
+  .feature-item, .arch-card, .why-stat-card, .tool-card, .install-method-card, .eco-card {
+    transition: transform 0.22s cubic-bezier(0.2, 0.7, 0.2, 1), border-color 0.22s, box-shadow 0.22s;
+  }
+  .feature-item:hover, .arch-card:hover, .why-stat-card:hover, .tool-card:hover, .install-method-card:hover, .eco-card:hover {
+    transform: translateY(-3px);
+    border-color: color-mix(in srgb, var(--accent) 45%, var(--border));
+    box-shadow: 0 10px 28px -16px color-mix(in srgb, var(--accent) 55%, transparent);
+  }
+  .accent-highlight {
+    background-image: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 40%, var(--purple)), var(--accent));
+    background-size: 200% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: accent-flow 6s ease-in-out infinite;
+  }
+  .badge-accent { animation: badge-pop 0.6s cubic-bezier(0.2, 0.9, 0.3, 1.4) 0.2s both; }
+  .settings-table tbody tr { transition: background 0.15s; }
+  .settings-table tbody tr:hover { background: var(--bg-subtle); }
+  details > summary { transition: color 0.15s; }
+  details > summary:hover { color: var(--accent); }
+}
+@keyframes accent-flow { 0%, 100% { background-position: 0% 0; } 50% { background-position: 100% 0; } }
+@keyframes badge-pop { from { opacity: 0; transform: scale(0.6); } to { opacity: 1; transform: none; } }
 
 *, *::before, *::after { box-sizing: border-box; }
 
@@ -4844,3 +4903,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .main-content:not(:has(.natural-home)) .section-header { font-size: 19px; }
   .main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .feature-item, .install-method-card) { padding: 20px; }
 }
+
+.brand-stack { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.brand-byline { font-size: 11px; letter-spacing: 0.02em; color: var(--text-secondary); text-decoration: none; transition: color 0.15s; }
+.brand-byline:hover { color: var(--accent); }
+.natural-footer .brand-byline { display: block; margin-top: 6px; }

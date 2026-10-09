@@ -2,11 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/terms" },
   title: "Terms of Service",
   description: "Terms of use for Tokalator — free open-source token calculator and VS Code extension.",
 };
 
-const LAST_UPDATED = "March 22, 2026";
+const LAST_UPDATED = "October 10, 2026";
 
 export default function TermsPage() {
   return (
@@ -57,7 +58,8 @@ export default function TermsPage() {
             </a>
             . You are free to use, study, modify, and self-host it; if you modify it and make it
             available to others over a network, you must release your modified source under the same
-            licence. The VS Code extension is distributed separately under the MIT Licence.
+            licence. The VS Code extension and the MCP server use the same licence. Commercial licences
+            are available; see LICENSING.md in the repository.
           </p>
           <p>
             The full source is available at{" "}
@@ -105,7 +107,8 @@ export default function TermsPage() {
           <p>
             The Tokalator VS Code extension is distributed through the Visual Studio Marketplace
             and is subject to Microsoft&apos;s Marketplace Terms in addition to these terms.
-            Extension use is governed by the MIT Licence included in the extension package.
+            Extension use is governed by the AGPL-3.0-or-later licence included in the extension package.
+            Versions up to 3.1.7 were released under the MIT Licence and remain available under it.
           </p>
         </section>
 

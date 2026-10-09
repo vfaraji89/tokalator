@@ -1,6 +1,6 @@
 {
   "name": "@Tokalator",
-  "version": "v3.4.0",
+  "version": "v3.5.0",
   "footer": "© 2026 @Tokalator. Made by Vahid Faraji with love from Istanbul.",
   "github": "https://github.com/vfaraji89/tokalator",
   "authorGithub": "https://github.com/vfaraji89",
@@ -26,13 +26,11 @@
         },
         {
           "href": "/learn",
-          "label": "Learn",
-          "badge": "New"
+          "label": "Learn"
         },
         {
           "href": "/events",
-          "label": "Events & Talks",
-          "badge": "New"
+          "label": "Events & Talks"
         }
       ]
     },
@@ -48,13 +46,33 @@
           "label": "Calculator"
         },
         {
+          "href": "/tools/compare",
+          "label": "Compare"
+        },
+        {
+          "href": "/tools/pricing",
+          "label": "Pricing"
+        },
+        {
+          "href": "/tools/caching",
+          "label": "Caching"
+        },
+        {
+          "href": "/tools/conversation",
+          "label": "Conversation"
+        },
+        {
+          "href": "/tools/context",
+          "label": "Context Budget"
+        },
+        {
           "href": "/tools/economics",
           "label": "Economics"
         },
         {
           "href": "/tools/usage",
           "label": "Usage",
-          "badge": "CSV"
+          "badge": "Claude Code"
         }
       ]
     },
@@ -64,22 +82,11 @@
         {
           "href": "/extension",
           "label": "VS Code Extension",
-          "badge": "Live"
+          "badge": "4.1.1"
         },
         {
           "href": "/extension#mcp",
-          "label": "MCP & CLI",
-          "badge": "New"
-        }
-      ]
-    },
-    {
-      "section": "Bead",
-      "items": [
-        {
-          "href": "https://tokalator.ai",
-          "label": "Tokalator Bead",
-          "badge": "Beta"
+          "label": "MCP & CLI"
         }
       ]
     },

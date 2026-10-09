@@ -75,15 +75,22 @@ describe('analyzeContextBudget', () => {
     expect(result.warnings.some((w) => w.includes('exceeds'))).toBe(true);
   });
 
-  it('detects Sonnet extended pricing', () => {
+  it('detects long-context pricing from the catalog threshold', () => {
+    const budget = { userInputTokens: 60_000, reservedOutputTokens: 10_000, model: 'claude-haiku-5-5' };
+    const result = analyzeContextBudget({ ...budget, systemPromptTokens: 40_001 });
+    expect(result.isInExtendedPricing).toBe(true);
+    expect(result.warnings.some((w) => w.includes('Long-context') && w.includes('5x input'))).toBe(true);
+    expect(analyzeContextBudget({ ...budget, systemPromptTokens: 40_000 }).isInExtendedPricing).toBe(false);
+  });
+
+  it('models without a long-context tier never report it', () => {
     const result = analyzeContextBudget({
       systemPromptTokens: 150_000,
       userInputTokens: 60_000,
       reservedOutputTokens: 10_000,
       model: 'claude-sonnet-4.6',
     });
-    expect(result.isInExtendedPricing).toBe(true);
-    expect(result.warnings.some((w) => w.includes('Extended'))).toBe(true);
+    expect(result.isInExtendedPricing).toBe(false);
   });
 
   it('breakdown percentages sum to ~100%', () => {

@@ -11,6 +11,9 @@
  *   b = base model quality
  */
 
+import { CATALOG_MODELS, catalogModel, type CatalogModel } from './models';
+import { PROVIDER_MODELS, getProviderColor, type ModelPricing } from './providers';
+
 // ============================================
 // TYPES
 // ============================================
@@ -20,7 +23,7 @@ export interface TokenUsage {
   outputTokens: number;
   cacheWriteTokens?: number;
   cacheReadTokens?: number;
-  promptLength?: number; // For Sonnet's tiered pricing
+  promptLength?: number; // Defaults to all input tokens; selects long-context pricing
 }
 
 export interface ServiceUsage {
@@ -61,95 +64,47 @@ export interface QualityMetrics {
 }
 
 // ============================================
-// CONSTANTS - Anthropic Pricing (September 2026)
+// CONSTANTS - pricing from the extension catalog
 // ============================================
 
-export const MODEL_LIMITS = {
-  'claude-fable-5-1': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-fable-5': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-opus-5': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-opus-4.8': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-opus-4.7': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-opus-4.6': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-sonnet-5': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-sonnet-4.6': { contextWindow: 1_000_000, maxOutput: 128_000 },
-  'claude-haiku-4.5': { contextWindow: 200_000, maxOutput: 64_000 },
-} as const;
+interface ModelPricingTiers {
+  standard: PricingTier;
+  threshold?: number;
+  extended?: PricingTier;
+}
 
-export const ANTHROPIC_PRICING = {
-  'claude-fable-5-1': {
-    standard: {
-      inputCostPerMTok: 10.0,
-      outputCostPerMTok: 50.0,
-      cacheWriteCostPerMTok: 12.50,
-      cacheReadCostPerMTok: 0.25,
+export const MODEL_LIMITS: Record<string, { contextWindow: number; maxOutput: number }> = Object.fromEntries(
+  CATALOG_MODELS.map(m => [m.id, { contextWindow: m.contextWindow, maxOutput: m.maxOutput }]),
+);
+
+function pricingTiers(m: CatalogModel): ModelPricingTiers {
+  const standard: PricingTier = {
+    inputCostPerMTok: m.inputCostPerMTok,
+    outputCostPerMTok: m.outputCostPerMTok,
+    cacheWriteCostPerMTok: m.cacheWriteCostPerMTok ?? m.inputCostPerMTok,
+    cacheReadCostPerMTok: m.cachedInputCostPerMTok,
+  };
+  const lc = m.longContext;
+  if (!lc) return { standard };
+  return {
+    standard,
+    threshold: lc.threshold,
+    extended: {
+      inputCostPerMTok: standard.inputCostPerMTok * lc.inputMultiplier,
+      outputCostPerMTok: standard.outputCostPerMTok * lc.outputMultiplier,
+      cacheWriteCostPerMTok: standard.cacheWriteCostPerMTok * lc.inputMultiplier,
+      cacheReadCostPerMTok: standard.cacheReadCostPerMTok * lc.inputMultiplier,
     },
-  },
-  'claude-fable-5': {
-    standard: {
-      inputCostPerMTok: 10.0,
-      outputCostPerMTok: 50.0,
-      cacheWriteCostPerMTok: 12.50,
-      cacheReadCostPerMTok: 1.00,
-    },
-  },
-  'claude-opus-5': {
-    standard: {
-      inputCostPerMTok: 5.0,
-      outputCostPerMTok: 25.0,
-      cacheWriteCostPerMTok: 6.25,
-      cacheReadCostPerMTok: 0.50,
-    },
-  },
-  'claude-opus-4.8': {
-    standard: {
-      inputCostPerMTok: 5.0,
-      outputCostPerMTok: 25.0,
-      cacheWriteCostPerMTok: 6.25,
-      cacheReadCostPerMTok: 0.50,
-    },
-  },
-  'claude-opus-4.7': {
-    standard: {
-      inputCostPerMTok: 5.0,
-      outputCostPerMTok: 25.0,
-      cacheWriteCostPerMTok: 6.25,
-      cacheReadCostPerMTok: 0.50,
-    },
-  },
-  'claude-opus-4.6': {
-    standard: {
-      inputCostPerMTok: 5.0,
-      outputCostPerMTok: 25.0,
-      cacheWriteCostPerMTok: 6.25,
-      cacheReadCostPerMTok: 0.50,
-    },
-  },
-  'claude-sonnet-5': {
-    standard: {
-      inputCostPerMTok: 2.0,
-      outputCostPerMTok: 10.0,
-      cacheWriteCostPerMTok: 2.50,
-      cacheReadCostPerMTok: 0.20,
-    },
-  },
-  'claude-sonnet-4.6': {
-    standard: {
-      inputCostPerMTok: 3.0,
-      outputCostPerMTok: 15.0,
-      cacheWriteCostPerMTok: 3.75,
-      cacheReadCostPerMTok: 0.30,
-    },
-  },
-  'claude-haiku-4.5': {
-    standard: {
-      inputCostPerMTok: 1.0,
-      outputCostPerMTok: 5.0,
-      cacheWriteCostPerMTok: 1.25,
-      cacheReadCostPerMTok: 0.10,
-    },
-  },
-} as const;
+  };
+}
+
+export const MODEL_PRICING: Record<string, ModelPricingTiers> = Object.fromEntries(
+  CATALOG_MODELS.map(m => [m.id, pricingTiers(m)]),
+);
+
+export const ANTHROPIC_PRICING: Record<string, ModelPricingTiers> = Object.fromEntries(
+  CATALOG_MODELS.filter(m => m.provider === 'anthropic').map(m => [m.id, MODEL_PRICING[m.id]]),
+);
 
 export const SERVICE_PRICING = {
   webSearch: {
@@ -161,62 +116,16 @@ export const SERVICE_PRICING = {
   },
 } as const;
 
-export const MODEL_PARAMS: Record<string, ModelParams> = {
-  'claude-fable-5-1': {
-    baseQuality: 1.25,
-    alphaParam: 0.35,
-    betaParam: 0.40,
-    gammaParam: 0.20,
-  },
-  'claude-fable-5': {
-    baseQuality: 1.2,
-    alphaParam: 0.35,
-    betaParam: 0.40,
-    gammaParam: 0.20,
-  },
-  'claude-opus-5': {
-    baseQuality: 1.1,
-    alphaParam: 0.32,
-    betaParam: 0.38,
-    gammaParam: 0.20,
-  },
-  'claude-opus-4.8': {
-    baseQuality: 1.0,
-    alphaParam: 0.30,
-    betaParam: 0.35,
-    gammaParam: 0.20,
-  },
-  'claude-opus-4.7': {
-    baseQuality: 0.98,
-    alphaParam: 0.30,
-    betaParam: 0.35,
-    gammaParam: 0.20,
-  },
-  'claude-opus-4.6': {
-    baseQuality: 0.95,
-    alphaParam: 0.30,
-    betaParam: 0.35,
-    gammaParam: 0.20,
-  },
-  'claude-sonnet-5': {
-    baseQuality: 0.90,
-    alphaParam: 0.28,
-    betaParam: 0.32,
-    gammaParam: 0.20,
-  },
-  'claude-sonnet-4.6': {
-    baseQuality: 0.85,
-    alphaParam: 0.25,
-    betaParam: 0.30,
-    gammaParam: 0.20,
-  },
-  'claude-haiku-4.5': {
-    baseQuality: 0.70,
-    alphaParam: 0.20,
-    betaParam: 0.25,
-    gammaParam: 0.15,
-  },
+const TIER_PARAMS: Record<NonNullable<ModelPricing['tier']>, ModelParams> = {
+  flagship: { baseQuality: 1.0, alphaParam: 0.30, betaParam: 0.35, gammaParam: 0.20 },
+  balanced: { baseQuality: 0.85, alphaParam: 0.25, betaParam: 0.30, gammaParam: 0.20 },
+  fast: { baseQuality: 0.70, alphaParam: 0.20, betaParam: 0.25, gammaParam: 0.15 },
 };
+
+/** Illustrative parameters by model tier for the Bergemann, Bonatti and Smolin model; not benchmark results. */
+export const MODEL_PARAMS: Record<string, ModelParams> = Object.fromEntries(
+  PROVIDER_MODELS.map(m => [m.id, TIER_PARAMS[m.tier ?? 'balanced']]),
+);
 
 // ============================================
 // COST CALCULATION FUNCTIONS
@@ -229,27 +138,18 @@ export function getPricingTier(
   modelName: string,
   promptLength?: number
 ): PricingTier {
-  const pricing = ANTHROPIC_PRICING[modelName as keyof typeof ANTHROPIC_PRICING];
+  const pricing = MODEL_PRICING[modelName];
   if (!pricing) {
     throw new Error(`Unknown model: ${modelName}`);
   }
-
-  const tiered = pricing as {
-    standard: PricingTier;
-    threshold?: number;
-    extended?: PricingTier;
-  };
-
-  if (
-    tiered.threshold !== undefined &&
-    tiered.extended !== undefined &&
-    promptLength !== undefined &&
-    promptLength > tiered.threshold
-  ) {
-    return tiered.extended;
+  if (pricing.threshold !== undefined && pricing.extended && promptLength !== undefined && promptLength > pricing.threshold) {
+    return pricing.extended;
   }
-
   return pricing.standard;
+}
+
+function promptTokens(usage: TokenUsage): number {
+  return usage.promptLength ?? usage.inputTokens + (usage.cacheWriteTokens ?? 0) + (usage.cacheReadTokens ?? 0);
 }
 
 /**
@@ -290,7 +190,7 @@ export function calculateCost(
   tokenUsage: TokenUsage,
   serviceUsage?: ServiceUsage
 ): CostBreakdown {
-  const pricing = getPricingTier(modelName, tokenUsage.promptLength);
+  const pricing = getPricingTier(modelName, promptTokens(tokenUsage));
   const tokenCosts = calculateTokenCost(tokenUsage, pricing);
   const serviceCosts = calculateServiceCost(serviceUsage || {});
 
@@ -445,7 +345,7 @@ export function calculateQualityMetrics(
   tokenUsage: TokenUsage
 ): QualityMetrics {
   const params = MODEL_PARAMS[modelName];
-  const pricing = getPricingTier(modelName, tokenUsage.promptLength);
+  const pricing = getPricingTier(modelName, promptTokens(tokenUsage));
   
   if (!params) {
     throw new Error(`Unknown model: ${modelName}`);
@@ -558,46 +458,11 @@ export function formatTokens(tokens: number): string {
   return tokens.toString();
 }
 
-/**
- * Get model display info
- */
 export function getModelInfo(modelName: string) {
-  const info = {
-    'claude-fable-5': {
-      displayName: 'Claude Fable 5',
-      description: 'Mythos-class; most intelligent generally available model',
-      color: '#DC2626',
-    },
-    'claude-opus-5': {
-      displayName: 'Claude Opus 5',
-      description: 'Claude 5 family Opus; complex reasoning and agentic coding',
-      color: '#7C3AED',
-    },
-    'claude-sonnet-5': {
-      displayName: 'Claude Sonnet 5',
-      description: 'Claude 5 family; best speed-intelligence balance',
-      color: '#E85D04',
-    },
-    'claude-opus-4.8': {
-      displayName: 'Claude Opus 4.8',
-      description: 'Most capable Opus for complex reasoning and agentic coding',
-      color: '#8B5CF6',
-    },
-    'claude-sonnet-4.6': {
-      displayName: 'Claude Sonnet 4.6',
-      description: 'Extended thinking; strong coding performance',
-      color: '#3B82F6',
-    },
-    'claude-haiku-4.5': {
-      displayName: 'Claude Haiku 4.5',
-      description: 'Fastest model with near-frontier intelligence',
-      color: '#10B981',
-    },
-  };
-
-  return info[modelName as keyof typeof info] || {
-    displayName: modelName,
-    description: '',
-    color: '#6B7280',
+  const m = catalogModel(modelName);
+  return {
+    displayName: m?.label ?? modelName,
+    description: m ? `${formatTokens(m.contextWindow)} context, $${m.inputCostPerMTok} / $${m.outputCostPerMTok} per MTok` : '',
+    color: m ? getProviderColor(m.provider) : 'var(--text-muted)',
   };
 }

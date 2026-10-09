@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 
 export const metadata: Metadata = {
-  title: "Context Engineering",
-  description: "Context engineering artifacts — agents, prompts, instructions, and collections for token-optimized AI workflows.",
+  title: "Context Engineering Plugin for GitHub Copilot",
+  description: "The context-engineering plugin in awesome-copilot: an instructions file, the context-architect custom agent, and prompt files for planning multi-file changes in GitHub Copilot.",
+  alternates: { canonical: "/context-engineering" },
 };
 
 export default function ContextEngineeringPage() {
@@ -14,22 +15,22 @@ export default function ContextEngineeringPage() {
         "Guidelines for structuring code so Copilot understands it better",
     },
     {
-      type: "Agent",
+      type: "Custom agent",
       file: "context-architect.agent.md",
       purpose: "Plans multi-file changes by mapping dependencies first",
     },
     {
-      type: "Prompt",
+      type: "Prompt file",
       file: "context-map.prompt.md",
       purpose: "Generates a map of affected files before changes",
     },
     {
-      type: "Prompt",
+      type: "Prompt file",
       file: "what-context-needed.prompt.md",
       purpose: "Asks Copilot what files it needs to answer well",
     },
     {
-      type: "Prompt",
+      type: "Prompt file",
       file: "refactor-plan.prompt.md",
       purpose: "Creates phased refactor plans with verification steps",
     },
@@ -49,28 +50,28 @@ export default function ContextEngineeringPage() {
         </div>
         <h1 className="hero-headline">
           <span className="hero-marker">Context Engineering Collection</span>{" "}
-          <span className="badge badge-accent">PR</span>
+          <span className="badge badge-accent">Plugin</span>
         </h1>
         <p className="hero-description">
           Tools for maximizing GitHub Copilot effectiveness through better
-          context management. Contributed to{" "}
+          context management. Published in{" "}
           <a
-            href="https://github.com/github/awesome-copilot"
+            href="https://github.com/github/awesome-copilot/tree/main/plugins/context-engineering"
             style={{ textDecoration: "underline" }}
           >
             awesome-copilot
-          </a>
-          .
+          </a>{" "}
+          as the <code>context-engineering</code> plugin.
         </p>
       </header>
 
       <section>
         <h2>Why this matters</h2>
         <p>
-          Copilot&apos;s suggestions are only as good as the context it has. Most
-          &ldquo;bad&rdquo; suggestions come from relevant files not being open,
-          poor project structure that obscures intent, or asking for multi-file
-          changes without providing the full picture.
+          Copilot&apos;s suggestions are only as good as the context it has.
+          Missing files, a project structure that hides intent, and multi-file
+          requests without the full picture can all lead to generic or wrong
+          answers. These files help you give the agent the right context first.
         </p>
       </section>
 
@@ -101,11 +102,14 @@ export default function ContextEngineeringPage() {
       <section>
         <h2>Usage examples</h2>
 
-        <h3>Context Architect Agent</h3>
-        <pre>
-          {`@context-architect I need to add authentication to the API.
-What files are involved?`}
-        </pre>
+        <h3>Install</h3>
+        <pre>{`copilot plugin install context-engineering@awesome-copilot`}</pre>
+
+        <h3 style={{ marginTop: "1rem" }}>Context Architect agent</h3>
+        <p>
+          In VS Code, pick <code>context-architect</code> from the Agent dropdown in the Chat view, then ask:
+        </p>
+        <pre>{`I need to add authentication to the API. What files are involved?`}</pre>
 
         <h3 style={{ marginTop: "1rem" }}>Before a big change</h3>
         <pre>{`/context-map Add caching to all database queries`}</pre>
@@ -119,8 +123,9 @@ What files are involved?`}
 
       <div className="footer">
         <p>
-          Files live in <code>copilot-contribution/</code> &mdash; ready to PR
-          to awesome-copilot.
+          Source files live in <code>copilot-contribution/</code>. Sources:{" "}
+          <a href="https://github.com/github/awesome-copilot/tree/main/plugins/context-engineering">awesome-copilot plugin</a>,{" "}
+          <a href="https://code.visualstudio.com/docs/copilot/customization/custom-agents">VS Code custom agents</a>.
         </p>
       </div>
     </article>

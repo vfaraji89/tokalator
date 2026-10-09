@@ -10,10 +10,9 @@
       "time": "12:30 – 17:00",
       "location": "Istanbul",
       "type": "talk",
-      "status": "past",
-      "description": "Vahid breaks down the critical factors that determine the efficiency of AI assistants — context window vs. prompt distinction, token economics, cost management, and IDE planning with GitHub Copilot.",
+      "description": "Vahid breaks down the critical factors that determine the efficiency of AI assistants: context window vs. prompt distinction, token economics, cost management, and IDE planning with GitHub Copilot.",
       "topics": [
-        "Context Window vs. Prompt — the difference and token economics",
+        "Context Window vs. Prompt: the difference and token economics",
         "Limits, cost management, and IDE planning (GitHub Copilot example)",
         "Spec preparation, refactoring workflows with Numpy/Pandas code examples"
       ],
@@ -31,10 +30,5 @@
       "part": 1,
       "image": "/events/only-builders-club.png"
     }
-  ],
-  "stats": {
-    "total": 1,
-    "upcoming": 0,
-    "past": 1
-  }
+  ]
 }
