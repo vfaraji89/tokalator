@@ -67,3 +67,22 @@ tokalator-extension-vs/node_modules/
 github-token-analysis*.csv
 *-cost.csv
 *billing*.csv
+
+# Local agent and editor config
+CLAUDE.md
+AGENTS.md
+.claude/
+.entire/
+.mcp.json
+.vscode/
+
+# Generated code maps (refreshed by local hooks)
+GLOSSARY.md
+SITE-MAP.md
+
+# Database (not used yet) and local data
+prisma/
+prisma.config.ts
+*.db
+*.sqlite
+*.sqlite3
