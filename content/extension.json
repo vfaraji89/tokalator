@@ -1,5 +1,5 @@
 {
-  "version": "3.1.7",
+  "version": "4.1.0",
   "icon": "⬡",
   "headline": "Real-time context monitoring.\nInside your editor.",
   "highlightPhrase": "context monitoring",
@@ -7,7 +7,7 @@
   "installCmd": "ext install vfaraji89.tokalator",
   "vsCodeMinVersion": "1.99",
   "githubUrl": "https://github.com/vfaraji89/tokalator",
-  "license": "MIT",
+  "license": "AGPL-3.0-or-later",
   "features": [
     {
       "icon": "▣",
@@ -19,8 +19,8 @@
     {
       "icon": "◎",
       "name": "@tokalator Chat Participant",
-      "description": "Twelve chat commands for inline budget management directly in Copilot Chat.",
-      "command": "@tokalator /count, /optimize, /breakdown, /pin, /unpin, /instructions, /model, /compaction, /preview, /reset, /terminology-gen, /exit",
+      "description": "Chat commands for budget management, workspace security, generators, and price watch, directly in Copilot Chat.",
+      "command": "@tokalator /count, /breakdown, /optimize, /pin, /unpin, /instructions, /model, /compaction, /preview, /secure, /skill-gen, /settings-gen, /pricewatch, /reset, /exit",
       "number": 2
     },
     {
@@ -109,11 +109,27 @@
     "period": "First 30 days (Feb 4 – Mar 6, 2026)",
     "communityDevelopers": 220,
     "communitySessions": 3,
-    "communitySessionNames": ["iLab / Kariyer.net", "SaaS Bridge", "TechCareer"],
+    "communitySessionNames": [
+      "iLab / Kariyer.net",
+      "SaaS Bridge",
+      "TechCareer"
+    ],
     "communitySessionDetails": [
-      { "name": "iLab / Kariyer.net", "attendees": 50, "note": "Internal deployment — engineers used the extension for one week" },
-      { "name": "SaaS Bridge", "attendees": 90, "note": "Istanbul, March 4 2026" },
-      { "name": "TechCareer", "attendees": 80, "note": "Istanbul, March 5 2026" }
+      {
+        "name": "iLab / Kariyer.net",
+        "attendees": 50,
+        "note": "Internal deployment — engineers used the extension for one week"
+      },
+      {
+        "name": "SaaS Bridge",
+        "attendees": 90,
+        "note": "Istanbul, March 4 2026"
+      },
+      {
+        "name": "TechCareer",
+        "attendees": 80,
+        "note": "Istanbul, March 5 2026"
+      }
     ],
     "unitTests": 124,
     "testFiles": 6
@@ -213,11 +229,11 @@
       "title": "VSIX",
       "icon": "◇",
       "steps": [
-        "Download tokalator-3.1.7.vsix from releases",
+        "Download tokalator-4.1.0.vsix from releases",
         "Cmd+Shift+P → Extensions: Install from VSIX...",
         "Select the downloaded .vsix file"
       ],
-      "command": "code --install-extension tokalator-3.1.7.vsix"
+      "command": "code --install-extension tokalator-4.1.0.vsix"
     },
     "source": {
       "title": "Build from Source",

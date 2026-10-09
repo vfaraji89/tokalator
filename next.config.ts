@@ -11,6 +11,9 @@ const nextConfig: NextConfig = {
   logging: {
     browserToTerminal: "error",
   },
+  async redirects() {
+    return [{ source: '/pro', destination: '/extension', permanent: true }];
+  },
 };
 
 export default nextConfig;

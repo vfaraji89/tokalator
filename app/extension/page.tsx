@@ -190,36 +190,35 @@ export default function ExtensionPage() {
         </div>
       </section>
 
-      {/* What's New in 3.1.7 */}
+      {/* What's New in 4.1.0 */}
       <section>
         <div className="section-divider" />
-        <h2 className="section-header">What&apos;s New in v3.1.7</h2>
+        <h2 className="section-header">What&apos;s New in v4.1.0</h2>
         <div className="feature-grid feature-grid--2col" style={{ marginTop: "1rem" }}>
           <motion.div {...scrollReveal(0)} className="feature-item feature-item--extension" style={{ borderColor: "color-mix(in srgb, var(--accent) 30%, var(--border))" }}>
             <span className="feature-number">%</span>
-            <h3>Context Engineering Stats</h3>
+            <h3>Pro Is Now Open Source</h3>
             <p>
-              A new sidebar panel tracks how your context budget is being spent:
-              context-window percentage used, turns-to-rot, measured tokens/turn
-              growth from your actual history, and estimated turns left. Next-turn
-              and turns-left projections render only from measured turns, never
-              fabricated defaults.
+              Tokalator Pro is merged into the open-source extension. Secure
+              Workspace, the SKILL.md and AI settings generators, price watch, and
+              the dashboard are free under AGPL-3.0-or-later, with a new
+              calculator icon and an OPEN SOURCE badge.
             </p>
             <div style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-primary)" }}>Plus:</strong> model auto-detected from your Copilot chat, cost box relabeled <code>API Cost Simulation</code>
+              <strong style={{ color: "var(--text-primary)" }}>Removed:</strong> Enterprise team features, the credits tracker, and the glossary command
             </div>
           </motion.div>
           <motion.div {...scrollReveal(0.1)} className="feature-item feature-item--extension">
             <span className="feature-number">/</span>
-            <h3>Generate Glossary</h3>
+            <h3>Honest Numbers, Safer Settings</h3>
             <p>
-              The new <code>/terminology-gen</code> chat command scans your
-              workspace Markdown docs for terminology sources, measures their real
-              token cost, and estimates how much a generated glossary could
-              compress them. Available free from the dashboard feature panel.
+              Turn cost is now an input-only estimate, because output tokens and
+              cache hits cannot be observed from the editor. A default window of
+              0 no longer reads as a full context, and Secure Workspace never
+              overwrites a settings file it cannot parse.
             </p>
             <div style={{ marginTop: "0.75rem", fontSize: "0.8125rem", color: "var(--text-secondary)" }}>
-              <strong style={{ color: "var(--text-primary)" }}>Also:</strong> redesigned abacus-branded dashboard, 17 models on May 2026 pricing (Claude Opus 4.8, GPT-5.5, Gemini 3.5 Flash)
+              <strong style={{ color: "var(--text-primary)" }}>Also:</strong> escaped dashboard data and a stricter content security policy
             </div>
           </motion.div>
         </div>

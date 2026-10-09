@@ -55,13 +55,15 @@ export function TopNav() {
             </Link>
           </li>
           <li>
-            <Link
-              href="/pro"
-              className={`topnav-link${path === "/pro" ? " topnav-link--active" : ""}`}
+            <a
+              href="https://tokalator.ai"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="topnav-link"
               onClick={() => setOpen(false)}
             >
-              Pro
-            </Link>
+              Bead
+            </a>
           </li>
           <li>
             <a

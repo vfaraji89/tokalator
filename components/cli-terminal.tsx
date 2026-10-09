@@ -100,7 +100,7 @@ export function CliTerminal() {
         <div className="cli-brand">
           <PixelAbacus width={26} height={37} />
           <span className="cli-wordmark">tokalator</span>
-          <span className="cli-badge">v3.1.7</span>
+          <span className="cli-badge">v4.1.0</span>
         </div>
 
         {/* ── Status bar ── */}
