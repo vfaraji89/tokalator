@@ -142,7 +142,15 @@ describe('findModel', () => {
 
   it('finds GPT-5.5 model', () => {
     expect(findModel('gpt-5.5')?.provider).toBe('openai');
-    expect(findModel('gpt-5.5')?.contextWindow).toBe(272_000);
+    expect(findModel('gpt-5.5')?.contextWindow).toBe(1_050_000);
+    expect(findModel('gpt-5.5')?.longContext?.threshold).toBe(272_000);
+  });
+
+  it('matches Claude 5.5 by API id and by dotted name', () => {
+    expect(findModel('claude-opus-5-5')?.id).toBe('claude-opus-5-5');
+    expect(findModel('claude-opus-5.5')?.id).toBe('claude-opus-5-5');
+    expect(findModel('Claude Sonnet 5.5')?.id).toBe('claude-sonnet-5-5');
+    expect(findModel('claude-opus-5')?.id).toBe('claude-opus-5');
   });
 
   it('finds Claude Sonnet 4.6', () => {
