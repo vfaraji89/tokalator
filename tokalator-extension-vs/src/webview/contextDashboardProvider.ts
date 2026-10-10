@@ -487,7 +487,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         el._n = v;
         var t0 = performance.now();
         (function step(now) {
-          var q = Math.min((now - t0) / 450, 1);
+          var q = Math.min(Math.max((now - t0) / 450, 0), 1);
           el.textContent = fmtBy(f, from + (v - from) * (1 - Math.pow(1 - q, 3)));
           if (q < 1) requestAnimationFrame(step);
         })(t0);
