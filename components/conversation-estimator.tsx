@@ -104,7 +104,7 @@ export function ConversationEstimator() {
   return (
     <div className="space-y-8">
       {/* Input Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
         <div className={card}>
           <label htmlFor="conv-model" className={`block ${subheading}`}>Model</label>
           <select id="conv-model" value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className={field}>
@@ -250,15 +250,15 @@ export function ConversationEstimator() {
               key={strategy}
               className={`${card} ${isLowest ? 'ring-2 ring-(--green)' : ''}`}
             >
-              <div className="flex justify-between items-start mb-4">
-                <div>
+              <div className="flex justify-between items-start gap-3 mb-4">
+                <div className="min-w-0">
                   <h3 className="text-lg font-semibold text-(--text-primary)">
                     {desc.name}
                   </h3>
                   <p className="text-xs text-(--text-secondary)">{desc.description}</p>
                 </div>
                 {isLowest && (
-                  <span className="border border-(--green) text-(--green) text-xs px-2 py-1 rounded-full">
+                  <span className="shrink-0 border border-(--green) text-(--green) text-xs px-2 py-1 rounded-full">
                     Cheapest
                   </span>
                 )}

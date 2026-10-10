@@ -92,7 +92,7 @@ export default function ExtensionPage() {
       <header className="hero">
         <div className="hero-outline-icon"><CalculatorMark size={44} label="Tokalator extension" /></div>
         <h1 className="hero-headline">
-          {before}<span className="accent-highlight">{ext.highlightPhrase}</span>{after}
+          {before}<span className="whitespace-nowrap"><span className="accent-highlight">{ext.highlightPhrase}</span>{after}</span>
           <br />
           {second}
         </h1>
@@ -144,11 +144,11 @@ export default function ExtensionPage() {
         <div className="section-divider" />
         <h2 className="section-header">What it tracks</h2>
         <div style={{ overflowX: "auto" }}>
-          <table className="settings-table">
+          <table className="settings-table settings-table--stack">
             <thead><tr><th>Assistant</th><th>What Tokalator sees</th><th>Cost</th></tr></thead>
             <tbody>
               {TRACKING.map(r => (
-                <tr key={r.assistant}><td><strong>{r.assistant}</strong></td><td>{r.sees}</td><td>{r.cost}</td></tr>
+                <tr key={r.assistant}><td><strong>{r.assistant}</strong></td><td data-label="What Tokalator sees">{r.sees}</td><td data-label="Cost">{r.cost}</td></tr>
               ))}
             </tbody>
           </table>
@@ -229,11 +229,11 @@ export default function ExtensionPage() {
         <div className="section-divider" />
         <h2 className="section-header">@tokalator chat commands</h2>
         <div style={{ overflowX: "auto" }}>
-          <table className="settings-table">
+          <table className="settings-table settings-table--stack">
             <thead><tr><th>Command</th><th>What it does</th></tr></thead>
             <tbody>
               {chatCommands.map(c => (
-                <tr key={c.name}><td><code>/{c.name}</code></td><td>{c.description}</td></tr>
+                <tr key={c.name}><td><code>/{c.name}</code></td><td data-label="What it does">{c.description}</td></tr>
               ))}
             </tbody>
           </table>
@@ -247,11 +247,11 @@ export default function ExtensionPage() {
         <div className="section-divider" />
         <h2 className="section-header">Settings</h2>
         <div style={{ overflowX: "auto" }}>
-          <table className="settings-table">
+          <table className="settings-table settings-table--stack">
             <thead><tr><th>Setting</th><th>Default</th><th>Description</th></tr></thead>
             <tbody>
               {settings.map(s => (
-                <tr key={s.key}><td><code>{s.key}</code></td><td>{s.default}</td><td>{s.description}</td></tr>
+                <tr key={s.key}><td><code>{s.key}</code></td><td data-label="Default">{s.default}</td><td data-label="Description">{s.description}</td></tr>
               ))}
             </tbody>
           </table>
@@ -283,15 +283,15 @@ export default function ExtensionPage() {
         <div className="section-divider" />
         <h2 className="section-header">Tokenizers</h2>
         <div style={{ overflowX: "auto" }}>
-          <table className="settings-table">
+          <table className="settings-table settings-table--stack">
             <thead><tr><th>Provider</th><th>Models</th><th>Tokenizer</th><th>Notes</th></tr></thead>
             <tbody>
               {ext.tokenizers.map(t => (
                 <tr key={t.provider}>
                   <td><strong>{t.provider}</strong></td>
-                  <td>{t.models}</td>
-                  <td><code>{t.tokenizer}</code></td>
-                  <td style={{ fontSize: "0.8125rem" }}>{t.source}</td>
+                  <td data-label="Models">{t.models}</td>
+                  <td data-label="Tokenizer"><code>{t.tokenizer}</code></td>
+                  <td data-label="Notes" style={{ fontSize: "0.8125rem" }}>{t.source}</td>
                 </tr>
               ))}
             </tbody>
