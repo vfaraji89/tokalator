@@ -1,5 +1,25 @@
 # Changelog
 
+## 4.1.2 (2026-10-10)
+
+### Added
+
+- Agent usage for more than Claude Code. The usage card now has a tab for each coding agent active in the workspace in the last 7 days:
+  - GitHub Copilot Chat, from the session files VS Code keeps for the workspace. Uses the token counts VS Code recorded and estimates the rest, and shows the estimated share.
+  - GitHub Copilot CLI, from its local session logs, including premium requests.
+  - OpenAI Codex CLI, from its local session logs (respects `CODEX_HOME`).
+  Settings: `tokalator.agents.copilot.enabled`, `tokalator.agents.codex.enabled`. Everything is read on your machine; nothing is uploaded.
+- Usage as tokens or dollars. `tokalator.costDisplay` and a $ / Tokens / Both toggle on the usage card. Tokens mode hides every dollar amount and shows tokens, context windows and cache share instead, for Claude, Copilot and ChatGPT subscribers who are not billed per token.
+- Tabs match what you have: an agent gets a tab while its extension is installed (Claude Code, Copilot Chat, Codex) or while you use it from a CLI. Uninstalling an extension removes its tab right away, even when VS Code was closed at the time; using that agent's CLI later brings the tab back. Copilot Chat hides when VS Code's AI features are turned off.
+- The usage card follows you: it switches to an agent as soon as that agent writes new activity (file watchers, about a second), or when you focus a Claude Code editor tab or a terminal running Claude Code, Codex or the Copilot CLI. Picking a tab also switches the active model to that agent's model.
+- `Tokalator: Take the 1-Minute Survey`: six fixed-choice, anonymous questions (role, team size, agents, billing, biggest pain, interest in team insights). Sent only with telemetry consent; every question can be skipped.
+- Extension API: `setCompanionBadge` lets a companion extension show one small status chip in the dashboard header.
+- New Marketplace, activity bar and dashboard icon: the Tokalator sidebar mark, with a short abacus-to-Tokalator intro.
+
+### Fixed
+
+- The active model now follows the coding agent you used most recently (for example Claude Opus 5.5 in Claude Code) instead of staying on the settings fallback, so context window and turn costs use the right model. The model card says where the model came from.
+
 ## 4.1.1 (2026-10-10)
 
 ### Added

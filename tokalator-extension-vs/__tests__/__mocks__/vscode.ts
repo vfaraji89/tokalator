@@ -117,8 +117,13 @@ export const window = {
   tabGroups: {
     all: [] as any[],
     onDidChangeTabs: jest.fn(() => ({ dispose: () => {} })),
+    onDidChangeTabGroups: jest.fn(() => ({ dispose: () => {} })),
+    activeTabGroup: { activeTab: undefined as any },
     close: jest.fn(async () => {}),
   },
+  activeTerminal: undefined as any,
+  onDidChangeActiveTerminal: jest.fn(() => ({ dispose: () => {} })),
+  onDidStartTerminalShellExecution: jest.fn(() => ({ dispose: () => {} })),
   onDidChangeActiveTextEditor: jest.fn(() => ({ dispose: () => {} })),
   onDidChangeTextEditorSelection: jest.fn(() => ({ dispose: () => {} })),
   showInformationMessage: jest.fn(async () => undefined),
@@ -148,3 +153,12 @@ export enum DiagnosticSeverity {
   Information = 2,
   Hint = 3,
 }
+
+export const extensions = {
+  all: [],
+  getExtension: () => undefined,
+  onDidChange: () => ({ dispose: () => {} }),
+};
+
+export class TabInputWebview { constructor(public viewType: string) {} }
+export class TabInputTerminal {}

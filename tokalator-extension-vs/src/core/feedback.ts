@@ -94,3 +94,54 @@ export async function maybeAskUseCase(state: vscode.Memento, telemetry: Telemetr
   await state.update(USE_CASE_KEY, true);
   if (pick) await telemetry.answer('use-case', pick);
 }
+
+const SURVEY_KEY = 'tokalator.feedback.survey';
+
+/** Fixed-choice questions only, so no free text (and no personal data) can be sent. */
+export const SURVEY: { id: string; title: string; options: string[]; many?: boolean }[] = [
+  { id: 'role', title: 'What best describes you?', options: ['Developer', 'Team lead or manager', 'Researcher', 'Student', 'Other'] },
+  { id: 'team-size', title: 'How many developers are on your team?', options: ['Just me', '2 to 10', '11 to 50', 'More than 50'] },
+  { id: 'agents', title: 'Which coding agents do you use? (pick all that apply)', options: ['Claude Code', 'GitHub Copilot', 'Codex', 'Cursor', 'OpenCode', 'Other'], many: true },
+  { id: 'billing', title: 'How do you pay for AI coding?', options: ['API, pay per token', 'Personal subscription', 'My company pays', 'Free tier', 'Not sure'] },
+  { id: 'pain', title: 'What is the hardest part today?', options: ['Unexpected cost', 'Running out of context', 'Choosing the right model', 'Keeping secrets away from agents', 'Something else'] },
+  { id: 'team-insights', title: 'Would your team use opt-in, anonymous team usage insights?', options: ['Yes', 'Maybe', 'No'] },
+];
+
+/** Runs the survey; every question can be skipped with Esc. Answers are sent only with telemetry consent. */
+export async function runSurvey(state: vscode.Memento, telemetry: Telemetry): Promise<number> {
+  if (!telemetry.enabled) {
+    const turnOn = await vscode.window.showInformationMessage(
+      'The Tokalator survey sends anonymous, fixed-choice answers. It needs telemetry consent, which is off.',
+      'Turn on telemetry',
+      'Cancel',
+    );
+    if (turnOn !== 'Turn on telemetry') return 0;
+    await vscode.workspace.getConfiguration('tokalator').update('telemetry.enabled', true, vscode.ConfigurationTarget.Global);
+    if (!telemetry.enabled) {
+      void vscode.window.showWarningMessage('VS Code telemetry is off, so Tokalator cannot send answers. Nothing was sent.');
+      return 0;
+    }
+  }
+  let answered = 0;
+  for (const [i, q] of SURVEY.entries()) {
+    const title = `Tokalator survey ${i + 1}/${SURVEY.length}: ${q.title}`;
+    const picked = q.many
+      ? await vscode.window.showQuickPick(q.options, { title, canPickMany: true, placeHolder: 'Space to select, Enter to continue, Esc to stop' })
+      : await vscode.window.showQuickPick(q.options, { title, placeHolder: 'Enter to continue, Esc to stop' });
+    if (!picked || (Array.isArray(picked) && !picked.length)) break;
+    await telemetry.answer(`survey-${q.id}`, Array.isArray(picked) ? picked.join(', ') : picked);
+    answered++;
+  }
+  await state.update(SURVEY_KEY, true);
+  if (answered) void vscode.window.showInformationMessage(`Thank you. ${answered} anonymous answer${answered === 1 ? '' : 's'} sent.`);
+  return answered;
+}
+
+/** Offers the survey once, only to people who already consented to telemetry and have used the extension for a while. */
+export async function maybeOfferSurvey(state: vscode.Memento, telemetry: Telemetry): Promise<void> {
+  const s = state.get<FeedbackState>(STATE_KEY);
+  if (!telemetry.enabled || state.get<boolean>(SURVEY_KEY) || !s || s.sessions < MIN_SESSIONS + 2) return;
+  const choice = await vscode.window.showInformationMessage('Help shape Tokalator: 6 quick, anonymous questions (about a minute).', 'Start', 'Not now', "Don't ask again");
+  if (choice === 'Start') await runSurvey(state, telemetry);
+  else if (choice === "Don't ask again") await state.update(SURVEY_KEY, true);
+}

@@ -1,6 +1,0 @@
-agno
-anthropic
-google-genai
-arxiv
-pypdf
-python-dotenv

@@ -1,0 +1,11 @@
+{
+  "name": "tokalator-glossary",
+  "version": "4.1.2",
+  "description": "Generate source-linked GLOSSARY.md and SITE-MAP.md with review commands and local lifecycle hooks.",
+  "author": {
+    "name": "Vahid Faraji"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/vfaraji89/tokalator",
+  "homepage": "https://tokalator.ai"
+}

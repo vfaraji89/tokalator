@@ -41,6 +41,23 @@ fs.writeFileSync(sessionLog, [
   line({ type: 'assistant', uuid: 'a3', timestamp: at(62), message: { id: 'msg_3', model: 'claude-opus-5-5', usage: { input_tokens: 4, output_tokens: 300, cache_read_input_tokens: 20605, cache_creation_input_tokens: 900 } } }),
 ].join('\n') + '\n');
 
+const codexDir = path.join(tmp, 'codex');
+const now = new Date();
+const dayDir = path.join(codexDir, 'sessions', String(now.getFullYear()), String(now.getMonth() + 1).padStart(2, '0'), String(now.getDate()).padStart(2, '0'));
+fs.mkdirSync(dayDir, { recursive: true });
+const ct = Date.now() - 20 * 60_000;
+const cat = s => new Date(ct + s * 1000).toISOString();
+const cx = (type, payload, s) => JSON.stringify({ timestamp: cat(s), type, payload });
+const cu = (input, cached, output) => ({ input_tokens: input, cached_input_tokens: cached, cache_write_input_tokens: 0, output_tokens: output, reasoning_output_tokens: 0, total_tokens: input + output });
+fs.writeFileSync(path.join(dayDir, 'rollout-e2e.jsonl'), [
+  cx('session_meta', { id: 'codex-e2e', cwd: ws, cli_version: '0.0.0', model_provider: 'openai', originator: 'codex_cli' }, 0),
+  cx('turn_context', { model: 'gpt-6-astra', effort: 'high', cwd: ws }, 0),
+  cx('event_msg', { type: 'user_message', message: 'synthetic' }, 1),
+  cx('event_msg', { type: 'token_count', info: { last_token_usage: cu(4000, 0, 300), total_token_usage: cu(4000, 0, 300), model_context_window: 1050000 } }, 3),
+  cx('event_msg', { type: 'user_message', message: 'synthetic' }, 30),
+  cx('event_msg', { type: 'token_count', info: { last_token_usage: cu(5000, 4000, 200), total_token_usage: cu(9000, 4000, 500), model_context_window: 1050000 } }, 33),
+].join('\n') + '\n');
+
 const extPath = process.env.TOKALATOR_EXT_PATH || path.resolve(__dirname, '..');
 const suite = path.join(extPath, 'e2e', 'suite.js');
 if (extPath !== path.resolve(__dirname, '..')) {
@@ -49,7 +66,7 @@ if (extPath !== path.resolve(__dirname, '..')) {
 }
 const report = path.join(tmp, 'report.json');
 const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('VSCODE_') && !k.startsWith('ELECTRON_')));
-Object.assign(env, { CLAUDE_CONFIG_DIR: claudeDir, TOKALATOR_E2E_REPORT: report, TOKALATOR_E2E_SESSION_LOG: sessionLog });
+Object.assign(env, { CODEX_HOME: codexDir, CLAUDE_CONFIG_DIR: claudeDir, TOKALATOR_E2E_REPORT: report, TOKALATOR_E2E_SESSION_LOG: sessionLog });
 
 const result = spawnSync(bin, [
   ws,

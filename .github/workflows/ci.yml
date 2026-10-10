@@ -1,62 +1,50 @@
-# CI: Build, Lint & Test
-# Runs on every push and PR to main/develop branches
-
 name: CI
 
 on:
   push:
-    branches: [main, develop]
-  pull_request:
     branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
-  # ─── Web Platform ───────────────────────────────
-  web-platform:
-    name: Web Platform (Build + Test)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Run unit tests
-        run: npm test
-
-      - name: Build
-        run: npm run build
-
-  # ─── VS Code Extension ─────────────────────────
   extension:
-    name: Extension (Build + Test)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: tokalator-extension-vs
     steps:
       - uses: actions/checkout@v6
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
-          cache: 'npm'
+          cache: npm
           cache-dependency-path: tokalator-extension-vs/package-lock.json
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm test
 
-      - name: Install dependencies
-        run: npm ci
+  mcp:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tokalator-mcp
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: tokalator-mcp/package-lock.json
+      - run: npm ci
+      - run: npm run build
 
-      - name: Run unit tests
-        run: npm test
-
-      - name: Build extension
-        run: npm run compile
+  claude-plugin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+      - run: python3 -m unittest discover -s claude-plugin/tests -v

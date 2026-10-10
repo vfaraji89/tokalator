@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import type { AgentId } from './agents/types';
 import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary, CostEstimate } from './types';
 import { TabRelevanceScorer } from './tabRelevanceScorer';
 import { TokenBudgetEstimator } from './tokenBudgetEstimator';
@@ -22,7 +23,7 @@ const MODEL_USAGE_LOG_KEY = 'tokalator.modelUsageLog';
 const MAX_MODEL_LOG_ENTRIES = 200;
 
 /** Where a model switch originated. */
-export type ModelSwitchSource = 'chat-api' | 'detected' | 'available-lms' | 'manual';
+export type ModelSwitchSource = 'chat-api' | 'detected' | 'available-lms' | 'manual' | AgentId;
 
 /** One entry in the chronological model-switch log. */
 export interface ModelUsageEntry {

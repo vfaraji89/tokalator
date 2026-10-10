@@ -4,45 +4,14 @@ import * as path from 'path';
 import { StringDecoder } from 'string_decoder';
 import * as vscode from 'vscode';
 import { getActiveCatalog } from './catalogStore';
-import {
-  ClaudeCodeUsageCollector,
-  ClaudeCodeUsageRecord,
-  TurnStats,
-  UsageRates,
-  UsageTotals,
-  cacheHitRate,
-  entrypointLabel,
-  groupUsage,
-  localDay,
-  modelKey,
-  sessionTurnStats,
-  summarizeUsage,
-} from './claudeCodeUsage.pure';
+import { ClaudeCodeUsageCollector } from './claudeCodeUsage.pure';
+import { AgentSummary, summarizeAgent } from './agents/summary.pure';
 
 const WINDOW_DAYS = 7;
 const MIN_REFRESH_MS = 15_000;
 const CHUNK_BYTES = 4 * 1024 * 1024;
 
-export interface ClaudeCodeSummary {
-  logDirs: string[];
-  today: UsageTotals;
-  week: UsageTotals;
-  todayTurns: number;
-  session: (UsageTotals & {
-    model: string;
-    startedAt: string;
-    lastAt: string;
-    turns: TurnStats[];
-    turnCount: number;
-    contextTokens: number;
-    contextWindow: number;
-    avgGrowthPerTurn: number;
-    turnsLeft: number | null;
-  }) | null;
-  cacheHitRate: number;
-  byEntrypoint: { label: string; cost: number; messages: number }[];
-  lastActivityAt: string | null;
-}
+export type ClaudeCodeSummary = AgentSummary;
 
 interface FileCursor {
   offset: number;
@@ -139,59 +108,8 @@ export class ClaudeCodeTracker {
   }
 
   private summarize(logDirs: string[], cutoff: number): ClaudeCodeSummary {
-    const rates = ratesLookup();
-    const week = this.collector.records.filter(r => Date.parse(r.timestamp) >= cutoff);
-    const today = localDay(new Date().toISOString());
-    const todays = week.filter(r => localDay(r.timestamp) === today);
-    const latest = week.reduce<ClaudeCodeUsageRecord | null>((a, r) => (!a || r.timestamp > a.timestamp ? r : a), null);
-
-    let session: ClaudeCodeSummary['session'] = null;
-    if (latest) {
-      const records = week.filter(r => r.sessionId === latest.sessionId).sort((a, b) => a.timestamp.localeCompare(b.timestamp));
-      const main = records.filter(r => !r.sidechain);
-      const last = main[main.length - 1] ?? latest;
-      const profile = getActiveCatalog().find(m => modelKey(m.id) === modelKey(last.model));
-      const turns = sessionTurnStats(this.collector.turns.filter(t => t.sessionId === latest.sessionId), records, rates);
-      const sized = turns.filter(t => t.contextTokens > 0);
-      const avgGrowthPerTurn = sized.length >= 2
-        ? Math.max(0, Math.round((sized[sized.length - 1].contextTokens - sized[0].contextTokens) / (sized.length - 1)))
-        : 0;
-      const contextTokens = last.inputTokens + last.cacheReadTokens + last.cacheWrite5mTokens + last.cacheWrite1hTokens;
-      const contextWindow = profile?.contextWindow ?? 0;
-      session = {
-        ...summarizeUsage(records, rates),
-        model: profile?.label ?? last.model,
-        startedAt: records[0].timestamp,
-        lastAt: records[records.length - 1].timestamp,
-        turns: turns.slice(-30),
-        turnCount: turns.length,
-        contextTokens,
-        contextWindow,
-        avgGrowthPerTurn,
-        turnsLeft: avgGrowthPerTurn > 0 && contextWindow > 0
-          ? Math.max(0, Math.floor((contextWindow - contextTokens) / avgGrowthPerTurn))
-          : null,
-      };
-    }
-
-    const weekTotals = summarizeUsage(week, rates);
-    return {
-      logDirs,
-      today: summarizeUsage(todays, rates),
-      todayTurns: this.collector.turns.filter(t => localDay(t.timestamp) === today).length,
-      week: weekTotals,
-      session,
-      cacheHitRate: cacheHitRate(weekTotals),
-      byEntrypoint: groupUsage(week, r => entrypointLabel(r.entrypoint), rates)
-        .map(g => ({ label: g.key, cost: g.totals.cost, messages: g.totals.messages })),
-      lastActivityAt: latest?.timestamp ?? null,
-    };
+    return summarizeAgent(this.collector.records, this.collector.turns, getActiveCatalog(), cutoff, logDirs);
   }
-}
-
-function ratesLookup(): (model: string) => UsageRates | undefined {
-  const byKey = new Map(getActiveCatalog().map(m => [modelKey(m.id), m] as const));
-  return model => byKey.get(modelKey(model));
 }
 
 async function listLogFiles(dirs: string[]): Promise<string[]> {

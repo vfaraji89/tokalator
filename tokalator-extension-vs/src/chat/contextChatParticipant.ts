@@ -4,10 +4,9 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
-import type { ContextSnapshot } from '../core/types';
 import { findModel } from '../core/modelProfiles';
 import { WorkspaceSecurityScanner, SECRET_FILE_PATTERNS } from '../core/workspaceSecurityScanner';
-import type { PriceWatchService, RateChange } from '../core/priceWatch';
+import type { PriceWatchService } from '../core/priceWatch';
 
 /**
  * Chat participant `@tokalator` for Tokalator.
@@ -465,7 +464,6 @@ export class ContextChatParticipant implements vscode.Disposable {
     const pyFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*.py'), '**/node_modules/**', 5);
     const goFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*.go'), '**/node_modules/**', 5);
     const rustFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/Cargo.toml'), '**/node_modules/**', 1);
-    const readmeFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'README.md'), undefined, 1);
     const existingSkills = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/SKILL.md'), '**/node_modules/**', 5);
 
     // Detect languages

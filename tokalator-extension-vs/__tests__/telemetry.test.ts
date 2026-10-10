@@ -39,3 +39,14 @@ describe('telemetry payload rules', () => {
     expect(Object.keys(prune(days, ['2026-10-10']))).toEqual(['2026-10-10']);
   });
 });
+
+describe('survey', () => {
+  test('questions are fixed choice with short ids that the feedback API accepts', () => {
+    const { SURVEY } = require('../src/core/feedback');
+    for (const q of SURVEY) {
+      expect(`survey-${q.id}`).toMatch(/^[a-z0-9-]{1,40}$/);
+      expect(q.options.length).toBeGreaterThan(1);
+      expect(q.options.join(', ').length).toBeLessThanOrEqual(500);
+    }
+  });
+});
