@@ -307,17 +307,21 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       90% { opacity: 0.7; }
       100% { opacity: 0.35; }
     }
-    .hdr-icon .calc-btn { animation: btnPress 0.35s ease both; }
-    .hdr-icon .btn-1 { animation-delay: 0.3s; }
-    .hdr-icon .btn-2 { animation-delay: 0.55s; }
-    .hdr-icon .btn-3 { animation-delay: 0.8s; }
-    .hdr-icon .btn-4 { animation-delay: 1.05s; }
-    .hdr-icon .btn-5 { animation-delay: 1.3s; }
-    .hdr-icon .btn-6 { animation-delay: 1.55s; }
-    .hdr-icon .btn-7 { animation-delay: 1.8s; }
-    .hdr-icon .btn-8 { animation-delay: 2.05s; }
-    .hdr-icon .btn-eq { animation-delay: 2.3s; animation-duration: 0.5s; }
-    .hdr-icon .calc-screen { animation: screenGlow 3s ease 2.5s both; }
+    @keyframes beadToKey { from { x: var(--bx); y: var(--by); width: 2.4px; height: 2.4px; rx: 1.2px; opacity: 0.9; } }
+    @keyframes rodOut { from { opacity: 0.55; } to { opacity: 0; } }
+    @keyframes screenIn { from { opacity: 0; } }
+    .hdr-icon .calc-rod { opacity: 0; animation: rodOut 0.5s ease 0.45s both; }
+    .hdr-icon .calc-btn { animation-name: beadToKey, btnPress; animation-duration: 0.7s, 0.35s; animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1), ease; animation-fill-mode: both, both; }
+    .hdr-icon .btn-1 { animation-delay: 0.3s, 1.1s; }
+    .hdr-icon .btn-2 { animation-delay: 0.33s, 1.35s; }
+    .hdr-icon .btn-3 { animation-delay: 0.36s, 1.6s; }
+    .hdr-icon .btn-4 { animation-delay: 0.39s, 1.85s; }
+    .hdr-icon .btn-5 { animation-delay: 0.42s, 2.1s; }
+    .hdr-icon .btn-6 { animation-delay: 0.45s, 2.35s; }
+    .hdr-icon .btn-7 { animation-delay: 0.48s, 2.6s; }
+    .hdr-icon .btn-8 { animation-delay: 0.51s, 2.85s; }
+    .hdr-icon .btn-eq { animation-delay: 0.54s, 3.1s; animation-duration: 0.7s, 0.5s; }
+    .hdr-icon .calc-screen { animation: screenIn 0.4s ease 0.8s both, screenGlow 3s ease 3.3s both; }
 
     .meter { padding: 8px; border-radius: 6px; margin-bottom: 8px; }
     .meter-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -510,16 +514,19 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         var html = '<!--k:hdr--><div class="hdr"><span class="hdr-icon">' +
           '<svg viewBox="0 0 24 24" fill="none" stroke="var(--fg)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
           '<rect x="3" y="2" width="18" height="20" rx="2"/>' +
+          '<rect class="calc-rod" x="4.5" y="7" width="15" height="0.6" fill="var(--fg)" stroke="none"/>' +
+          '<rect class="calc-rod" x="4.5" y="12" width="15" height="0.6" fill="var(--fg)" stroke="none"/>' +
+          '<rect class="calc-rod" x="4.5" y="17" width="15" height="0.6" fill="var(--fg)" stroke="none"/>' +
           '<rect class="calc-screen" x="5.5" y="4.5" width="13" height="4" rx="1" fill="var(--accent)" opacity="0.35" stroke="none"/>' +
-          '<rect class="calc-btn btn-1" x="5.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-2" x="9.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-3" x="13.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-4" x="5.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-5" x="9.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-6" x="13.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-7" x="5.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-8" x="9.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-eq" x="13.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.45" stroke="none"/>' +
+          '<rect class="calc-btn btn-1" style="--bx:5.5px;--by:5.8px" x="5.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-2" style="--bx:8.3px;--by:5.8px" x="9.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-3" style="--bx:11.1px;--by:5.8px" x="13.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-4" style="--bx:5.5px;--by:10.8px" x="5.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-5" style="--bx:8.3px;--by:10.8px" x="9.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-6" style="--bx:11.1px;--by:10.8px" x="13.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-7" style="--bx:5.5px;--by:15.8px" x="5.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-8" style="--bx:8.3px;--by:15.8px" x="9.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
+          '<rect class="calc-btn btn-eq" style="--bx:11.1px;--by:15.8px" x="13.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.45" stroke="none"/>' +
           '</svg></span><span class="hdr-title">Tokalator</span><span class="hdr-badge">OPEN SOURCE</span></div>';
 
         // 1. Budget meter

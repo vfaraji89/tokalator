@@ -17,7 +17,7 @@
 .brand { font-size: 20px; font-weight: 700; color: var(--text-primary); text-decoration: none; }
 .brand span { color: var(--accent); }
 
-.by { display: block; margin-top: 0; padding-left: 26px; font-size: 12px; color: var(--text-secondary); text-decoration: none; }
+.by { display: block; margin-top: 2px; padding-left: 68px; font-size: 12px; color: var(--text-secondary); text-decoration: none; }
 .by:hover { color: var(--accent); }
 
 .tagline { margin: 10px 0 14px; line-height: 1.5; }
