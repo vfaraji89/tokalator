@@ -59,7 +59,7 @@ exports.run = async function run() {
   const pkg = ext.packageJSON;
 
   await test('activates and returns its API', async () => {
-    assert.ok(api && api.monitor && api.dashboard && api.chat && api.claudeCode);
+    assert.ok(api && api.monitor && api.dashboard && api.chat && api.claudeCode && api.agents);
   });
 
   await test('registers every contributed command', async () => {
@@ -150,16 +150,47 @@ exports.run = async function run() {
     assert.strictEqual(s.byEntrypoint[0].label, 'VS Code extension');
   });
 
+  await test('reads Codex CLI usage for this workspace', async () => {
+    await api.agents.refresh(true);
+    const s = api.agents.getSummaries().codex;
+    assert.ok(s, 'expected a Codex summary');
+    assert.strictEqual(s.week.messages, 2);
+    assert.strictEqual(s.todayTurns, 2);
+    assert.strictEqual(s.session.modelId, 'gpt-6-astra');
+    assert.strictEqual(s.week.cacheReadTokens, 4000);
+    assert.strictEqual(s.week.inputTokens, 5000);
+    assert.ok(s.week.cost > 0);
+  });
+
   await test('dashboard picks up new Claude Code activity without any chat mention', async () => {
     const log = process.env.TOKALATOR_E2E_SESSION_LOG;
     const now = Date.now();
     fs.appendFileSync(log, [
-      JSON.stringify({ type: 'user', uuid: 'u3', timestamp: new Date(now).toISOString(), sessionId: 'e2e', isSidechain: false, origin: { kind: 'human' }, message: { role: 'user', content: 'third prompt' } }),
-      JSON.stringify({ type: 'assistant', uuid: 'a4', timestamp: new Date(now + 1000).toISOString(), sessionId: 'e2e', cwd: root, entrypoint: 'claude-vscode', isSidechain: false, message: { id: 'msg_4', model: 'claude-opus-5-5', usage: { input_tokens: 3, output_tokens: 120, cache_read_input_tokens: 30000, cache_creation_input_tokens: 0 } } }),
+      JSON.stringify({ type: 'user', uuid: 'u3', timestamp: new Date(now - 2000).toISOString(), sessionId: 'e2e', isSidechain: false, origin: { kind: 'human' }, message: { role: 'user', content: 'third prompt' } }),
+      JSON.stringify({ type: 'assistant', uuid: 'a4', timestamp: new Date(now - 1000).toISOString(), sessionId: 'e2e', cwd: root, entrypoint: 'claude-vscode', isSidechain: false, message: { id: 'msg_4', model: 'claude-opus-5-5', usage: { input_tokens: 3, output_tokens: 120, cache_read_input_tokens: 30000, cache_creation_input_tokens: 0 } } }),
     ].join('\n') + '\n');
     posted.length = 0;
     const msg = await until(() => posted.find(m => m.data && m.data.claudeCode && m.data.claudeCode.session && m.data.claudeCode.session.turnCount === 3), 40000);
     assert.strictEqual(msg.data.claudeCode.week.messages, 4);
+  });
+
+  await test('agent tabs show agents with activity even without their extension', async () => {
+    const msg = await until(() => posted.slice().reverse().find(m => m.data && Array.isArray(m.data.visibleAgents) && m.data.visibleAgents.includes('codex')), 40000);
+    assert.ok(msg.data.visibleAgents.includes('claude-code'), 'Claude Code has activity in this workspace');
+    assert.ok(!msg.data.visibleAgents.includes('copilot-cli'), 'no Copilot CLI activity here');
+  });
+
+  await test('a companion extension can show and clear a header chip', async () => {
+    posted.length = 0;
+    api.setCompanionBadge({ label: 'TEAM', detail: 'Example team, sharing', tone: 'active', command: 'workbench.action.showCommands' });
+    const shown = await until(() => posted.slice().reverse().find(m => m.data && m.data.companion));
+    assert.strictEqual(shown.data.companion.label, 'TEAM');
+    assert.strictEqual(shown.data.companion.tone, 'active');
+    posted.length = 0;
+    api.setCompanionBadge({ label: '<img src=x>', detail: 'bad' });
+    const rejected = await until(() => posted.slice().reverse().find(m => m.data && 'companion' in m.data));
+    assert.strictEqual(rejected.data.companion, null);
+    api.setCompanionBadge(null);
   });
 
   const chatCommands = pkg.contributes.chatParticipants[0].commands.map(c => c.name).filter(c => c !== 'exit').concat('exit');
@@ -228,6 +259,42 @@ exports.run = async function run() {
     assert.deepStrictEqual(shown.pending, []);
     assert.ok(shown.privacy.startsWith('https://tokalator.ai/privacy'));
     await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  });
+
+  await test('Export My Telemetry Data shows an empty export when nothing was ever sent', async () => {
+    await vscode.commands.executeCommand('tokalator.telemetryExport');
+    const doc = vscode.window.activeTextEditor.document;
+    assert.deepStrictEqual(JSON.parse(doc.getText()), { installId: null, stored: [] });
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+  });
+
+  await test('Delete My Telemetry Data confirms deletion without contacting the server', async () => {
+    const original = vscode.window.showInformationMessage;
+    let shown = '';
+    vscode.window.showInformationMessage = async msg => { shown = msg; return undefined; };
+    try {
+      await vscode.commands.executeCommand('tokalator.telemetryDelete');
+    } finally {
+      vscode.window.showInformationMessage = original;
+    }
+    assert.ok(shown.includes('was deleted'), shown);
+  });
+
+  await test('Survey asks for telemetry consent first and sends nothing when declined', async () => {
+    const info = vscode.window.showInformationMessage;
+    const pick = vscode.window.showQuickPick;
+    let asked = '';
+    let picks = 0;
+    vscode.window.showInformationMessage = async msg => { asked = msg; return 'Cancel'; };
+    vscode.window.showQuickPick = async () => { picks++; return undefined; };
+    try {
+      await vscode.commands.executeCommand('tokalator.survey');
+    } finally {
+      vscode.window.showInformationMessage = info;
+      vscode.window.showQuickPick = pick;
+    }
+    assert.ok(asked.includes('needs telemetry consent'), asked);
+    assert.strictEqual(picks, 0);
   });
 
   await test('Send Feedback offers topics and sends nothing when dismissed', async () => {

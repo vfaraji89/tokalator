@@ -1,13 +1,15 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { ContextMonitor } from './core/contextMonitor';
-import { ContextDashboardProvider } from './webview/contextDashboardProvider';
+import { ContextDashboardProvider, type CompanionBadge } from './webview/contextDashboardProvider';
 import { ContextChatParticipant } from './chat/contextChatParticipant';
 import { loadPricingCatalog, refreshPricingCatalog } from './core/pricingCatalog';
 import { applyRemotePayload } from './core/catalogStore';
 import { WorkspaceSecurityScanner } from './core/workspaceSecurityScanner';
 import { PriceWatchService } from './core/priceWatch';
 import { ClaudeCodeTracker } from './core/claudeCodeTracker';
-import { askForImprovement, maybeAskForFeedback, maybeAskUseCase } from './core/feedback';
+import { AgentUsageTracker } from './core/agents/agentTracker';
+import { askForImprovement, maybeAskForFeedback, maybeAskUseCase, maybeOfferSurvey, runSurvey } from './core/feedback';
 import { Telemetry } from './core/telemetry';
 import { writeCodeMaps } from './core/codeMaps';
 
@@ -35,9 +37,11 @@ export interface TokalatorApi {
   dashboard: ContextDashboardProvider;
   chat: ContextChatParticipant;
   claudeCode: ClaudeCodeTracker;
+  agents: AgentUsageTracker;
   telemetry: Telemetry;
   priceWatch?: PriceWatchService;
   applyCatalog: typeof applyRemotePayload;
+  setCompanionBadge: (badge: CompanionBadge | null) => void;
 }
 
 export async function activate(context: vscode.ExtensionContext): Promise<TokalatorApi | undefined> {
@@ -58,7 +62,8 @@ export async function activate(context: vscode.ExtensionContext): Promise<Tokala
   context.subscriptions.push(monitor);
 
   const claudeCode = new ClaudeCodeTracker();
-  const dashboardProvider = new ContextDashboardProvider(context.extensionUri, monitor, claudeCode);
+  const agents = new AgentUsageTracker(context.storageUri ? path.dirname(context.storageUri.fsPath) : undefined);
+  const dashboardProvider = new ContextDashboardProvider(context.extensionUri, monitor, claudeCode, agents, context.globalState);
   context.subscriptions.push(
     vscode.window.registerWebviewViewProvider(
       ContextDashboardProvider.viewType,
@@ -236,6 +241,7 @@ export async function activate(context: vscode.ExtensionContext): Promise<Tokala
 
   context.subscriptions.push(
     register('tokalator.feedback', () => askForImprovement(version, telemetry)),
+    register('tokalator.survey', () => runSurvey(context.globalState, telemetry)),
     register('tokalator.codeMaps', async () => {
       const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
       if (!root) { vscode.window.showWarningMessage('Tokalator: open a folder to generate code maps.'); return; }
@@ -284,13 +290,14 @@ export async function activate(context: vscode.ExtensionContext): Promise<Tokala
     later(120_000, () => telemetry.maybeAskConsent());
     later(60_000, () => maybeAskForFeedback(context.globalState, version, telemetry));
     later(300_000, () => maybeAskUseCase(context.globalState, telemetry));
+    later(900_000, () => maybeOfferSurvey(context.globalState, telemetry));
     later(15_000, () => telemetry.flush());
     const flushTimer = setInterval(() => void telemetry.flush().catch(() => undefined), 6 * 3_600_000);
     flushTimer.unref?.();
     context.subscriptions.push({ dispose: () => clearInterval(flushTimer) });
   }
 
-  return { monitor, dashboard: dashboardProvider, chat: chatParticipant, claudeCode, telemetry, priceWatch: priceWatchRef, applyCatalog: applyRemotePayload };
+  return { monitor, dashboard: dashboardProvider, chat: chatParticipant, claudeCode, agents, telemetry, priceWatch: priceWatchRef, applyCatalog: applyRemotePayload, setCompanionBadge: badge => dashboardProvider.setCompanionBadge(badge) };
   } catch (err) {
     log.appendLine('[activate] FATAL: ' + String(err));
     log.show();

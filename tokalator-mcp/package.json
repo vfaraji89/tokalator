@@ -1,6 +1,6 @@
 {
   "name": "tokalator-mcp",
-  "version": "4.1.1",
+  "version": "4.1.2",
   "description": "Tokalator MCP server — real Claude BPE token counting for Claude Code",
   "type": "module",
   "main": "build/index.js",

@@ -1,0 +1,39 @@
+#!/usr/bin/env python3
+"""Install the standalone generator and merge Claude Code project hooks."""
+import argparse
+import json
+from pathlib import Path
+import shutil
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument('root')
+args = parser.parse_args()
+root = Path(args.root).resolve()
+plugin = Path(__file__).resolve().parents[1]
+(root / 'scripts').mkdir(exist_ok=True)
+shutil.copyfile(plugin / 'bin/tokalator-generate', root / 'scripts/tokalator-context.py')
+settings_path = root / '.claude/settings.json'
+settings_path.parent.mkdir(parents=True, exist_ok=True)
+settings = json.loads(settings_path.read_text()) if settings_path.exists() else {}
+hooks = settings.setdefault('hooks', {})
+command = 'python3 "${CLAUDE_PROJECT_DIR}/scripts/tokalator-context.py" --hook'
+for event, groups in list(hooks.items()):
+    for group in groups:
+        group['hooks'] = [h for h in group.get('hooks', []) if not (
+            'tokalator-context.py' in h.get('command', '') or
+            'tokalator-glossary/generate.py' in h.get('command', ''))]
+    hooks[event] = [group for group in groups if group.get('hooks')]
+for event in ('SessionStart', 'UserPromptSubmit', 'Stop'):
+    hooks.setdefault(event, []).append({'hooks': [{'type': 'command', 'command': command, 'timeout': 30}]})
+settings_path.write_text(json.dumps(settings, indent=2) + '\n')
+commands = root / '.claude/commands'
+commands.mkdir(exist_ok=True)
+for name in ('code-review', 'refresh-context'):
+    source = (plugin / 'commands' / f'{name}.md').read_text()
+    source = source.replace('"${CLAUDE_PLUGIN_ROOT}/bin/tokalator-generate"', '"${CLAUDE_PROJECT_DIR}/scripts/tokalator-context.py"')
+    destination = commands / f'{name}.md'
+    if destination.exists() and '<!-- tokalator-managed -->' not in destination.read_text():
+        print(f'Preserving existing command: {destination}')
+    else:
+        destination.write_text(source)
+print(f'Installed context generator, commands, and hooks in {root}')

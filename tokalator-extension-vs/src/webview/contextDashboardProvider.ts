@@ -1,10 +1,27 @@
+import * as path from 'path';
+import * as fs from 'fs';
+import { claudeCodeModelToSync } from '../core/modelSync.pure';
+import { agentFromCommand, agentFromWebview } from '../core/agents/agentFocus.pure';
+import { AGENT_EXTENSIONS, newlyUninstalled, visibleAgents } from '../core/agents/agentVisibility.pure';
+import { claudeProjectsDir, encodeProjectDir } from '../core/claudeCodeTracker';
+import type { AgentUsageTracker } from '../core/agents/agentTracker';
+import type { AgentSummary } from '../core/agents/summary.pure';
+import type { AgentId } from '../core/agents/types';
+
+export interface CompanionBadge {
+  label: string;
+  detail?: string;
+  tone?: 'neutral' | 'active' | 'warn';
+  glyph?: 'people';
+  command?: string;
+}
 import { randomBytes } from 'crypto';
 import * as vscode from 'vscode';
 import { ContextMonitor } from '../core/contextMonitor';
 import type { ContextSnapshot } from '../core/types';
 import { getCatalogMeta, onDidChangeCatalog } from '../core/catalogStore';
 import { getFeaturedModels } from '../core/modelProfiles';
-import type { PriceWatchService, RateChangeset, PriceWatchImpact } from '../core/priceWatch';
+import type { PriceWatchService } from '../core/priceWatch';
 import type { ClaudeCodeTracker } from '../core/claudeCodeTracker';
 import type { Telemetry } from '../core/telemetry';
 import { WorkspaceSecurityScanner, type SecurityAuditResult } from '../core/workspaceSecurityScanner';
@@ -20,12 +37,17 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
   private view?: vscode.WebviewView;
   private readonly _snapshotListener: vscode.Disposable;
   private readonly _catalogListener: vscode.Disposable;
+  private readonly _configListener: vscode.Disposable;
+  private readonly _extensionsListener: vscode.Disposable;
 
   constructor(
     private readonly extensionUri: vscode.Uri,
     private readonly monitor: ContextMonitor,
     private readonly claudeCode?: ClaudeCodeTracker,
+    private readonly agents?: AgentUsageTracker,
+    private readonly state?: vscode.Memento,
   ) {
+    this.trackUninstalls();
     this._snapshotListener = this.monitor.onDidUpdateSnapshot(snapshot => {
       this.postSnapshot(snapshot);
     });
@@ -33,23 +55,149 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       const snapshot = this.monitor.getLatestSnapshot();
       if (snapshot) { this.postSnapshot(snapshot); }
     });
+    this._extensionsListener = vscode.extensions.onDidChange(() => {
+      this.trackUninstalls();
+      const snapshot = this.monitor.getLatestSnapshot();
+      if (snapshot) { this.postSnapshot(snapshot); }
+    });
+    this._configListener = vscode.workspace.onDidChangeConfiguration(e => {
+      if (!e.affectsConfiguration('tokalator.costDisplay') && !e.affectsConfiguration('tokalator.agents') && !e.affectsConfiguration('tokalator.claudeCode')) { return; }
+      const snapshot = this.monitor.getLatestSnapshot();
+      if (snapshot) { this.postSnapshot(snapshot); }
+    });
+  }
+
+  private focus: { agent: AgentId; at: number } | null = null;
+  private companionBadge: CompanionBadge | null = null;
+
+  /** Lets a companion extension show one small labelled chip in the dashboard header. */
+  setCompanionBadge(badge: CompanionBadge | null): void {
+    this.companionBadge = badge && /^[A-Za-z0-9 .-]{1,16}$/.test(badge.label)
+      ? { label: badge.label, detail: String(badge.detail ?? '').slice(0, 160), tone: badge.tone ?? 'neutral', glyph: badge.glyph === 'people' ? 'people' : undefined, command: badge.command && /^[A-Za-z][\w-]*\.[\w.-]+$/.test(badge.command) ? badge.command : undefined }
+      : null;
+    const snapshot = this.monitor.getLatestSnapshot();
+    if (snapshot) this.postSnapshot(snapshot);
+  }
+  private readonly terminalAgents = new WeakMap<vscode.Terminal, AgentId>();
+  private watchers: fs.FSWatcher[] = [];
+  private watchTimer?: ReturnType<typeof setTimeout>;
+  private readonly _focusListeners: vscode.Disposable[] = [
+    vscode.window.tabGroups.onDidChangeTabs(() => this.checkTabFocus()),
+    vscode.window.tabGroups.onDidChangeTabGroups(() => this.checkTabFocus()),
+    vscode.window.onDidChangeActiveTerminal(t => { if (t) this.setFocus(this.terminalAgents.get(t) ?? agentFromCommand(t.name)); }),
+    vscode.window.onDidStartTerminalShellExecution(e => {
+      const agent = agentFromCommand(e.execution.commandLine.value);
+      if (!agent) return;
+      this.terminalAgents.set(e.terminal, agent);
+      if (vscode.window.activeTerminal === e.terminal) this.setFocus(agent);
+    }),
+  ];
+
+  private installedAgentExtensions(): Partial<Record<AgentId, boolean>> {
+    return Object.fromEntries((Object.entries(AGENT_EXTENSIONS) as [AgentId, string][]).map(([id, ext]) => [id, !!vscode.extensions.getExtension(ext)]));
+  }
+
+  private trackUninstalls(): void {
+    if (!this.state) return;
+    const installed = this.installedAgentExtensions();
+    const gone = newlyUninstalled(this.state.get<string[]>('tokalator.agentExtensions', []), installed);
+    if (gone.length) {
+      const removed = { ...this.state.get<Record<string, number>>('tokalator.agentUninstalledAt', {}) };
+      for (const id of gone) removed[id] = Date.now();
+      void this.state.update('tokalator.agentUninstalledAt', removed);
+    }
+    void this.state.update('tokalator.agentExtensions', Object.keys(installed).filter(id => installed[id as AgentId]));
+  }
+
+  private agentSummaries(): Partial<Record<AgentId, AgentSummary>> {
+    const claude = this.claudeCode?.getSummary();
+    return { ...(this.agents?.getSummaries() ?? {}), ...(claude ? { 'claude-code': claude } : {}) };
+  }
+
+  /** Agents that get a tab: installed, enabled, or used from a CLI since their extension was removed. */
+  private visibleAgents(): AgentId[] {
+    const cfg = vscode.workspace.getConfiguration('tokalator');
+    const enabled: Record<AgentId, boolean> = {
+      'claude-code': cfg.get<boolean>('claudeCode.enabled', true),
+      'copilot-chat': cfg.get<boolean>('agents.copilot.enabled', true),
+      'copilot-cli': cfg.get<boolean>('agents.copilot.enabled', true),
+      codex: cfg.get<boolean>('agents.codex.enabled', true),
+      opencode: false,
+    };
+    const summaries = this.agentSummaries();
+    return visibleAgents({
+      installed: this.installedAgentExtensions(),
+      lastActivity: Object.fromEntries(Object.entries(summaries).map(([id, s]) => [id, s?.lastActivityAt ?? null])),
+      uninstalledAt: this.state?.get<Record<string, number>>('tokalator.agentUninstalledAt', {}) ?? {},
+      aiFeaturesDisabled: vscode.workspace.getConfiguration('chat').get<boolean>('disableAIFeatures', false),
+    }).filter(id => enabled[id]);
+  }
+
+  private checkTabFocus(): void {
+    const input = vscode.window.tabGroups.activeTabGroup.activeTab?.input;
+    if (input instanceof vscode.TabInputWebview) this.setFocus(agentFromWebview(input.viewType));
+    else if (input instanceof vscode.TabInputTerminal && vscode.window.activeTerminal) {
+      this.setFocus(this.terminalAgents.get(vscode.window.activeTerminal) ?? agentFromCommand(vscode.window.activeTerminal.name));
+    }
+  }
+
+  private setFocus(agent: AgentId | null): void {
+    if (!agent || this.focus?.agent === agent) return;
+    this.focus = { agent, at: Date.now() };
+    const summary = agent === 'claude-code' ? this.claudeCode?.getSummary() : this.agents?.getSummaries()[agent];
+    const modelId = summary?.session?.modelId;
+    void (modelId ? this.monitor.setModel(modelId, agent) : Promise.resolve()).then(() => {
+      const snapshot = this.monitor.getLatestSnapshot();
+      if (snapshot) this.postSnapshot(snapshot);
+    });
+  }
+
+  /** Re-reads usage shortly after any agent writes to its logs, instead of waiting for the 15-second poll. */
+  private startWatchers(): void {
+    this.stopWatchers();
+    const claudeDirs = (vscode.workspace.workspaceFolders ?? []).map(f => path.join(claudeProjectsDir(), encodeProjectDir(f.uri.fsPath)));
+    for (const dir of [...claudeDirs, ...(this.agents?.watchDirs() ?? [])]) {
+      try {
+        this.watchers.push(fs.watch(dir, { recursive: true, persistent: false }, () => {
+          clearTimeout(this.watchTimer);
+          this.watchTimer = setTimeout(() => this.syncClaudeCode(true), 700);
+        }));
+      } catch { /* folder does not exist yet */ }
+    }
+  }
+
+  private stopWatchers(): void {
+    for (const w of this.watchers) w.close();
+    this.watchers = [];
+    clearTimeout(this.watchTimer);
   }
 
   dispose(): void {
+    this._focusListeners.forEach(d => d.dispose());
+    this.stopWatchers();
     this._snapshotListener.dispose();
     this._catalogListener.dispose();
+    this._configListener.dispose();
+    this._extensionsListener.dispose();
     clearInterval(this.claudeCodeTimer);
   }
 
   private claudeCodeTimer?: ReturnType<typeof setInterval>;
 
-  private syncClaudeCode(): void {
+  private syncClaudeCode(force = false): void {
     const tracker = this.claudeCode;
     if (!tracker || !this.view?.visible) { return; }
     const version = tracker.version;
-    void tracker.refresh().then(() => {
+    const agentsVersion = this.agents?.version ?? 0;
+    void Promise.all([tracker.refresh(force), this.agents?.refresh(force)]).then(async () => {
+      const visible = this.visibleAgents();
+      const live = (Object.entries(this.agentSummaries()) as [AgentId, AgentSummary | undefined][])
+        .filter((e): e is [AgentId, AgentSummary] => !!e[1]?.session && visible.includes(e[0]))
+        .sort((a, b) => b[1].session!.lastAt.localeCompare(a[1].session!.lastAt))[0];
+      const sync = live ? claudeCodeModelToSync(live[1].session, this.monitor.getActiveModel().id, this.monitor.getModelUsageLog().at(-1)?.timestamp, Date.now()) : null;
+      if (sync && live) { await this.monitor.setModel(sync, live[0]); }
       const snapshot = this.monitor.getLatestSnapshot();
-      if (tracker.version === version) { return; }
+      if (tracker.version === version && (this.agents?.version ?? 0) === agentsVersion && !sync) { return; }
       const cc = tracker.getSummary();
       if (cc) {
         this.telemetry?.recordClaudeCode({
@@ -103,11 +251,13 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
     clearInterval(this.claudeCodeTimer);
     this.claudeCodeTimer = setInterval(() => this.syncClaudeCode(), 15_000);
     this.claudeCodeTimer.unref?.();
+    this.startWatchers();
 
     // Clear reference when the webview is disposed (panel closed completely)
     webviewView.onDidDispose(() => {
       this.view = undefined;
       clearInterval(this.claudeCodeTimer);
+      this.stopWatchers();
     });
 
     webviewView.webview.html = this.getHtml(webviewView.webview);
@@ -187,6 +337,28 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
           break;
         }
 
+        case 'companionCommand': {
+          if (this.companionBadge?.command) {
+            await vscode.commands.executeCommand(this.companionBadge.command);
+          }
+          break;
+        }
+
+        case 'agentModel': {
+          const summary = message.agent === 'claude-code' ? this.claudeCode?.getSummary() : this.agents?.getSummaries()[message.agent as AgentId];
+          if (summary?.session?.modelId) {
+            await this.monitor.setModel(summary.session.modelId, message.agent as AgentId);
+          }
+          break;
+        }
+
+        case 'setCostDisplay': {
+          if (['dollars', 'tokens', 'both'].includes(message.mode)) {
+            await vscode.workspace.getConfiguration('tokalator').update('costDisplay', message.mode, vscode.ConfigurationTarget.Global);
+          }
+          break;
+        }
+
         case 'switchModel': {
           if (message.modelId) {
             await this.monitor.setModel(message.modelId, 'detected');
@@ -249,8 +421,11 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       hasUnacked: this.priceWatch.hasUnacknowledged(),
     } : null;
     const claudeCode = this.claudeCode?.getSummary() ?? null;
+    const agents = this.agents?.getSummaries() ?? {};
+    const visibleAgentIds = this.visibleAgents();
     const security = this.security;
-    this.view.webview.postMessage({ type: 'snapshot', data: { ...serialized, catalogMeta, modelUsageLog, usageInsights, priceWatchData, claudeCode, security }, lastSession });
+    const costDisplay = vscode.workspace.getConfiguration('tokalator').get<string>('costDisplay', 'dollars');
+    this.view.webview.postMessage({ type: 'snapshot', data: { ...serialized, catalogMeta, modelUsageLog, usageInsights, priceWatchData, claudeCode, agents, visibleAgents: visibleAgentIds, focus: this.focus, companion: this.companionBadge, security, costDisplay }, lastSession });
     this.syncClaudeCode();
     } catch (err) {
       console.error('Tokalator: postSnapshot failed', err);
@@ -296,32 +471,28 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
     .hdr-icon { width: 20px; height: 20px; flex-shrink: 0; }
     .hdr-icon svg { width: 100%; height: 100%; }
     .hdr-title { font-weight: 700; font-size: 13px; }
+    .hdr-companion { font-size: 9px; font-weight: 700; letter-spacing: 1px; padding: 1px 6px; border-radius: 8px; border: 1px solid var(--border); color: var(--desc-fg); }
+    .hdr-companion[role="button"] { cursor: pointer; }
+    .hdr-companion { display: inline-flex; align-items: center; gap: 3px; }
+    .hdr-companion svg { width: 10px; height: 10px; fill: currentColor; }
+    .hdr-companion.tone-active { color: var(--low); border-color: color-mix(in srgb, var(--low) 50%, var(--border)); background: color-mix(in srgb, var(--low) 12%, transparent); }
+    .hdr-companion.tone-warn { color: var(--medium); border-color: color-mix(in srgb, var(--medium) 50%, var(--border)); }
     .hdr-badge { background: var(--brand-red); color: #fff; font-size: 9px; font-weight: 800; padding: 1px 5px; border-radius: 8px; letter-spacing: 1px; }
-    /* Calculator button press animation */
-    @keyframes btnPress {
-      0%, 100% { opacity: 0.25; }
-      50% { opacity: 0.75; }
-    }
-    @keyframes screenGlow {
-      0%, 80% { opacity: 0.35; }
-      90% { opacity: 0.7; }
-      100% { opacity: 0.35; }
-    }
-    @keyframes beadToKey { from { x: var(--bx); y: var(--by); width: 2.4px; height: 2.4px; rx: 1.2px; opacity: 0.9; } }
-    @keyframes rodOut { from { opacity: 0.55; } to { opacity: 0; } }
-    @keyframes screenIn { from { opacity: 0; } }
-    .hdr-icon .calc-rod { opacity: 0; animation: rodOut 0.5s ease 0.45s both; }
-    .hdr-icon .calc-btn { animation-name: beadToKey, btnPress; animation-duration: 0.7s, 0.35s; animation-timing-function: cubic-bezier(0.2, 0.7, 0.2, 1), ease; animation-fill-mode: both, both; }
-    .hdr-icon .btn-1 { animation-delay: 0.3s, 1.1s; }
-    .hdr-icon .btn-2 { animation-delay: 0.33s, 1.35s; }
-    .hdr-icon .btn-3 { animation-delay: 0.36s, 1.6s; }
-    .hdr-icon .btn-4 { animation-delay: 0.39s, 1.85s; }
-    .hdr-icon .btn-5 { animation-delay: 0.42s, 2.1s; }
-    .hdr-icon .btn-6 { animation-delay: 0.45s, 2.35s; }
-    .hdr-icon .btn-7 { animation-delay: 0.48s, 2.6s; }
-    .hdr-icon .btn-8 { animation-delay: 0.51s, 2.85s; }
-    .hdr-icon .btn-eq { animation-delay: 0.54s, 3.1s; animation-duration: 0.7s, 0.5s; }
-    .hdr-icon .calc-screen { animation: screenIn 0.4s ease 0.8s both, screenGlow 3s ease 3.3s both; }
+    .hdr-icon .rod { opacity: 0; animation: rodOut 0.5s ease 0.9s both; }
+    .hdr-icon .bar { animation: barGrow 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both; }
+    .hdr-icon .bar-1 { animation-delay: 0.35s; }
+    .hdr-icon .bar-2 { animation-delay: 0.5s; }
+    .hdr-icon .bar-3 { animation-delay: 0.65s; }
+    .hdr-icon .dot { animation: beadIn 0.5s ease both; }
+    .hdr-icon .hdr-fill { animation: meterFill 0.8s cubic-bezier(0.2, 0.7, 0.2, 1) 1s both; }
+    .hdr-icon .hdr-meter { animation: fadeIn 0.4s ease 0.9s both; }
+    .hdr-icon .cost { animation: fadeIn 0.4s ease 1.2s both; }
+    @keyframes rodOut { from { opacity: 0.8; } to { opacity: 0; } }
+    @keyframes barGrow { from { width: 1.5px; fill: #e3120b; } }
+    @keyframes beadIn { from { fill: #e3120b; } }
+    @keyframes meterFill { from { width: 0; } }
+    @keyframes fadeIn { from { opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .hdr-icon * { animation: none !important; } }
 
     .meter { padding: 8px; border-radius: 6px; margin-bottom: 8px; }
     .meter-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
@@ -338,6 +509,14 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 
     .card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; margin-bottom: 8px; font-size: 12px; }
     .card-title { font-weight: 600; font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--desc-fg); margin-bottom: 4px; }
+    .agent-tabs { display: flex; gap: 2px; margin: -2px 0 6px; border-bottom: 1px solid var(--border); overflow-x: auto; }
+    .agent-tabs button { background: none; border: 0; border-bottom: 2px solid transparent; color: var(--desc-fg); font: inherit; font-size: 10px; padding: 3px 6px; cursor: pointer; white-space: nowrap; }
+    .agent-tabs button[aria-selected="true"] { color: var(--fg, inherit); border-bottom-color: var(--accent); font-weight: 600; }
+    .cc-title { display: flex; justify-content: space-between; align-items: center; gap: 6px; }
+    .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 4px; overflow: hidden; flex-shrink: 0; }
+    .seg button { background: none; border: 0; color: var(--desc-fg); font: inherit; font-size: 9px; letter-spacing: 0; text-transform: none; padding: 2px 6px; cursor: pointer; }
+    .seg button[aria-pressed="true"] { background: var(--accent); color: var(--vscode-button-foreground, #fff); }
+    .seg button:focus-visible { outline: 1px solid var(--accent); outline-offset: -1px; }
 
     .cost-total { font-size: 18px; font-weight: 700; margin-bottom: 4px; }
     .cost-grid { display: grid; grid-template-columns: 1fr auto auto; gap: 2px 8px; font-size: 11px; }
@@ -439,6 +618,7 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
     var booted = false, lastNum = {}, lastW = {}, toastTimer = 0;
     function fmtBy(f, v) { return f === 'usd' ? fmtC(v) : f === 'int' ? String(Math.round(v)) : fmt(Math.round(v)); }
     function num(id, v, f) { return '<span class="num" data-id="'+id+'" data-v="'+v+'" data-f="'+f+'">'+fmtBy(f, v)+'</span>'; }
+    function tokTotal(u) { return u.inputTokens + u.outputTokens + u.cacheReadTokens + u.cacheWriteTokens; }
     function bar(id, w, color) { return '<div class="bar-fill" data-w-id="'+id+'" data-w="'+w+'" style="background:'+color+'"></div>'; }
     function fold(key, title, body) {
       var c = prefs.collapsed[key];
@@ -505,29 +685,29 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       try {
         var t = s.tabs || [], bl = s.budgetLevel || 'low', tot = s.totalEstimatedTokens || 0, cap = s.windowCapacity || 200000;
         var turns = s.chatTurnCount || 0, pins = (s.pinnedFiles || []).length, reasons = s.healthReasons || [];
-        var mid = s.modelId || '', models = s.models || [], ce = s.costEstimate, detected = s.detectedModels || [], usageLog = s.modelUsageLog || [];
+        var mid = s.modelId || '', models = s.models || [], ce = s.costEstimate, detected = s.detectedModels || [], usageLog = s.modelUsageLog || [], cd = s.costDisplay || 'dollars';
         var bd = s.budgetBreakdown, diag = s.diagnosticsSummary || {errors:0};
         var tl = s.tokenizerLabel || '', wfc = s.workspaceFileCount || 0, wft = s.workspaceFileTokens || 0;
         var th = 0.3, rel = t.filter(function(x){return x.relevanceScore>=th||x.isActive||x.isPinned;});
         var dist = t.filter(function(x){return x.relevanceScore<th&&!x.isActive&&!x.isPinned;});
 
-        var html = '<!--k:hdr--><div class="hdr"><span class="hdr-icon">' +
-          '<svg viewBox="0 0 24 24" fill="none" stroke="var(--fg)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
-          '<rect x="3" y="2" width="18" height="20" rx="2"/>' +
-          '<rect class="calc-rod" x="4.5" y="7" width="15" height="0.6" fill="var(--fg)" stroke="none"/>' +
-          '<rect class="calc-rod" x="4.5" y="12" width="15" height="0.6" fill="var(--fg)" stroke="none"/>' +
-          '<rect class="calc-rod" x="4.5" y="17" width="15" height="0.6" fill="var(--fg)" stroke="none"/>' +
-          '<rect class="calc-screen" x="5.5" y="4.5" width="13" height="4" rx="1" fill="var(--accent)" opacity="0.35" stroke="none"/>' +
-          '<rect class="calc-btn btn-1" style="--bx:5.5px;--by:5.8px" x="5.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-2" style="--bx:8.3px;--by:5.8px" x="9.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-3" style="--bx:11.1px;--by:5.8px" x="13.5" y="10.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-4" style="--bx:5.5px;--by:10.8px" x="5.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-5" style="--bx:8.3px;--by:10.8px" x="9.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-6" style="--bx:11.1px;--by:10.8px" x="13.5" y="13.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-7" style="--bx:5.5px;--by:15.8px" x="5.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-8" style="--bx:8.3px;--by:15.8px" x="9.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.25" stroke="none"/>' +
-          '<rect class="calc-btn btn-eq" style="--bx:11.1px;--by:15.8px" x="13.5" y="16.5" width="3" height="2" rx="0.5" fill="var(--brand-red)" opacity="0.45" stroke="none"/>' +
-          '</svg></span><span class="hdr-title">Tokalator</span><span class="hdr-badge">OPEN SOURCE</span></div>';
+        var html = '<!--k:hdr--><div class="hdr"><span class="hdr-icon" title="Tokalator">' +
+          '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+          '<rect width="24" height="24" rx="5" fill="#0a0a0b"/>' +
+          '<rect x="3" y="1.5" width="18" height="21" rx="3" fill="#ffffff"/>' +
+          '<rect class="rod" x="4.5" y="9.5" width="15" height="0.5" fill="#5a3a30"/>' +
+          '<rect class="rod" x="4.5" y="12.5" width="15" height="0.5" fill="#5a3a30"/>' +
+          '<rect class="rod" x="4.5" y="15.5" width="15" height="0.5" fill="#5a3a30"/>' +
+          '<rect class="hdr-meter" x="4.5" y="3" width="15" height="4.5" rx="1.5" fill="#cfe9d6"/>' +
+          '<rect class="hdr-fill" x="6" y="4.5" width="7.5" height="1.5" rx="0.75" fill="#00a544"/>' +
+          '<circle class="dot" cx="5.25" cy="9.75" r="0.9" fill="#00a544"/>' +
+          '<rect class="bar bar-1" x="7.5" y="9" width="12" height="1.5" rx="0.75" fill="#00a544"/>' +
+          '<circle class="dot" cx="5.25" cy="12.75" r="0.9" fill="#00a544"/>' +
+          '<rect class="bar bar-2" x="7.5" y="12" width="9" height="1.5" rx="0.75" fill="#00a544"/>' +
+          '<circle class="dot" cx="5.25" cy="15.75" r="0.9" fill="#d4a017"/>' +
+          '<rect class="bar bar-3" x="7.5" y="15" width="4.5" height="1.5" rx="0.75" fill="#d4a017"/>' +
+          '<rect class="cost" x="4.5" y="18" width="15" height="3" rx="1.5" fill="#e3120b"/>' +
+          '</svg></span><span class="hdr-title">Tokalator</span><span class="hdr-badge">OPEN SOURCE</span>' + (s.companion ? '<span class="hdr-companion tone-'+esc(s.companion.tone)+'"'+(s.companion.command ? ' role="button" tabindex="0" data-action="companion"' : '')+' title="'+esc(s.companion.detail || '')+'">'+(s.companion.glyph === 'people' ? '<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="5.5" cy="5.5" r="2.2"/><circle cx="10.5" cy="5.5" r="2.2"/><path d="M1.5 13c.4-2.6 2-4 4-4s3.6 1.4 4 4zM6.5 13c.4-2.6 2-4 4-4s3.6 1.4 4 4z"/></svg>' : '')+esc(s.companion.label)+'</span>' : '') + '</div>';
 
         // 1. Budget meter
         var mLabel = '';
@@ -537,16 +717,14 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         html += '<!--k:meter--><div class="meter '+bl+'" title="'+usedPct.toFixed(1)+'% of the context window"><div class="meter-row"><span class="meter-level">'+bl.toUpperCase()+'</span><span class="meter-tokens">~'+num('tot', tot, 'tok')+' / '+fmt(cap)+'</span></div><div class="meter-bar"><div class="meter-fill" data-w-id="meter" data-w="'+usedPct.toFixed(2)+'"></div></div></div>';
 
         // 1b. Active Model card
-        var lastChatApi = null;
+        var lastSwitch = null;
         for (var ul = usageLog.length - 1; ul >= 0; ul--) {
-          if (usageLog[ul].source === 'chat-api') { lastChatApi = usageLog[ul]; break; }
+          if (usageLog[ul].modelId === mid) { lastSwitch = usageLog[ul]; break; }
         }
-        var sourceLabel = 'Set via Settings';
-        var sourceColor = 'var(--desc-fg)';
-        if (lastChatApi && lastChatApi.modelId === mid) {
-          sourceLabel = 'Synced from @tokalator chat';
-          sourceColor = 'var(--low)';
-        }
+        var SOURCE_LABELS = { 'claude-code': 'Synced from Claude Code', 'copilot-chat': 'Synced from Copilot Chat', 'copilot-cli': 'Synced from Copilot CLI', 'codex': 'Synced from Codex', 'opencode': 'Synced from OpenCode', 'chat-api': 'Synced from @tokalator chat', 'detected': 'Detected in Copilot Chat', 'available-lms': 'Detected in Copilot Chat' };
+        var synced = lastSwitch && SOURCE_LABELS[lastSwitch.source];
+        var sourceLabel = synced || 'Set via Settings';
+        var sourceColor = synced ? 'var(--low)' : 'var(--desc-fg)';
         var providerLabel = mProvider === 'anthropic' ? 'Anthropic' : mProvider === 'openai' ? 'OpenAI' : mProvider === 'google' ? 'Google' : mProvider || 'Unknown';
         html += '<!--k:model--><div class="card" style="border-color:color-mix(in srgb, var(--accent) 50%, var(--border))">';
         html += '<div style="display:flex;justify-content:space-between;align-items:center">';
@@ -576,8 +754,8 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         }
 
         // Hint about auto-sync
-        if (!lastChatApi || lastChatApi.modelId !== mid) {
-          html += '<div style="font-size:9px;color:var(--desc-fg);margin-top:4px;border-top:1px solid var(--border);padding-top:4px">Use @tokalator in chat to auto-sync model</div>';
+        if (!synced) {
+          html += '<div style="font-size:9px;color:var(--desc-fg);margin-top:4px;border-top:1px solid var(--border);padding-top:4px">Syncs automatically from Claude Code or @tokalator chat</div>';
         }
         html += '</div>';
 
@@ -593,7 +771,17 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
 
         // 3. Turn Analytics (log-based, replaces hardcoded estimates)
         var ui = s.usageInsights;
-        var cc = s.claudeCode;
+        var AGENT_LABELS = { 'claude-code': 'Claude Code', 'copilot-chat': 'Copilot Chat', 'copilot-cli': 'Copilot CLI', 'codex': 'Codex', 'opencode': 'OpenCode' };
+        var agentList = (s.visibleAgents || []).map(function(id){
+          return { id: id, sum: (id === 'claude-code' ? s.claudeCode : (s.agents || {})[id]) || null };
+        });
+        var byRecent = agentList.filter(function(a){ return a.sum && a.sum.lastActivityAt; }).sort(function(a, b){ return String(b.sum.lastActivityAt).localeCompare(String(a.sum.lastActivityAt)); });
+        if (!byRecent.length) byRecent = agentList.slice();
+        if (s.focus && s.focus.at > (prefs.agentAt || 0) && agentList.some(function(a){ return a.id === s.focus.agent; })) { prefs.agent = s.focus.agent; prefs.agentAt = s.focus.at; vscode.setState(prefs); }
+        if (prefs.agent && byRecent[0] && byRecent[0].sum && byRecent[0].id !== prefs.agent && Date.parse(byRecent[0].sum.lastActivityAt || '') > (prefs.agentAt || 0)) { prefs.agent = null; vscode.setState(prefs); }
+        var selAgent = agentList.filter(function(a){ return a.id === prefs.agent; })[0] || byRecent[0] || null;
+        var cc = selAgent ? selAgent.sum : null;
+        var agentName = selAgent ? AGENT_LABELS[selAgent.id] || selAgent.id : 'Claude Code';
         var ccs = cc && cc.session && cc.session.turnCount > 0 ? cc.session : null;
         html += '<!--k:turns-->';
         if (ui && ui.totalTurns >= 1) {
@@ -615,11 +803,14 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         } else if (ccs) {
           var ctxPct = ccs.contextWindow > 0 ? Math.min((ccs.contextTokens / ccs.contextWindow) * 100, 100) : 0;
           html += '<div class="card" style="border-color:color-mix(in srgb, var(--accent) 40%, var(--border))">';
-          html += '<div class="card-title" style="color:var(--accent)">Turn Analytics <span style="font-weight:400;font-size:10px;color:var(--desc-fg)">(from '+ccs.turnCount+' Claude Code turns)</span></div>';
+          html += '<div class="card-title" style="color:var(--accent)">Turn Analytics <span style="font-weight:400;font-size:10px;color:var(--desc-fg)">(from '+ccs.turnCount+' '+esc(agentName)+' turns)</span></div>';
           html += '<div class="usage-stat"><span class="usage-stat-label">Context now</span><span class="usage-stat-val">~'+num('ccCtx', ccs.contextTokens, 'tok')+(ccs.contextWindow ? ' / '+fmt(ccs.contextWindow)+' ('+ctxPct.toFixed(1)+'%)' : '')+'</span></div>';
           html += '<div class="usage-stat"><span class="usage-stat-label">Growth per turn</span><span class="usage-stat-val">~'+fmt(ccs.avgGrowthPerTurn)+'</span></div>';
           html += '<div class="usage-stat"><span class="usage-stat-label">Turns remaining</span><span class="usage-stat-val">'+(ccs.turnsLeft == null ? 'n/a' : '~'+ccs.turnsLeft)+'</span></div>';
-          html += '<div class="usage-stat"><span class="usage-stat-label">Avg API-equivalent cost per turn</span><span class="usage-stat-val">'+fmtC(ccs.cost / ccs.turnCount)+'</span></div>';
+          var perTurnTok = tokTotal(ccs) / ccs.turnCount;
+          html += cd === 'dollars'
+            ? '<div class="usage-stat"><span class="usage-stat-label">Avg API-equivalent cost per turn</span><span class="usage-stat-val">'+fmtC(ccs.cost / ccs.turnCount)+'</span></div>'
+            : '<div class="usage-stat"><span class="usage-stat-label">Avg tokens per turn</span><span class="usage-stat-val">~'+fmt(perTurnTok)+(cd === 'both' ? ' <span style="color:var(--desc-fg);font-weight:400">('+fmtC(ccs.cost / ccs.turnCount)+')</span>' : '')+'</span></div>';
           if (ctxPct >= 75) html += '<div style="color:var(--medium);font-weight:600;margin-top:4px;font-size:11px">'+(ctxPct >= 90 ? 'High risk of overflow' : 'Approaching limit')+'</div>';
           html += '</div>';
         } else {
@@ -633,42 +824,64 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         if (ui && ui.totalTurns >= 1) {
           var lt = ui.lastTurn;
           html += '<!--k:cost--><div class="card" style="border-color:color-mix(in srgb, var(--low) 30%, var(--border))">';
-          html += '<div class="card-title" style="color:var(--low)">Turn Cost <span style="font-weight:400;font-size:10px;color:var(--desc-fg)">(input only)</span></div>';
+          html += '<div class="card-title" style="color:var(--low)">'+(cd === 'tokens' ? 'Turn Size' : 'Turn Cost')+' <span style="font-weight:400;font-size:10px;color:var(--desc-fg)">(input only)</span></div>';
           if (lt) {
-            html += '<div class="usage-highlight">'+num('lastTurn', lt.effectiveCost, 'usd')+'</div>';
+            html += cd === 'tokens'
+              ? '<div class="usage-highlight">~'+num('lastTurnTok', lt.inputTokens, 'tok')+' <span style="font-size:10px;font-weight:500;color:var(--desc-fg)">tokens</span></div>'
+              : '<div class="usage-highlight">'+num('lastTurn', lt.effectiveCost, 'usd')+'</div>';
             html += '<div class="usage-sub">last turn: ~'+fmt(lt.inputTokens)+' input tokens</div>';
           }
           html += '<div class="cost-grid">';
-          html += '<span class="cost-label">Avg cost/turn</span><span class="cost-tok">~'+fmt(ui.avgInputTokens)+'</span><span class="cost-val">'+fmtC(ui.avgCostPerTurn)+'</span>';
-          html += '<span class="cost-label">Total spend</span><span class="cost-tok">'+ui.totalTurns+' turns</span><span class="cost-val">'+num('totalSpend', ui.totalCost, 'usd')+'</span>';
+          if (cd === 'tokens') {
+            html += '<span class="cost-label">Avg per turn</span><span class="cost-tok">'+ui.totalTurns+' turns</span><span class="cost-val">~'+fmt(ui.avgInputTokens)+'</span>';
+            html += '<span class="cost-label">Total input</span><span class="cost-tok"></span><span class="cost-val">~'+fmt(ui.avgInputTokens * ui.totalTurns)+'</span>';
+          } else {
+            html += '<span class="cost-label">Avg cost/turn</span><span class="cost-tok">~'+fmt(ui.avgInputTokens)+'</span><span class="cost-val">'+fmtC(ui.avgCostPerTurn)+'</span>';
+            html += '<span class="cost-label">Total spend</span><span class="cost-tok">'+ui.totalTurns+' turns</span><span class="cost-val">'+num('totalSpend', ui.totalCost, 'usd')+'</span>';
+          }
           html += '</div>';
-          if (ce) {
+          if (ce && cd !== 'tokens') {
             html += '<div class="cost-rate">Rate: '+fmtR(ce.inputCostPerMTok)+'/MTok input</div>';
           }
-          html += '<div class="cost-rate" title="VS Code does not expose Copilot token usage to other extensions">Copilot and other chat models: input-only estimate. Claude Code usage is observed from its logs.</div>';
+          html += '<div class="cost-rate">Estimated from what is open in the editor. Agent usage below is read from each agent&apos;s own logs.</div>';
           html += '</div>';
         }
 
         // 5. Claude Code usage observed from local session logs
-        if (cc) {
-          var isLive = cc.lastActivityAt && Date.now() - Date.parse(cc.lastActivityAt) < 120000;
+        if (selAgent) {
+          var isLive = cc && cc.lastActivityAt && Date.now() - Date.parse(cc.lastActivityAt) < 120000;
           html += '<!--k:cc--><div class="card" style="border-color:color-mix(in srgb, var(--brand-red) 35%, var(--border))">';
-          html += '<div class="card-title">Claude Code'+(isLive ? '<span class="live" title="Active session; updates automatically"></span>' : '')+' <span style="font-weight:400;font-size:10px;text-transform:none">observed'+(cc.lastActivityAt ? ' &middot; '+ago(cc.lastActivityAt) : '')+'</span></div>';
-          if (cc.week.messages === 0) {
-            html += '<div style="font-size:11px;color:var(--desc-fg)">No Claude Code activity for this workspace in the last 7 days.</div>';
+          if (agentList.length > 1) {
+            html += '<div class="agent-tabs" role="tablist" aria-label="Coding agent">'+agentList.map(function(a){ return '<button role="tab" data-action="agentTab" data-agent="'+esc(a.id)+'" aria-selected="'+(a === selAgent)+'">'+esc(AGENT_LABELS[a.id] || a.id)+'</button>'; }).join('')+'</div>';
+          }
+          html += '<div class="card-title cc-title"><span>'+esc(agentName)+(isLive ? '<span class="live" title="Active session; updates automatically"></span>' : '')+' <span style="font-weight:400;font-size:10px;text-transform:none">'+(cc && cc.lastActivityAt ? 'observed &middot; '+ago(cc.lastActivityAt) : 'installed')+'</span></span>';
+          html += '<span class="seg" role="group" aria-label="Show usage as">'+[['dollars','$'],['tokens','Tokens'],['both','Both']].map(function(o){ return '<button data-action="costDisplay" data-mode="'+o[0]+'" aria-pressed="'+(cd === o[0])+'" title="'+(o[0] === 'tokens' ? 'For Pro, Max and Team subscriptions' : o[0] === 'dollars' ? 'API-equivalent dollars' : 'Tokens with API-equivalent dollars')+'">'+o[1]+'</button>'; }).join('')+'</span></div>';
+          if (!cc || cc.week.messages === 0) {
+            html += '<div style="font-size:11px;color:var(--desc-fg)">No '+esc(agentName)+' activity in this workspace in the last 7 days. It appears here automatically when you use it.</div>';
           } else {
-            html += '<div class="usage-highlight" title="What these tokens would cost at API list prices. Pro, Max and Team subscriptions are not billed per token.">'+num('ccToday', cc.today.cost, 'usd')+' <span style="font-size:10px;font-weight:500;color:var(--desc-fg)">API-equivalent</span></div>';
-            html += '<div class="usage-sub">today &middot; '+num('ccTurns', cc.todayTurns, 'int')+' turns &middot; '+cc.today.messages+' requests &middot; '+num('ccWeek', cc.week.cost, 'usd')+' in 7 days</div>';
+            var todayTok = tokTotal(cc.today), weekTok = tokTotal(cc.week);
+            if (cd === 'dollars') {
+              html += '<div class="usage-highlight" title="What these tokens would cost at API list prices. Pro, Max and Team subscriptions are not billed per token.">'+num('ccToday', cc.today.cost, 'usd')+' <span style="font-size:10px;font-weight:500;color:var(--desc-fg)">API-equivalent</span></div>';
+              html += '<div class="usage-sub">today &middot; '+num('ccTurns', cc.todayTurns, 'int')+' turns &middot; '+cc.today.messages+' requests &middot; '+num('ccWeek', cc.week.cost, 'usd')+' in 7 days</div>';
+            } else {
+              html += '<div class="usage-highlight">'+num('ccTodayTok', todayTok, 'tok')+' <span style="font-size:10px;font-weight:500;color:var(--desc-fg)">tokens today</span></div>';
+              if (cd === 'both') html += '<div class="usage-sub" title="What these tokens would cost at API list prices">&asymp; '+num('ccToday', cc.today.cost, 'usd')+' API-equivalent</div>';
+              html += '<div class="usage-sub">'+num('ccTurns', cc.todayTurns, 'int')+' turns &middot; '+cc.today.messages+' requests &middot; '+fmt(weekTok)+' tokens in 7 days</div>';
+              var winCap = (cc.session && cc.session.contextWindow) || cap;
+              if (winCap > 0 && todayTok > 0) html += '<div class="usage-sub">&asymp; '+(todayTok / winCap).toFixed(1)+' full context windows today'+(selAgent.id === 'copilot-chat' ? '' : ' &middot; '+Math.round(cc.cacheHitRate*100)+'% served from cache')+'</div>';
+            }
             if (cc.session) {
               html += '<div class="cost-grid">';
-              html += '<span class="cost-label">Last session</span><span class="cost-tok">'+esc(cc.session.model)+'</span><span class="cost-val">'+num('ccSession', cc.session.cost, 'usd')+'</span>';
+              html += '<span class="cost-label">Last session</span><span class="cost-tok">'+esc(cc.session.model)+'</span><span class="cost-val">'+(cd === 'tokens' ? fmt(tokTotal(cc.session)) : num('ccSession', cc.session.cost, 'usd'))+'</span>';
               html += '<span class="cost-label">Input / output</span><span class="cost-tok">'+fmt(cc.session.inputTokens)+'</span><span class="cost-val">'+fmt(cc.session.outputTokens)+'</span>';
               html += '<span class="cost-label">Cache read / write</span><span class="cost-tok">'+fmt(cc.session.cacheReadTokens)+'</span><span class="cost-val">'+fmt(cc.session.cacheWriteTokens)+'</span>';
               html += '</div>';
             }
-            var split = (cc.byEntrypoint || []).map(function(e){ return esc(e.label)+' '+fmtC(e.cost); }).join(' &middot; ');
-            html += '<div class="cost-rate">Cache hit '+Math.round(cc.cacheHitRate*100)+'% (7 days)'+(split ? ' &middot; '+split : '')+'</div>';
-            html += '<div class="cost-rate">API list prices; subscription plans are not billed per token.</div>';
+            if (selAgent && selAgent.id === 'copilot-chat') html += '<div class="cost-rate">VS Code records the final prompt size of each request, so multi-step agent requests may use more input than shown.</div>';
+            if (cc.estimatedShare > 0) html += '<div class="cost-rate" title="'+esc(agentName)+' did not record token counts for these requests; Tokalator estimated them from text length">'+Math.round(cc.estimatedShare*100)+'% of requests estimated, the rest are exact</div>';
+            var split = (selAgent && selAgent.id === 'claude-code' ? cc.byEntrypoint || [] : []).map(function(e){ return esc(e.label)+' '+(cd === 'tokens' ? e.messages+' requests' : fmtC(e.cost)); }).join(' &middot; ');
+            html += '<div class="cost-rate">'+(selAgent.id === 'copilot-chat' ? 'Copilot does not record cache use' : 'Cache hit '+Math.round(cc.cacheHitRate*100)+'% (7 days)')+(split ? ' &middot; '+split : '')+'</div>';
+            html += '<div class="cost-rate">'+(cd === 'tokens' ? 'Showing tokens. Subscription plans are not billed per token.' : 'API list prices; subscription plans are not billed per token.')+'</div>';
             if (cc.week.unpricedMessages > 0) html += '<div class="cost-rate">'+cc.week.unpricedMessages+' requests on unpriced models: '+esc(cc.week.unpricedModels.join(', '))+'</div>';
           }
           html += '</div>';
@@ -797,6 +1010,9 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
         case 'pricewatch': vscode.postMessage({command:'pricewatch'}); break;
         case 'codeMaps': vscode.postMessage({command:'codeMaps'}); toast('Generating code maps'); break;
         case 'switchModel': vscode.postMessage({command:'switchModel',modelId:el.dataset.model}); toast('Switched to ' + el.textContent); break;
+        case 'costDisplay': vscode.postMessage({command:'setCostDisplay',mode:el.dataset.mode}); break;
+        case 'companion': vscode.postMessage({command:'companionCommand'}); break;
+        case 'agentTab': prefs.agent = el.dataset.agent; prefs.agentAt = Date.now(); vscode.setState(prefs); vscode.postMessage({command:'agentModel',agent:el.dataset.agent}); if (lastData) render(lastData, lastSes); break;
       }
     });
     document.addEventListener('keydown', function(e) {
@@ -807,10 +1023,11 @@ export class ContextDashboardProvider implements vscode.WebviewViewProvider, vsc
       el.click();
     });
 
-    var lastSes = null;
+    var lastSes = null, lastData = null;
     window.addEventListener('message', function(e) {
       if (e.data.type === 'snapshot') {
         if (e.data.lastSession) lastSes = e.data.lastSession;
+        lastData = e.data.data;
         render(e.data.data, lastSes);
       }
     });

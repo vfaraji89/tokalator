@@ -1,8 +1,8 @@
 {
   "name": "tokalator",
   "displayName": "Tokalator",
-  "description": "Open-source context engineering for AI coding: context budget, Claude Code turns and API-equivalent cost, tab relevance, current model pricing, code maps, and workspace security for Copilot and Claude Code.",
-  "version": "4.1.1",
+  "description": "Open-source context engineering for AI coding: context budget, Claude Code, GitHub Copilot and Codex usage in tokens or API-equivalent cost, tab relevance, current model pricing, code maps, and workspace security.",
+  "version": "4.1.2",
   "publisher": "vfaraji89",
   "license": "AGPL-3.0-or-later",
   "repository": {
@@ -31,7 +31,10 @@
     "mcp",
     "ai",
     "tokalator",
-    "open-source"
+    "open-source",
+    "copilot-usage",
+    "codex",
+    "token-usage"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -164,6 +167,10 @@
       {
         "command": "tokalator.feedback",
         "title": "Tokalator: Send Feedback"
+      },
+      {
+        "command": "tokalator.survey",
+        "title": "Tokalator: Take the 1-Minute Survey"
       },
       {
         "command": "tokalator.telemetryShow",
@@ -299,6 +306,31 @@
           "default": true,
           "description": "Show token usage and cost from local Claude Code session logs (CLI and VS Code extension) for this workspace. Reads ~/.claude/projects (or CLAUDE_CONFIG_DIR) on this machine; nothing is uploaded."
         },
+        "tokalator.agents.copilot.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show GitHub Copilot usage: Copilot Chat sessions that VS Code stores for this workspace, and Copilot CLI sessions started in this workspace. Read locally; nothing is uploaded."
+        },
+        "tokalator.agents.codex.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show OpenAI Codex CLI usage for sessions started in this workspace, read from local Codex session logs (CODEX_HOME or ~/.codex). Nothing is uploaded."
+        },
+        "tokalator.costDisplay": {
+          "type": "string",
+          "enum": [
+            "dollars",
+            "tokens",
+            "both"
+          ],
+          "enumDescriptions": [
+            "API-equivalent dollars (best if you pay per token through the API)",
+            "Tokens only, no dollar amounts (best for Claude Pro, Max or Team subscriptions)",
+            "Tokens first, with the API-equivalent dollar value underneath"
+          ],
+          "default": "dollars",
+          "description": "How Claude Code usage and turn costs are shown. Subscriptions are not billed per token, so subscribers may prefer tokens."
+        },
         "tokalator.telemetry.enabled": {
           "type": "boolean",
           "default": false,
@@ -319,7 +351,6 @@
     "package": "npm run compile && npx @vscode/vsce package --no-dependencies",
     "lint": "eslint src",
     "test": "jest --verbose",
-    "preview:dashboard": "npx tsx scripts/render-dashboard-preview.ts",
     "test:e2e": "npm run compile && node e2e/run.js"
   },
   "devDependencies": {
