@@ -19,31 +19,20 @@ export default function Image() {
           fontFamily: "system-ui, sans-serif",
         }}
       >
-        {/* Abacus icon */}
-        <svg
-          width="80"
-          height="80"
-          viewBox="0 0 28 28"
-          fill="none"
-        >
-          <path
-            d="M4 4 L4 24 L24 24 L24 4 Z"
-            stroke="#888"
-            strokeWidth="2"
-            fill="none"
-            strokeLinejoin="round"
-          />
-          <line x1="4" y1="9" x2="24" y2="9" stroke="#888" strokeWidth="1.2" />
-          <line x1="4" y1="14" x2="24" y2="14" stroke="#888" strokeWidth="1.2" />
-          <line x1="4" y1="19" x2="24" y2="19" stroke="#888" strokeWidth="1.2" />
-          <circle cx="8" cy="9" r="2.2" fill="#e3120b" />
-          <circle cx="13" cy="9" r="2.2" fill="#555" />
-          <circle cx="9" cy="14" r="2.2" fill="#555" />
-          <circle cx="14" cy="14" r="2.2" fill="#e3120b" />
-          <circle cx="19" cy="14" r="2.2" fill="#e3120b" />
-          <circle cx="8" cy="19" r="2.2" fill="#e3120b" />
-          <circle cx="13" cy="19" r="2.2" fill="#e3120b" />
-          <circle cx="18" cy="19" r="2.2" fill="#555" />
+        <svg width="84" height="108" viewBox="0 0 56 72">
+          <rect x="1" y="1" width="54" height="70" rx="9" fill="#1d1d24" stroke="#33333d" />
+          <rect x="7" y="7" width="42" height="17" rx="3" fill="#062314" />
+          <rect x="30" y="12" width="15" height="7" rx="1" fill="#3ee08a" />
+          <rect x="9" y="30" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="22" y="30" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="35" y="30" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="9" y="40" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="22" y="40" width="10" height="7" rx="1.6" fill="#ff4b3e" />
+          <rect x="35" y="40" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="9" y="50" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="22" y="50" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="35" y="50" width="10" height="7" rx="1.6" fill="#3a3a45" />
+          <rect x="9" y="60" width="36" height="7" rx="1.6" fill="#e3120b" />
         </svg>
 
         <div

@@ -1,5 +1,5 @@
 // Launches an isolated VS Code (fresh profile, temp workspace, no other extensions) and runs e2e/suite.js.
-// Usage: npm run test:e2e   (VSCODE_BIN overrides the VS Code executable)
+// Usage: npm run test:e2e   (VSCODE_BIN overrides the VS Code executable; TOKALATOR_EXT_PATH tests an unpacked VSIX)
 const { spawnSync } = require('child_process');
 const fs = require('fs');
 const os = require('os');
@@ -41,14 +41,20 @@ fs.writeFileSync(sessionLog, [
   line({ type: 'assistant', uuid: 'a3', timestamp: at(62), message: { id: 'msg_3', model: 'claude-opus-5-5', usage: { input_tokens: 4, output_tokens: 300, cache_read_input_tokens: 20605, cache_creation_input_tokens: 900 } } }),
 ].join('\n') + '\n');
 
+const extPath = process.env.TOKALATOR_EXT_PATH || path.resolve(__dirname, '..');
+const suite = path.join(extPath, 'e2e', 'suite.js');
+if (extPath !== path.resolve(__dirname, '..')) {
+  fs.mkdirSync(path.dirname(suite), { recursive: true });
+  fs.copyFileSync(path.join(__dirname, 'suite.js'), suite);
+}
 const report = path.join(tmp, 'report.json');
 const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith('VSCODE_') && !k.startsWith('ELECTRON_')));
 Object.assign(env, { CLAUDE_CONFIG_DIR: claudeDir, TOKALATOR_E2E_REPORT: report, TOKALATOR_E2E_SESSION_LOG: sessionLog });
 
 const result = spawnSync(bin, [
   ws,
-  `--extensionDevelopmentPath=${path.resolve(__dirname, '..')}`,
-  `--extensionTestsPath=${path.resolve(__dirname, 'suite.js')}`,
+  `--extensionDevelopmentPath=${extPath}`,
+  `--extensionTestsPath=${suite}`,
   `--user-data-dir=${path.join(tmp, 'user')}`,
   `--extensions-dir=${path.join(tmp, 'extensions')}`,
   '--disable-extensions',

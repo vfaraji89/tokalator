@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { CalculatorMark } from "./calculator-mark";
 import { usePathname } from "next/navigation";
 import { useState, useEffect, useRef, useCallback } from "react";
 import siteContent from "../content/site.json";
@@ -183,12 +184,15 @@ export function SideNav() {
       <nav className="sidebar">
         <div className="sidebar-header">
           <div className="sidebar-brand">
+            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <CalculatorMark size={26} />
             <div className="brand-stack">
               <Link href="/" className="sidebar-logo">
                 <span className="sidebar-at">@</span>
                 <span className="sidebar-logo-text text-motion">{siteContent.name.replace("@", "")}</span>
               </Link>
               <a href="https://vfaraji89.github.io/" target="_blank" rel="noopener noreferrer" className="brand-byline">by Vahid Faraji</a>
+            </div>
             </div>
             <a
               href="https://github.com/vfaraji89/tokalator"

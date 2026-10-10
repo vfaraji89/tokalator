@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { track } from "@vercel/analytics";
 import styles from "./site-footer.module.css";
+import { CalculatorMark } from "./calculator-mark";
 
 const MARKETPLACE = "https://marketplace.visualstudio.com/items?itemName=vfaraji89.tokalator";
 
@@ -20,7 +21,7 @@ export function SiteFooter() {
     <footer className={styles.footer}>
       <div className={styles.grid}>
         <div>
-          <Link href="/" className={styles.brand}><span>@</span> tokalator</Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}><CalculatorMark size={30} /><Link href="/" className={styles.brand}><span>@</span> tokalator</Link></div>
           <a href="https://vfaraji89.github.io/" target="_blank" rel="noopener noreferrer" className={styles.by}>by Vahid Faraji</a>
           <p className={styles.tagline}>Open-source context engineering for AI coding. Free, AGPL-3.0.</p>
           <a href={MARKETPLACE} target="_blank" rel="noopener noreferrer" className={styles.stats} onClick={() => track("marketplace_click", { location: "footer" })}>

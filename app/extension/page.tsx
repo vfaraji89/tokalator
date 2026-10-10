@@ -8,6 +8,7 @@ import ext from "../../content/extension.json";
 import pkg from "../../tokalator-extension-vs/package.json";
 import { CATALOG_MODELS, CATALOG_UPDATED_AT } from "../../lib/models";
 import { CliTerminal } from "../../components/cli-terminal";
+import { CalculatorMark } from "../../components/calculator-mark";
 import { FAQ, TRACKING } from "../../lib/extension-faq";
 
 const scrollReveal = (delay = 0) => ({
@@ -89,13 +90,7 @@ export default function ExtensionPage() {
   return (
     <article className="article">
       <header className="hero">
-        <div className="hero-outline-icon" aria-hidden>
-          <svg width="48" height="48" viewBox="0 0 28 28" fill="none">
-            <rect x="4" y="4" width="20" height="20" rx="3" stroke="currentColor" strokeWidth="1.5" fill="none" />
-            <path d="M10 10L14 14L10 18" stroke="var(--accent)" strokeWidth="1.5" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-            <line x1="15" y1="18" x2="20" y2="18" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-        </div>
+        <div className="hero-outline-icon"><CalculatorMark size={44} label="Tokalator extension" /></div>
         <h1 className="hero-headline">
           {before}<span className="accent-highlight">{ext.highlightPhrase}</span>{after}
           <br />

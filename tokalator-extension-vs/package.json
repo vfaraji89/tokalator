@@ -1,7 +1,7 @@
 {
   "name": "tokalator",
   "displayName": "Tokalator",
-  "description": "Open-source context engineering for AI coding assistants: real-time context budget, tab relevance, model pricing, and workspace security for Copilot, Claude, and other agents.",
+  "description": "Open-source context engineering for AI coding: context budget, Claude Code turns and API-equivalent cost, tab relevance, current model pricing, code maps, and workspace security for Copilot and Claude Code.",
   "version": "4.1.1",
   "publisher": "vfaraji89",
   "license": "AGPL-3.0-or-later",
@@ -18,14 +18,19 @@
     "Other"
   ],
   "keywords": [
-    "tokens",
-    "context",
-    "context-engineering",
-    "ai",
-    "copilot",
+    "claude-code",
     "claude",
+    "copilot",
+    "tokens",
+    "token-counter",
+    "context",
+    "context-window",
+    "context-engineering",
+    "cost",
+    "pricing",
+    "mcp",
+    "ai",
     "tokalator",
-    "calculator",
     "open-source"
   ],
   "activationEvents": [
@@ -332,5 +337,12 @@
     "js-tiktoken": "^1.0.21"
   },
   "homepage": "https://tokalator.ai",
-  "author": "Vahid Farajijobehdar"
+  "author": "Vahid Farajijobehdar",
+  "bugs": {
+    "url": "https://github.com/vfaraji89/tokalator/issues"
+  },
+  "galleryBanner": {
+    "color": "#0c0c0f",
+    "theme": "dark"
+  }
 }

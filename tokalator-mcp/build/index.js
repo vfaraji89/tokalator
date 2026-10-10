@@ -23,7 +23,7 @@ import { claudeCodeUsage, claudeCodeUsageSchema, formatUsage } from './tools/cla
 const tokenizer = new TokenizerService();
 const server = new McpServer({
     name: 'tokalator',
-    version: '3.1.8',
+    version: '4.1.1',
 });
 // ── count_tokens ──────────────────────────────────────────────────────────────
 server.registerTool('count_tokens', {
