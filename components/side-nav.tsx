@@ -69,6 +69,10 @@ function SidebarHeart() {
 
 export function SideNav() {
   const pathname = usePathname();
+  const activeHref = nav
+    .flatMap((section) => section.items.map((item) => item.href))
+    .filter((href) => pathname === href || (href !== "/" && pathname.startsWith(href + "/")))
+    .sort((a, b) => b.length - a.length)[0];
 
   // Track which collapsible sections are open
   const [collapsed, setCollapsed] = useState<Record<string, boolean>>({});
@@ -144,9 +148,7 @@ export function SideNav() {
           <div key={section.section} className="mobile-menu-section">
             <div className="mobile-menu-section-label">{section.section}</div>
             {section.items.map((item) => {
-              const isActive =
-                pathname === item.href ||
-                (item.href !== "/" && pathname.startsWith(item.href));
+              const isActive = item.href === activeHref;
               return (
                 <Link
                   key={item.href}
@@ -229,9 +231,7 @@ export function SideNav() {
               {isOpen && (
                 <div className={isCollapsible ? "nav-submenu" : ""}>
                   {section.items.map((item) => {
-                    const isActive =
-                      pathname === item.href ||
-                      (item.href !== "/" && pathname.startsWith(item.href));
+                    const isActive = item.href === activeHref;
                     return (
                       <Link
                         key={item.href}

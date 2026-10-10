@@ -694,7 +694,7 @@ html, body {
 }
 
 /* Mobile responsive */
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .sidebar {
     display: none !important;
     width: 0 !important;
@@ -886,6 +886,9 @@ html, body {
     display: none;
   }
 
+}
+
+@media (max-width: 768px) {
   /* Demo mockup mobile */
   .demo-mockup-wrapper { margin: 2rem auto 0; max-width: 100%; }
   .demo-sidebar { width: 100px; padding: 8px; }
@@ -1016,7 +1019,7 @@ html, body {
   }
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1024px) {
   .mobile-header,
   .mobile-desktop-hint,
   .mobile-menu,
@@ -4898,7 +4901,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 .nav-link.active { color: var(--accent); background: var(--accent-bg); }
 .nav-section-label { font-size: 9px; letter-spacing: .1em; }
 .recharts-wrapper { font-family: var(--font-primary); }
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .main-content:not(:has(.natural-home)) { padding: 76px 20px 32px; width: 100%; }
   .main-content:not(:has(.natural-home)) .section-header { font-size: 19px; }
   .main-content:not(:has(.natural-home)) :is(.tool-card, .arch-card, .feature-item, .install-method-card) { padding: 20px; }
@@ -4922,8 +4925,37 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   margin-left: auto;
   margin-right: auto;
 }
-@media (max-width: 768px) {
+@media (max-width: 1023px) {
   .main-content:not(:has(.natural-home)) { padding: 76px 20px 0; width: 100%; }
 }
 
 .sidebar-logo-text { padding-right: 0.12em; white-space: nowrap; }
+
+/* Grid items shrink with their column; long commands wrap inside their card instead of being clipped. */
+.main-content :is(.feature-grid, .tool-grid, .wiki-grid, .arch-grid, .install-methods, .why-stats) > * { min-width: 0; }
+.install-methods { grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.install-method-card pre { white-space: pre-wrap; overflow-wrap: anywhere; }
+.install-cmd { max-width: 100%; }
+.install-cmd code { min-width: 0; overflow-wrap: anywhere; }
+.wiki-grid { grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr)); }
+.wiki-card-meta { flex-wrap: wrap; }
+.wiki-card-title, .wiki-card-desc, .wiki-card-authors { overflow-wrap: anywhere; }
+.why-stats--4col { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.why-stats--4col .why-stat-number { font-size: clamp(1.125rem, 2vw, 1.375rem); }
+@media (min-width: 700px) {
+  .why-stats--4col { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+@media (max-width: 430px) {
+  body { font-size: .9375rem; }
+}
+@media (max-width: 640px) {
+  .settings-table--stack { display: block; overflow: visible; margin-top: 0.5rem; }
+  .settings-table--stack thead { display: none; }
+  .settings-table--stack tbody, .settings-table--stack tr, .settings-table--stack td { display: block; }
+  .settings-table--stack tr { padding: 0.875rem 0; border-bottom: 1px solid var(--border); }
+  .settings-table--stack td { border: 0; padding: 0; white-space: normal; overflow-wrap: anywhere; font-size: 0.875rem; }
+  .settings-table--stack td[data-label]::before { content: attr(data-label); display: block; margin-top: 0.5rem; font-size: 0.625rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; color: var(--text-muted); }
+}
+@media (min-width: 1680px) {
+  .main-content:not(:has(.natural-home)) > * { max-width: 1200px; }
+}
