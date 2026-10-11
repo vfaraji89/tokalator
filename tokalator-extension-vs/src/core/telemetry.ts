@@ -110,13 +110,14 @@ export class Telemetry {
   async deleteData(): Promise<boolean> {
     const id = this.state.get<string>(ID_KEY);
     await this.state.update(DAYS_KEY, {});
-    await this.state.update(ID_KEY, undefined);
     if (!id) return true;
     const res = await fetch(`${API}/telemetry?installId=${encodeURIComponent(id)}`, {
       method: 'DELETE',
       signal: AbortSignal.timeout(5000),
     }).catch(() => null);
-    return !!res?.ok;
+    if (!res?.ok) return false;
+    await this.state.update(ID_KEY, undefined);
+    return true;
   }
 
   async maybeAskConsent(): Promise<void> {

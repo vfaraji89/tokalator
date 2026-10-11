@@ -6,7 +6,9 @@ import * as os from 'os';
 import { ContextMonitor } from '../core/contextMonitor';
 import { findModel } from '../core/modelProfiles';
 import { WorkspaceSecurityScanner, SECRET_FILE_PATTERNS } from '../core/workspaceSecurityScanner';
-import type { PriceWatchService } from '../core/priceWatch';
+import { priceWatchReport, type PriceWatchService } from '../core/priceWatch';
+import { AGENT_LABELS } from '../core/agents/types';
+import { detectProject, planAgentFiles, planSkill, writePlanned, type PlannedFile } from '../core/workspaceSetup';
 
 /**
  * Chat participant `@tokalator` for Tokalator.
@@ -63,9 +65,7 @@ export class ContextChatParticipant implements vscode.Disposable {
       h => h instanceof vscode.ChatRequestTurn && !READONLY_COMMANDS.has(h.command ?? '')
     ).length;
     this.lastHistoryLength = context.history.length;
-    if (historyTurns > this.monitor.getChatTurnCount()) {
-      this.monitor.syncChatTurns(historyTurns);
-    }
+    this.monitor.syncChatTurns(historyTurns);
 
     const isReadOnly = READONLY_COMMANDS.has(request.command ?? '');
     if (!isReadOnly) {
@@ -317,8 +317,9 @@ export class ContextChatParticipant implements vscode.Disposable {
 
     // Current state
     const barLen = 20;
-    const currentFilled = Math.round(((preview.currentInput / preview.windowCapacity) * 100 / 100) * barLen);
-    const nextFilled = Math.round((preview.percentAfterTurn / 100) * barLen);
+    const clampBar = (n: number) => Math.min(barLen, Math.max(0, Number.isFinite(n) ? n : 0));
+    const currentFilled = clampBar(Math.round((preview.currentInput / preview.windowCapacity) * barLen));
+    const nextFilled = clampBar(Math.round((preview.percentAfterTurn / 100) * barLen));
     const currentBar = '█'.repeat(currentFilled) + '░'.repeat(barLen - currentFilled);
     const nextBar = '█'.repeat(nextFilled) + '░'.repeat(barLen - nextFilled);
 
@@ -448,103 +449,32 @@ export class ContextChatParticipant implements vscode.Disposable {
     request: vscode.ChatRequest,
     stream: vscode.ChatResponseStream,
   ): Promise<vscode.ChatResult> {
-    stream.progress('Analyzing project structure...');
-
-    const folders = vscode.workspace.workspaceFolders;
-    if (!folders) {
+    const root = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath;
+    if (!root) {
       stream.markdown('No workspace open.\n');
       return {};
     }
-
-    const root = folders[0].uri;
-    const rootPath = folders[0].name;
-
-    // Detect project characteristics
-    const pkgFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'package.json'), '**/node_modules/**', 1);
-    const pyFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*.py'), '**/node_modules/**', 5);
-    const goFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/*.go'), '**/node_modules/**', 5);
-    const rustFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/Cargo.toml'), '**/node_modules/**', 1);
-    const existingSkills = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/SKILL.md'), '**/node_modules/**', 5);
-
-    // Detect languages
-    const langs: string[] = [];
-    if (pkgFiles.length > 0) langs.push('TypeScript/JavaScript');
-    if (pyFiles.length > 0) langs.push('Python');
-    if (goFiles.length > 0) langs.push('Go');
-    if (rustFiles.length > 0) langs.push('Rust');
-    if (langs.length === 0) langs.push('Unknown');
-
-    // Detect instruction files
-    const instrFiles = await vscode.workspace.findFiles(
-      new vscode.RelativePattern(root, '**/*.{instructions.md,prompt.md,agent.md}'),
-      '**/node_modules/**', 20,
-    );
-    const claudeFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, '**/CLAUDE.md'), undefined, 1);
-
-    // Count workspace files
-    const allSrc = await vscode.workspace.findFiles(
-      new vscode.RelativePattern(root, '**/*.{ts,tsx,js,jsx,py,go,rs,java,cs}'),
-      '**/node_modules/**', 500,
-    );
-
-    stream.markdown(`## SKILL.md Generator\n\n`);
-    stream.markdown(`### Project Analysis: ${rootPath}\n\n`);
-    stream.markdown(`| Metric | Value |\n|---|---|\n`);
-    stream.markdown(`| Languages | ${langs.join(', ')} |\n`);
-    stream.markdown(`| Source files | ${allSrc.length} |\n`);
-    stream.markdown(`| Instruction files | ${instrFiles.length + claudeFiles.length} |\n`);
-    stream.markdown(`| Existing SKILL.md | ${existingSkills.length > 0 ? existingSkills.map(f => '`' + vscode.workspace.asRelativePath(f) + '`').join(', ') : 'None'} |\n\n`);
-
-    const { name: projectName, description: projectDesc, scripts } = await this.readPackageInfo(pkgFiles[0], rootPath);
-    const skillName = projectName.toLowerCase().replace(/^@/, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 64) || 'project';
-
-    // Agent Skills format: name (lowercase, hyphens) and a description saying what it does and when to use it.
-    const skillContent = [
-      '---',
-      `name: ${skillName}`,
-      `description: Conventions, commands, and structure for the ${projectName} codebase${projectDesc ? ` (${projectDesc.replace(/[\r\n]+/g, ' ').slice(0, 200)})` : ''}. Use when changing, testing, or reviewing code in this repository.`,
-      '---',
-      '',
-      `# ${projectName}`,
-      '',
-      projectDesc ? projectDesc + '\n' : '',
-      '## Project',
-      '',
-      `- Languages: ${langs.join(', ')}`,
-      `- Source files: about ${allSrc.length}`,
-      existingSkills.length > 0 ? `- Related skills: ${existingSkills.map(f => vscode.workspace.asRelativePath(f)).join(', ')}` : '',
-      '',
-      scripts.length ? '## Commands\n\n' + scripts.map(([k, v]) => `- \`npm run ${k}\`: ${v}`).join('\n') + '\n' : '',
-      '## Conventions',
-      '',
-      '- Follow the existing code style and patterns',
-      langs.includes('TypeScript/JavaScript') ? '- Keep TypeScript strict; run the type checker before finishing' : '',
-      '- Keep changes minimal and focused; run the tests that cover what you changed',
-      '',
-    ].filter(Boolean).join('\n');
-
-    // Token cost of the skill
-    const tokenizer = this.monitor.getTokenizer();
-    const model = this.monitor.getActiveModel();
-    const skillTokens = tokenizer.countTokens(skillContent, model.provider);
-
-    stream.markdown(`### Generated SKILL.md Preview\n\n`);
-    stream.markdown(`Token cost: ~${this.fmtTokens(skillTokens)} (${((skillTokens / model.contextWindow) * 100).toFixed(2)}% of ${model.label} window)\n\n`);
-    stream.markdown('```markdown\n' + skillContent + '```\n\n');
-
-    const arg = request.prompt.trim().toLowerCase();
-    const target = arg.includes('agents') ? '.agents/skills' : '.claude/skills';
-    if (arg.startsWith('apply') || arg.startsWith('write') || arg.startsWith('generate')) {
-      stream.progress('Writing SKILL.md...');
-      const dir = vscode.Uri.joinPath(root, target, skillName);
-      await vscode.workspace.fs.createDirectory(dir);
-      await vscode.workspace.fs.writeFile(vscode.Uri.joinPath(dir, 'SKILL.md'), Buffer.from(skillContent, 'utf-8'));
-      stream.markdown(`### Written\n\n\`${target}/${skillName}/SKILL.md\`. ${target === '.claude/skills' ? 'Claude Code and VS Code agent mode discover skills here.' : 'Codex and VS Code agent mode discover skills here.'}\n\n`);
-    } else {
-      stream.markdown(`**To write:** \`@tokalator /skill-gen apply\` (to \`.claude/skills/${skillName}/\`, read by Claude Code and VS Code) or \`@tokalator /skill-gen apply agents\` (to \`.agents/skills/${skillName}/\`, read by Codex and VS Code).\n`);
+    const plan = planSkill(root, detectProject(root));
+    if (plan.length === 0) {
+      stream.markdown('## Checks skill\n\nNo build, test, lint or type check commands found (package.json scripts, pyproject, go.mod, Cargo.toml or Makefile). Add them first, then generate the skill.\n');
+      return {};
     }
-
+    stream.markdown('## Checks skill\n\nAn Agent Skill that runs this project\'s checks before an agent says it is done. Skills load on demand, so it costs no tokens until it is used.\n\n');
+    this.streamPlan(stream, plan);
+    stream.markdown('```markdown\n' + plan[0].content + '```\n\n');
+    if (/^(apply|write|generate)/.test(request.prompt.trim().toLowerCase())) {
+      const written = writePlanned(root, plan);
+      stream.markdown(written.length ? `Written: ${written.map(w => '`' + w + '`').join(', ')}\n` : 'Nothing to write; the skill already exists.\n');
+    } else {
+      stream.markdown('**To write:** `@tokalator /skill-gen apply`, or the Generate SKILL.md button in the Tokalator sidebar.\n');
+    }
     return {};
+  }
+
+  private streamPlan(stream: vscode.ChatResponseStream, plan: PlannedFile[]): void {
+    stream.markdown('| File | Read by | Status |\n|---|---|---|\n');
+    for (const f of plan) stream.markdown(`| \`${f.path}\` | ${f.readBy} | ${f.exists ? 'Exists, kept' : 'Will create'} |\n`);
+    stream.markdown('\n');
   }
 
   /**
@@ -596,104 +526,22 @@ export class ContextChatParticipant implements vscode.Disposable {
     row('.vscode/settings.json', 'VS Code search exclusion', vscodeSettings.length);
     stream.markdown('\n');
 
-    const pkgFiles = await vscode.workspace.findFiles(new vscode.RelativePattern(root, 'package.json'), '**/node_modules/**', 1);
-    const { name: projectName, description: projectDesc, scripts } = await this.readPackageInfo(pkgFiles[0], folders[0].name);
-
-    const missing: string[] = [];
-    const generated: { path: string; content: string }[] = [];
-    const guide = [
-      `# ${projectName}`,
-      '',
-      projectDesc ? projectDesc + '\n' : '',
-      scripts.length ? '## Commands\n\n' + scripts.map(([k, v]) => `- \`npm run ${k}\`: ${v}`).join('\n') + '\n' : '',
-      '## Conventions',
-      '',
-      '- Follow existing patterns in the codebase',
-      '- Keep changes minimal and focused; no speculative abstractions',
-      '- Run the tests that cover what you changed before finishing',
-      '- Never read or print secret files such as .env or private keys',
-      '',
-    ].filter(Boolean).join('\n');
-
-    if (agentsFile.length === 0) {
-      missing.push('AGENTS.md');
-      generated.push({ path: 'AGENTS.md', content: guide });
-    }
-    if (claudeFile.length === 0) {
-      missing.push('CLAUDE.md');
-      generated.push({ path: 'CLAUDE.md', content: '@AGENTS.md\n' });
-    }
-    if (copilotInstr.length === 0) {
-      missing.push('.github/copilot-instructions.md');
-      generated.push({ path: '.github/copilot-instructions.md', content: guide });
-    }
-
-    // Generate .vscode/settings.json AI excludes if missing
-    if (vscodeSettings.length === 0) {
-      const content = JSON.stringify({
-        'search.exclude': {
-          '**/.env': true,
-          '**/.env.*': true,
-          '**/*.pem': true,
-          '**/*.key': true,
-          '**/id_rsa*': true,
-          '**/credentials.json': true,
-          '**/service-account*.json': true,
-          '**/dist/**': true,
-        },
-      }, null, 2) + '\n';
-      missing.push('.vscode/settings.json');
-      generated.push({ path: '.vscode/settings.json', content });
-    }
-
+    const plan = planAgentFiles(root.fsPath, detectProject(root.fsPath));
+    stream.markdown('### Agent instructions\n\n`AGENTS.md` is the single source: Codex and VS Code Copilot read it directly, and `CLAUDE.md` imports it for Claude Code. A copy in `.github/copilot-instructions.md` is not needed, since VS Code would load both.\n\n');
+    this.streamPlan(stream, plan);
+    const missing = plan.filter(f => !f.exists);
     if (missing.length === 0) {
-      stream.markdown(`> All core AI settings are configured. Your workspace is ready for AI agents.\n\n`);
-      stream.markdown(`### Token Cost of Existing Instructions\n\n`);
-
-      let totalTokens = 0;
-      const allInstr = [...instrFiles, ...copilotInstr, ...agentFiles, ...claudeFile];
-      for (const uri of allInstr) {
-        try {
-          const doc = await vscode.workspace.openTextDocument(uri);
-          const model = this.monitor.getActiveModel();
-          const tokenizer = this.monitor.getTokenizer();
-          const tokens = tokenizer.countTokens(doc.getText(), model.provider);
-          totalTokens += tokens;
-          stream.markdown(`- \`${vscode.workspace.asRelativePath(uri)}\`: ~${this.fmtTokens(tokens)}\n`);
-        } catch { /* skip */ }
-      }
-      if (totalTokens > 0) {
-        const model = this.monitor.getActiveModel();
-        stream.markdown(`\n**Total:** ~${this.fmtTokens(totalTokens)} (${((totalTokens / model.contextWindow) * 100).toFixed(1)}% of ${model.label} window)\n`);
-      }
+      stream.markdown('> All agent instruction files exist. Nothing to generate.\n');
       return {};
     }
-
-    stream.markdown(`### Will Generate\n\n`);
-    for (const m of missing) {
-      stream.markdown(`- \`${m}\`\n`);
-    }
-    stream.markdown('\n');
-
-    const arg = request.prompt.trim().toLowerCase();
-    if (arg === 'apply' || arg === 'write' || arg === 'generate') {
-      stream.progress('Writing settings files...');
-      for (const g of generated) {
-        const uri = vscode.Uri.joinPath(root, g.path);
-        // Ensure parent directory exists
-        const parent = vscode.Uri.joinPath(root, path.dirname(g.path));
-        try { await vscode.workspace.fs.createDirectory(parent); } catch { /* exists */ }
-        await vscode.workspace.fs.writeFile(uri, Buffer.from(g.content, 'utf-8'));
-      }
-      stream.markdown(`### Applied\n\nCLAUDE.md imports AGENTS.md, so both stay in sync.\n\n`);
-      for (const g of generated) {
-        stream.markdown(`- Generated: \`${g.path}\`\n`);
-      }
-      stream.markdown('\n');
+    const agents = plan.find(f => f.path === 'AGENTS.md');
+    if (agents && !agents.exists) stream.markdown('```markdown\n' + agents.content + '```\n\n');
+    if (/^(apply|write|generate)$/.test(request.prompt.trim().toLowerCase())) {
+      const written = writePlanned(root.fsPath, plan);
+      stream.markdown(`### Applied\n\n${written.map(w => '- Created `' + w + '`').join('\n')}\n`);
     } else {
-      stream.markdown(`**To apply:** \`@tokalator /settings-gen apply\`\n`);
+      stream.markdown('**To apply:** `@tokalator /settings-gen apply`, or the Agent Instructions button in the Tokalator sidebar.\n');
     }
-
     return {};
   }
 
@@ -708,18 +556,6 @@ export class ContextChatParticipant implements vscode.Disposable {
     stream.markdown(`## Code maps\n\n${r.symbolCount} symbols across ${r.fileCount} source files. ${r.updated.length ? 'Updated ' + r.updated.map(f => '`' + f + '`').join(' and ') + '.' : 'Both files are already current.'}\n\n`);
     stream.markdown('- `GLOSSARY.md`: every declaration with a source link and its documented purpose\n- `SITE-MAP.md`: packages and scripts, modules and routes, and imports by module\n\nAgents can read them to find the right files before opening source. Built locally with no model calls.\n');
     return {};
-  }
-
-  private async readPackageInfo(pkgUri: vscode.Uri | undefined, fallback: string): Promise<{ name: string; description: string; scripts: [string, string][] }> {
-    if (!pkgUri) return { name: fallback, description: '', scripts: [] };
-    try {
-      const pkg = JSON.parse((await vscode.workspace.openTextDocument(pkgUri)).getText());
-      const keep = ['dev', 'build', 'test', 'lint', 'typecheck', 'format'];
-      const scripts = Object.entries((pkg.scripts ?? {}) as Record<string, string>).filter(([k]) => keep.includes(k)) as [string, string][];
-      return { name: pkg.name || fallback, description: pkg.description || '', scripts };
-    } catch {
-      return { name: fallback, description: '', scripts: [] };
-    }
   }
 
   /**
@@ -844,7 +680,7 @@ export class ContextChatParticipant implements vscode.Disposable {
 
     // Simple bar
     const barLen = 20;
-    const filled = Math.round((snapshot.usagePercent / 100) * barLen);
+    const filled = Math.min(barLen, Math.max(0, Math.round((snapshot.usagePercent / 100) * barLen) || 0));
     const bar = '█'.repeat(filled) + '░'.repeat(barLen - filled);
     stream.markdown(`\`${bar}\` ${snapshot.budgetLevel}\n\n`);
 
@@ -1187,76 +1023,7 @@ export class ContextChatParticipant implements vscode.Disposable {
       stream.markdown('Price Watch is not available.');
       return {};
     }
-
-    const changelog = this.priceWatch.getChangelog();
-    if (changelog.length === 0) {
-      stream.markdown('**Price Watch** — No rate changes detected since monitoring began.\n\n');
-      stream.markdown('Tokalator tracks model pricing from the remote catalog. When rates change, you will see:\n');
-      stream.markdown('- Which models changed and by how much\n');
-      stream.markdown('- Dollar impact based on your actual usage\n');
-      stream.markdown('- Projected monthly cost difference\n');
-      return {};
-    }
-
-    const latest = changelog[changelog.length - 1];
-    const when = new Date(latest.detectedAt).toLocaleDateString();
-
-    stream.markdown(`**Price Watch** — ${latest.changes.length} rate change(s) detected on ${when}\n\n`);
-
-    const inputChanges = latest.changes.filter(c => c.field === 'input');
-    const outputChanges = latest.changes.filter(c => c.field === 'output');
-    const cachedChanges = latest.changes.filter(c => c.field === 'cachedInput');
-
-    if (inputChanges.length > 0) {
-      stream.markdown('**Input Rate Changes**\n\n');
-      stream.markdown('| Model | Old Rate | New Rate | Change |\n');
-      stream.markdown('|-------|----------|----------|--------|\n');
-      for (const c of inputChanges) {
-        const dir = c.pctChange > 0 ? '+' : '';
-        stream.markdown(`| ${c.label} | $${c.oldRate.toFixed(2)}/MTok | $${c.newRate.toFixed(2)}/MTok | ${dir}${c.pctChange.toFixed(1)}% |\n`);
-      }
-      stream.markdown('\n');
-    }
-
-    if (outputChanges.length > 0) {
-      stream.markdown('**Output Rate Changes**\n\n');
-      for (const c of outputChanges) {
-        const dir = c.pctChange > 0 ? '+' : '';
-        stream.markdown(`- ${c.label}: $${c.oldRate.toFixed(2)} -> $${c.newRate.toFixed(2)}/MTok (${dir}${c.pctChange.toFixed(1)}%)\n`);
-      }
-      stream.markdown('\n');
-    }
-
-    if (cachedChanges.length > 0) {
-      stream.markdown('**Cached Input Rate Changes**\n\n');
-      for (const c of cachedChanges) {
-        const dir = c.pctChange > 0 ? '+' : '';
-        stream.markdown(`- ${c.label}: $${c.oldRate.toFixed(2)} -> $${c.newRate.toFixed(2)}/MTok (${dir}${c.pctChange.toFixed(1)}%)\n`);
-      }
-      stream.markdown('\n');
-    }
-
-    const impact = this.priceWatch.getImpact();
-    if (impact && impact.affectedTurns > 0) {
-      stream.markdown('---\n\n**Your Impact**\n\n');
-      const dir = impact.totalHistoricalDelta >= 0 ? '+' : '';
-      stream.markdown(`Based on ${impact.affectedTurns} recorded turns with affected models:\n\n`);
-      stream.markdown(`- Historical delta: **${dir}$${Math.abs(impact.totalHistoricalDelta).toFixed(4)}**\n`);
-      if (impact.projectedMonthlyDelta !== 0) {
-        const mdir = impact.projectedMonthlyDelta >= 0 ? '+' : '';
-        stream.markdown(`- Projected monthly: **${mdir}$${Math.abs(impact.projectedMonthlyDelta).toFixed(2)}/mo**\n`);
-      }
-      stream.markdown('\n');
-      for (const m of impact.byModel) {
-        const d = m.historicalDelta >= 0 ? '+' : '';
-        stream.markdown(`  - ${m.label}: ${m.turns} turns, ${d}$${Math.abs(m.historicalDelta).toFixed(4)} ($${m.inputRateOld.toFixed(2)} -> $${m.inputRateNew.toFixed(2)}/MTok)\n`);
-      }
-    }
-
-    if (changelog.length > 1) {
-      stream.markdown(`\n---\n\n*${changelog.length} total rate change events recorded.*\n`);
-    }
-
+    stream.markdown(priceWatchReport(this.priceWatch, AGENT_LABELS));
     this.priceWatch.acknowledge();
     return {};
   }

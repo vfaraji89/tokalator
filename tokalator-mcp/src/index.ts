@@ -27,7 +27,7 @@ const tokenizer = new TokenizerService();
 
 const server = new McpServer({
   name: 'tokalator',
-  version: '4.1.2',
+  version: '4.2.0',
 });
 
 // ── count_tokens ──────────────────────────────────────────────────────────────

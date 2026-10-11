@@ -158,6 +158,31 @@ export function computeImpact(
   return { totalHistoricalDelta: totalDelta, projectedMonthlyDelta, affectedTurns, byModel };
 }
 
+export interface AgentPriceImpact {
+  weekDelta: number;
+  monthlyDelta: number;
+  rows: { agent: string; label: string; field: RateChange['field']; tokens: number; delta: number }[];
+}
+
+type ModelTokens = { modelId: string; inputTokens: number; outputTokens: number; cacheReadTokens: number };
+const FIELD_TOKENS: Record<RateChange['field'], keyof Omit<ModelTokens, 'modelId'>> = { input: 'inputTokens', output: 'outputTokens', cachedInput: 'cacheReadTokens' };
+
+/** Cost of a rate change on each agent's last 7 days of tokens for the changed model, read from the agent logs. */
+export function computeAgentImpact(changes: RateChange[], usage: Record<string, { weekByModel?: ModelTokens[] } | null | undefined>): AgentPriceImpact {
+  const rows: AgentPriceImpact['rows'] = [];
+  for (const [agent, summary] of Object.entries(usage)) {
+    for (const m of summary?.weekByModel ?? []) {
+      for (const c of changes.filter(x => x.modelId === m.modelId)) {
+        const tokens = m[FIELD_TOKENS[c.field]];
+        if (tokens > 0) rows.push({ agent, label: c.label, field: c.field, tokens, delta: tokens / 1e6 * (c.newRate - c.oldRate) });
+      }
+    }
+  }
+  rows.sort((a, b) => Math.abs(b.delta) - Math.abs(a.delta));
+  const weekDelta = rows.reduce((n, r) => n + r.delta, 0);
+  return { weekDelta, monthlyDelta: weekDelta * 30 / 7, rows };
+}
+
 export function shouldSuppressInitialDiff(settled: boolean): boolean {
   return !settled;
 }
@@ -248,6 +273,17 @@ export class PriceWatchService implements vscode.Disposable {
     }
   }
 
+  private agentUsage: () => Record<string, { weekByModel?: ModelTokens[] } | null | undefined> = () => ({});
+
+  setAgentUsage(fn: () => Record<string, { weekByModel?: ModelTokens[] } | null | undefined>): void {
+    this.agentUsage = fn;
+  }
+
+  getAgentImpact(): AgentPriceImpact | null {
+    const latest = this.getLatestChangeset();
+    return latest ? computeAgentImpact(latest.changes, this.agentUsage()) : null;
+  }
+
   getImpact(): PriceWatchImpact | null {
     const latest = this.getLatestChangeset();
     if (!latest) return null;
@@ -258,4 +294,31 @@ export class PriceWatchService implements vscode.Disposable {
     this._onDidDetectChange.dispose();
     this.disposables.forEach(d => d.dispose());
   }
+}
+
+const FIELD_LABELS: Record<RateChange['field'], string> = { input: 'Input', output: 'Output', cachedInput: 'Cache read' };
+const usd = (n: number) => `${n >= 0 ? '+' : '-'}$${Math.abs(n) < 1 ? Math.abs(n).toFixed(4) : Math.abs(n).toFixed(2)}`;
+
+/** Markdown report used by the dashboard button and by @tokalator /pricewatch. */
+export function priceWatchReport(service: PriceWatchService, agentLabels: Record<string, string>): string {
+  const changelog = service.getChangelog();
+  const latest = service.getLatestChangeset();
+  if (!latest) {
+    return '# Price Watch\n\nNo rate changes since monitoring began. When a provider changes a price in the catalog, this report lists the changed models and what the change would have cost on your agents\' last 7 days of usage.\n';
+  }
+  const out = [`# Price Watch`, '', `${latest.changes.length} rate change(s) detected on ${new Date(latest.detectedAt).toLocaleDateString()}.`, '', '| Model | Rate | Old | New | Change |', '|---|---|---|---|---|'];
+  for (const c of latest.changes) out.push(`| ${c.label} | ${FIELD_LABELS[c.field]} | $${c.oldRate.toFixed(2)}/MTok | $${c.newRate.toFixed(2)}/MTok | ${c.pctChange > 0 ? '+' : ''}${c.pctChange.toFixed(1)}% |`);
+  const agents = service.getAgentImpact();
+  out.push('', '## Impact on your agents (last 7 days)', '');
+  if (agents && agents.rows.length) {
+    out.push('| Agent | Model | Rate | Tokens | Cost change |', '|---|---|---|---|---|');
+    for (const r of agents.rows) out.push(`| ${agentLabels[r.agent] ?? r.agent} | ${r.label} | ${FIELD_LABELS[r.field]} | ${r.tokens.toLocaleString('en-US')} | ${usd(r.delta)} |`);
+    out.push('', `At the same usage: **${usd(agents.weekDelta)} per week**, about ${usd(agents.monthlyDelta)} per month (API list prices).`);
+  } else {
+    out.push('None of your agents used the changed models in the last 7 days.');
+  }
+  const chat = service.getImpact();
+  if (chat && chat.affectedTurns > 0) out.push('', `@tokalator chat turns: ${chat.affectedTurns} affected, ${usd(chat.totalHistoricalDelta)} so far.`);
+  if (changelog.length > 1) out.push('', `${changelog.length} rate change events recorded.`);
+  return out.join('\n') + '\n';
 }

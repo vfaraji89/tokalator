@@ -23,6 +23,8 @@ write('src/budget.ts', 'export function budget(n: number): number {\n  return Ma
 write('notes/unrelated.txt', 'Grocery list: apples, bread, coffee.\n'.repeat(20));
 write('big/corpus.txt', 'The context window holds every token the model reads on a turn. '.repeat(30000));
 write('.env', 'API_KEY=placeholder\n');
+write('package.json', JSON.stringify({ name: 'e2e-app', description: 'Fixture app for Tokalator e2e.', scripts: { build: 'tsc -p .', test: 'node --test', lint: 'eslint src' }, devDependencies: { typescript: '5.9.3', eslint: '10.0.0' } }, null, 2));
+write('tsconfig.json', JSON.stringify({ compilerOptions: { strict: true } }));
 
 const claudeDir = path.join(tmp, 'claude');
 const projectDir = path.join(claudeDir, 'projects', ws.replace(/[^a-zA-Z0-9]/g, '-'));

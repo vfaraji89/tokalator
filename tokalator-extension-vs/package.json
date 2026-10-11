@@ -1,8 +1,8 @@
 {
   "name": "tokalator",
   "displayName": "Tokalator",
-  "description": "Open-source context engineering for AI coding: context budget, Claude Code, GitHub Copilot and Codex usage in tokens or API-equivalent cost, tab relevance, current model pricing, code maps, and workspace security.",
-  "version": "4.1.2",
+  "description": "Open-source context engineering for AI coding: Claude Code, GitHub Copilot and Codex usage side by side, context budget, the memory files your agents load, pins into your agent, code maps, workspace security and model pricing.",
+  "version": "4.2.0",
   "publisher": "vfaraji89",
   "license": "AGPL-3.0-or-later",
   "repository": {
@@ -15,6 +15,8 @@
   },
   "categories": [
     "AI",
+    "Chat",
+    "Visualization",
     "Other"
   ],
   "keywords": [
@@ -34,7 +36,19 @@
     "open-source",
     "copilot-usage",
     "codex",
-    "token-usage"
+    "token-usage",
+    "github-copilot",
+    "openai-codex",
+    "anthropic",
+    "agents-md",
+    "claude-md",
+    "skills",
+    "hooks",
+    "claude-code-hooks",
+    "token-budget",
+    "usage-tracker",
+    "dependency-check",
+    "security"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -113,11 +127,11 @@
           },
           {
             "name": "skill-gen",
-            "description": "Auto-generate a SKILL.md from project analysis"
+            "description": "Generate a checks skill (SKILL.md) from your build, lint and test commands"
           },
           {
             "name": "settings-gen",
-            "description": "Generate GitHub and VS Code AI settings files"
+            "description": "Create AGENTS.md and a CLAUDE.md that imports it, from your project files"
           },
           {
             "name": "exit",
@@ -129,7 +143,7 @@
           },
           {
             "name": "pricewatch",
-            "description": "Show model pricing changes, cost impact analysis, and rate change history"
+            "description": "Rate changes and their cost on your agents' last 7 days"
           }
         ]
       }
@@ -146,6 +160,16 @@
         "title": "Optimize (Close Low-Relevance Tabs)",
         "category": "Tokalator",
         "icon": "$(sparkle)"
+      },
+      {
+        "command": "tokalator.pinFile",
+        "title": "Tokalator: Pin File",
+        "icon": "$(pin)"
+      },
+      {
+        "command": "tokalator.unpinFile",
+        "title": "Tokalator: Unpin File",
+        "icon": "$(pinned)"
       },
       {
         "command": "tokalator.clearPins",
@@ -185,8 +209,50 @@
         "title": "Tokalator: Delete My Telemetry Data"
       },
       {
+        "command": "tokalator.generateAgentFiles",
+        "title": "Tokalator: Create Agent Instructions (AGENTS.md, CLAUDE.md)"
+      },
+      {
+        "command": "tokalator.generateSkill",
+        "title": "Tokalator: Generate Checks Skill (SKILL.md)"
+      },
+      {
+        "command": "tokalator.dependencyCheck",
+        "title": "Tokalator: Check Dependencies (Beta)"
+      },
+      {
+        "command": "tokalator.removeHook",
+        "title": "Tokalator: Remove Claude Code Hook"
+      },
+      {
+        "command": "tokalator.hooksReport",
+        "title": "Tokalator: Review Claude Code Hooks (Beta)"
+      },
+      {
+        "command": "tokalator.toggleHooksPause",
+        "title": "Tokalator: Pause or Resume Claude Code Hooks (Beta)"
+      },
+      {
+        "command": "tokalator.priceWatch",
+        "title": "Tokalator: Price Watch Report"
+      },
+      {
         "command": "tokalator.codeMaps",
         "title": "Tokalator: Generate Code Maps (GLOSSARY.md, SITE-MAP.md)"
+      },
+      {
+        "command": "tokalator.showAgents",
+        "title": "Tokalator: Compare Agents",
+        "icon": "$(split-horizontal)"
+      },
+      {
+        "command": "tokalator.gettingStarted",
+        "title": "Tokalator: Get Started"
+      },
+      {
+        "command": "tokalator.openInEditor",
+        "title": "Tokalator: Open Dashboard in Editor",
+        "icon": "$(link-external)"
       }
     ],
     "menus": {
@@ -200,6 +266,46 @@
           "command": "tokalator.optimize",
           "when": "view == tokalator.dashboard",
           "group": "navigation"
+        },
+        {
+          "command": "tokalator.showAgents",
+          "when": "view == tokalator.dashboard",
+          "group": "navigation"
+        },
+        {
+          "command": "tokalator.openInEditor",
+          "when": "view == tokalator.dashboard",
+          "group": "navigation"
+        }
+      ],
+      "editor/title/context": [
+        {
+          "command": "tokalator.pinFile",
+          "when": "resourceScheme == file && resourcePath not in tokalator.pinnedPaths",
+          "group": "tokalator@1"
+        },
+        {
+          "command": "tokalator.unpinFile",
+          "when": "resourceScheme == file && resourcePath in tokalator.pinnedPaths",
+          "group": "tokalator@1"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "tokalator.pinFile",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath not in tokalator.pinnedPaths",
+          "group": "tokalator@1"
+        },
+        {
+          "command": "tokalator.unpinFile",
+          "when": "resourceScheme == file && !explorerResourceIsFolder && resourcePath in tokalator.pinnedPaths",
+          "group": "tokalator@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "tokalator.removeHook",
+          "when": "false"
         }
       ]
     },
@@ -339,9 +445,83 @@
             "telemetry"
           ],
           "markdownDescription": "Share anonymous daily usage counts (feature use, model IDs, Claude Code totals) with tokalator.ai to improve the extension. Off by default. Never includes code, file names, paths, or prompts. Also requires VS Code telemetry to be on. Use **Tokalator: Show Telemetry Data** to see exactly what is sent and **Tokalator: Delete My Telemetry Data** to erase it. [Privacy policy](https://tokalator.ai/privacy#telemetry)"
+        },
+        "tokalator.dependencyCheck.auto": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "Check every lockfile for known vulnerabilities and outdated packages once a day, and warn about critical or high issues or an end-of-life runtime. Package names and versions are sent to OSV.dev, the package registries and endoflife.date. Off by default."
         }
       }
-    }
+    },
+    "walkthroughs": [
+      {
+        "id": "gettingStarted",
+        "title": "Get started with Tokalator",
+        "description": "See every token your AI coding spends, in five short steps.",
+        "steps": [
+          {
+            "id": "openSidebar",
+            "title": "Open the Tokalator sidebar",
+            "description": "The meter shows how full your agent's context window is, read from Claude Code, Copilot or Codex as you work.\n[Open Tokalator](command:tokalator.dashboard.focus)",
+            "media": {
+              "image": "media/walkthrough/sidebar.png",
+              "altText": "Tokalator budget meter, active model and session pills"
+            },
+            "completionEvents": [
+              "onView:tokalator.dashboard"
+            ]
+          },
+          {
+            "id": "costDisplay",
+            "title": "Choose tokens or dollars",
+            "description": "On a Claude, Copilot or ChatGPT subscription? Show tokens instead of API-equivalent dollars. Use the $ / Tokens / Both switch on any agent card, or the setting.\n[Open the setting](command:workbench.action.openSettings?%22tokalator.costDisplay%22)",
+            "media": {
+              "image": "media/walkthrough/cost.png",
+              "altText": "Agent card with the dollars, tokens and both switch"
+            },
+            "completionEvents": [
+              "onSettingChanged:tokalator.costDisplay"
+            ]
+          },
+          {
+            "id": "compareAgents",
+            "title": "Compare your agents side by side",
+            "description": "Usage from every agent appears automatically from their local logs. The All tab puts them side by side on one scale; tap one to see its details.\n[Compare agents](command:tokalator.showAgents)",
+            "media": {
+              "image": "media/walkthrough/agents.png",
+              "altText": "All tab comparing Claude Code, Copilot Chat and Codex"
+            },
+            "completionEvents": [
+              "onCommand:tokalator.showAgents"
+            ]
+          },
+          {
+            "id": "secure",
+            "title": "Keep secrets away from agents",
+            "description": "Secure Workspace finds .env files and keys, hides them from AI agents, then checks the result.\n[Secure this workspace](command:tokalator.secure)",
+            "media": {
+              "image": "media/walkthrough/tools.png",
+              "altText": "Workspace tools with Secure Workspace"
+            },
+            "completionEvents": [
+              "onCommand:tokalator.secure"
+            ]
+          },
+          {
+            "id": "codeMaps",
+            "title": "Give your agents a map",
+            "description": "Code maps write GLOSSARY.md and SITE-MAP.md from your source so agents find the right files first. Built locally, no model calls.\n[Generate code maps](command:tokalator.codeMaps)",
+            "media": {
+              "image": "media/walkthrough/tools.png",
+              "altText": "Workspace tools with Code Maps"
+            },
+            "completionEvents": [
+              "onCommand:tokalator.codeMaps"
+            ]
+          }
+        ]
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
@@ -387,5 +567,6 @@
     "@vscode/vsce-sign@2.1.0": true,
     "@parcel/watcher": false,
     "unrs-resolver": false
-  }
+  },
+  "pricing": "Free"
 }

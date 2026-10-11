@@ -94,6 +94,14 @@ exports.run = async function run() {
     await settle(api, s => Array.from(s.pinnedFiles).length === 0 && !s.tabs.some(t => t.isPinned));
   });
 
+  await test('Pin File and Unpin File commands pin a file by URI', async () => {
+    const uri = file('notes/unrelated.txt');
+    await vscode.commands.executeCommand('tokalator.pinFile', uri);
+    await settle(api, s => Array.from(s.pinnedFiles).includes(uri.toString()));
+    await vscode.commands.executeCommand('tokalator.unpinFile', uri);
+    await settle(api, s => !Array.from(s.pinnedFiles).includes(uri.toString()));
+  });
+
   await test('switching models updates window and input rate', async () => {
     await api.monitor.setModel('claude-haiku-4.5');
     let s = await settle(api, x => x.modelId === 'claude-haiku-4.5');
@@ -297,6 +305,21 @@ exports.run = async function run() {
     assert.strictEqual(picks, 0);
   });
 
+  await test('Compare Agents, Open in Editor and Get Started commands run', async () => {
+    await vscode.commands.executeCommand('tokalator.showAgents');
+    await vscode.commands.executeCommand('tokalator.openInEditor');
+    const opened = () => vscode.window.tabGroups.all.some(g => g.tabs.some(t => t.input instanceof vscode.TabInputWebview && t.label === 'Tokalator'));
+    for (let i = 0; i < 20 && !opened(); i++) await new Promise(r => setTimeout(r, 100));
+    assert.ok(opened(), 'dashboard opened in an editor tab');
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    await vscode.commands.executeCommand('tokalator.gettingStarted');
+    await vscode.commands.executeCommand('workbench.action.closeActiveEditor');
+    const walk = pkg.contributes.walkthroughs[0];
+    assert.strictEqual(walk.id, 'gettingStarted');
+    const root = vscode.extensions.getExtension('vfaraji89.tokalator').extensionPath;
+    for (const step of walk.steps) assert.ok(fs.existsSync(path.join(root, step.media.image)), 'walkthrough image ' + step.media.image);
+  });
+
   await test('Send Feedback offers topics and sends nothing when dismissed', async () => {
     const original = vscode.window.showQuickPick;
     let offered = [];
@@ -313,6 +336,8 @@ exports.run = async function run() {
     assert.ok(api.priceWatch, 'price watch is running');
     const before = api.priceWatch.getChangelog().length;
     posted.length = 0;
+    api.applyCatalog({ schemaVersion: 2, updatedAt: '2026-10-10T23:59:59Z', models: [{ id: 'claude-opus-5-5', inputCostPerMTok: 4 }] });
+    await new Promise(r => setTimeout(r, 300));
     api.applyCatalog({ schemaVersion: 2, updatedAt: '2026-10-11T00:00:00Z', models: [{ id: 'claude-opus-5-5', inputCostPerMTok: 3.2 }] });
     const changeset = await until(() => api.priceWatch.getChangelog().length > before && api.priceWatch.getLatestChangeset());
     const change = changeset.changes.find(c => c.modelId === 'claude-opus-5-5' && c.field === 'input');
@@ -325,23 +350,66 @@ exports.run = async function run() {
     api.applyCatalog({ schemaVersion: 2, updatedAt: '2026-10-11T00:00:01Z', models: [{ id: 'claude-opus-5-5', inputCostPerMTok: 4 }] });
   });
 
-  await test('/skill-gen apply writes a discoverable Agent Skill', async () => {
+  await test('/skill-gen apply writes the checks skill for Codex, VS Code and Claude Code', async () => {
     const { stream } = fakeStream();
     await api.chat.handleRequest({ command: 'skill-gen', prompt: 'apply', references: [], toolReferences: [] }, { history: [] }, stream, new vscode.CancellationTokenSource().token);
-    const dir = path.join(root, '.claude', 'skills');
-    const [name] = fs.readdirSync(dir);
-    const skill = fs.readFileSync(path.join(dir, name, 'SKILL.md'), 'utf8');
-    assert.match(name, /^[a-z0-9-]+$/);
-    assert.match(skill, /^---\nname: [a-z0-9-]+\ndescription: .+Use when/m);
-    assert.ok(!skill.includes('applyTo'));
+    for (const dir of ['.agents/skills', '.claude/skills']) {
+      const skill = fs.readFileSync(path.join(root, dir, 'e2e-app-checks', 'SKILL.md'), 'utf8');
+      assert.match(skill, /^---\nname: e2e-app-checks\ndescription: Run the e2e-app checks \(lint, test, build\) and fix failures\. Use after/);
+      assert.ok(skill.includes('1. Lint: `npm run lint`') && skill.includes('2. Test: `npm test`') && skill.endsWith('\n'), skill);
+    }
   });
 
-  await test('/settings-gen apply writes AGENTS.md and a CLAUDE.md that imports it', async () => {
+  await test('/settings-gen apply writes AGENTS.md from project facts and a CLAUDE.md that imports it', async () => {
     const { stream } = fakeStream();
     await api.chat.handleRequest({ command: 'settings-gen', prompt: 'apply', references: [], toolReferences: [] }, { history: [] }, stream, new vscode.CancellationTokenSource().token);
-    assert.ok(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8').includes('## Conventions'));
+    const agents = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8');
+    assert.ok(agents.startsWith('# e2e-app\n\nFixture app for Tokalator e2e.\n') && agents.includes('- Install: `npm install`') && agents.includes('- Test: `npm test`') && agents.includes('TypeScript strict mode is on') && agents.includes('- `src/`'), agents);
     assert.strictEqual(fs.readFileSync(path.join(root, 'CLAUDE.md'), 'utf8').trim(), '@AGENTS.md');
-    assert.ok(fs.existsSync(path.join(root, '.github', 'copilot-instructions.md')));
+    assert.ok(!fs.existsSync(path.join(root, '.github', 'copilot-instructions.md')), 'no duplicate Copilot file');
+  });
+
+  await test('Agent Instructions and Checks Skill buttons create missing files and keep existing ones', async () => {
+    fs.writeFileSync(path.join(root, 'AGENTS.md'), '# kept\n');
+    fs.rmSync(path.join(root, 'CLAUDE.md'));
+    fs.rmSync(path.join(root, '.agents'), { recursive: true });
+    const agents = await vscode.commands.executeCommand('tokalator.generateAgentFiles', { apply: true });
+    assert.deepStrictEqual(agents, ['CLAUDE.md']);
+    assert.strictEqual(fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf8'), '# kept\n');
+    const skill = await vscode.commands.executeCommand('tokalator.generateSkill', { apply: true });
+    assert.deepStrictEqual(skill, ['.agents/skills/e2e-app-checks/SKILL.md']);
+  });
+
+  await test('Price Watch button opens the report without chat', async () => {
+    await vscode.commands.executeCommand('tokalator.priceWatch');
+    const doc = await until(() => vscode.workspace.textDocuments.find(d => d.languageId === 'markdown' && d.getText().startsWith('# Price Watch')));
+    assert.ok(/Impact on your agents \(last 7 days\)|No rate changes/.test(doc.getText()), doc.getText().slice(0, 300));
+  });
+
+  await test('Dependency Check runs without lockfiles and explains why nothing was checked', async () => {
+    const report = await vscode.commands.executeCommand('tokalator.dependencyCheck', { silent: true });
+    assert.ok(report && report.lockfiles.length === 0 && report.notes.some(n => n.startsWith('No lockfiles found')), JSON.stringify(report && report.notes));
+  });
+
+  await test('Claude Code hooks: pause, resume and report from the settings files', async () => {
+    fs.mkdirSync(path.join(root, '.claude'), { recursive: true });
+    const settings = path.join(root, '.claude', 'settings.json');
+    const before = fs.existsSync(settings) ? JSON.parse(fs.readFileSync(settings, 'utf8')) : {};
+    fs.writeFileSync(settings, JSON.stringify({ ...before, hooks: { PostTooluse: [{ hooks: [{ type: 'command', command: 'echo hi' }] }] } }, null, 2));
+    const info = vscode.window.showInformationMessage;
+    vscode.window.showInformationMessage = async () => undefined;
+    try {
+      await vscode.commands.executeCommand('tokalator.toggleHooksPause');
+      assert.strictEqual(JSON.parse(fs.readFileSync(path.join(root, '.claude', 'settings.local.json'), 'utf8')).disableAllHooks, true);
+      await vscode.commands.executeCommand('tokalator.toggleHooksPause');
+      assert.strictEqual(JSON.parse(fs.readFileSync(path.join(root, '.claude', 'settings.local.json'), 'utf8')).disableAllHooks, undefined);
+    } finally {
+      vscode.window.showInformationMessage = info;
+    }
+    await vscode.commands.executeCommand('tokalator.hooksReport');
+    const doc = await until(() => vscode.workspace.textDocuments.find(d => d.languageId === 'markdown' && d.getText().startsWith('# Claude Code hooks')));
+    assert.ok(/"PostTooluse" is not a Claude Code hook event/.test(doc.getText()), doc.getText().slice(0, 500));
+    assert.deepStrictEqual(JSON.parse(fs.readFileSync(settings, 'utf8')).permissions, before.permissions, 'other settings untouched');
   });
 
   await test('Generate Code Maps writes GLOSSARY.md and SITE-MAP.md from source', async () => {

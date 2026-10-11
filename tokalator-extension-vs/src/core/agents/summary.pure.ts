@@ -35,12 +35,24 @@ export interface AgentSummary {
     contextWindow: number;
     avgGrowthPerTurn: number;
     turnsLeft: number | null;
+    subagentShare: number;
   }) | null;
   cacheHitRate: number;
   byEntrypoint: { label: string; cost: number; messages: number }[];
+  todayByEntrypoint: { label: string; cost: number; messages: number }[];
   lastActivityAt: string | null;
   estimatedShare: number;
+  last5h: UsageTotals;
+  prev5h: UsageTotals;
+  weekByModel: { modelId: string; inputTokens: number; outputTokens: number; cacheReadTokens: number; cacheWriteTokens: number }[];
 }
+
+const FIVE_HOURS = 5 * 3_600_000;
+const recordTokens = (r: ClaudeCodeUsageRecord) => r.inputTokens + r.outputTokens + r.cacheReadTokens + r.cacheWrite5mTokens + r.cacheWrite1hTokens;
+const share = (part: ClaudeCodeUsageRecord[], all: ClaudeCodeUsageRecord[]) => {
+  const total = all.reduce((n, r) => n + recordTokens(r), 0);
+  return total > 0 ? part.reduce((n, r) => n + recordTokens(r), 0) / total : 0;
+};
 
 export function summarizeAgent(
   records: (ClaudeCodeUsageRecord & { estimated?: boolean })[],
@@ -82,6 +94,7 @@ export function summarizeAgent(
       contextWindow,
       avgGrowthPerTurn,
       turnsLeft: avgGrowthPerTurn > 0 && contextWindow > 0 ? Math.max(0, Math.floor((contextWindow - contextTokens) / avgGrowthPerTurn)) : null,
+      subagentShare: share(sessionRecords.filter(r => r.sidechain), sessionRecords),
     };
   }
 
@@ -94,7 +107,11 @@ export function summarizeAgent(
     session,
     cacheHitRate: cacheHitRate(weekTotals),
     byEntrypoint: groupUsage(week, r => entrypointLabel(r.entrypoint), rates).map(g => ({ label: g.key, cost: g.totals.cost, messages: g.totals.messages })),
+    todayByEntrypoint: groupUsage(todays, r => entrypointLabel(r.entrypoint), rates).map(g => ({ label: g.key, cost: g.totals.cost, messages: g.totals.messages })),
     lastActivityAt: latest?.timestamp ?? null,
     estimatedShare: week.length ? week.filter(r => r.estimated).length / week.length : 0,
+    last5h: summarizeUsage(week.filter(r => Date.parse(r.timestamp) > now.getTime() - FIVE_HOURS), rates),
+    prev5h: summarizeUsage(week.filter(r => { const t = Date.parse(r.timestamp); return t > now.getTime() - 2 * FIVE_HOURS && t <= now.getTime() - FIVE_HOURS; }), rates),
+    weekByModel: groupUsage(week, r => rates(r.model)?.id ?? r.model, rates).map(g => ({ modelId: g.key, inputTokens: g.totals.inputTokens, outputTokens: g.totals.outputTokens, cacheReadTokens: g.totals.cacheReadTokens, cacheWriteTokens: g.totals.cacheWriteTokens })),
   };
 }

@@ -160,11 +160,18 @@ describe('ContextDashboardProvider', () => {
       const html = mockView.webview.html;
       expect(html).toContain('Workspace tools');
       expect(html).toContain('Secure Workspace');
-      expect(html).toContain('Generate AI Settings');
+      for (const tool of ['Agent Instructions', 'Checks Skill', 'Code Maps', 'Price Watch']) expect(html).toContain(tool);
+      expect(html).not.toContain('Package domain expertise');
       expect(html).toContain('OPEN SOURCE');
       for (const gone of ['Generate Glossary', 'GitHub AI Credits', 'Enterprise', '>PRO<']) {
         expect(html).not.toContain(gone);
       }
+    });
+
+    test('the inline dashboard script is valid JavaScript', () => {
+      const scripts = [...mockView.webview.html.matchAll(/<script[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
+      expect(scripts.length).toBeGreaterThan(0);
+      for (const code of scripts) expect(() => new Function(code)).not.toThrow();
     });
 
     test('contains CSP with nonce', () => {

@@ -50,3 +50,26 @@ describe('survey', () => {
     }
   });
 });
+
+describe('delete my telemetry data', () => {
+  const memento = (init: Record<string, unknown>) => {
+    const data = { ...init };
+    return { get: (k: string) => data[k], update: async (k: string, v: unknown) => { data[k] = v; }, keys: () => Object.keys(data), data };
+  };
+
+  test('keeps the install id when the server cannot be reached, so the user can retry', async () => {
+    const { Telemetry } = require('../src/core/telemetry');
+    const state = memento({ 'tokalator.telemetry.installId': 'id-1' });
+    const fetchMock = jest.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValueOnce({ ok: true });
+    (global as { fetch?: unknown }).fetch = fetchMock;
+    const t = new Telemetry(state, '4.1.3');
+
+    expect(await t.deleteData()).toBe(false);
+    expect(state.data['tokalator.telemetry.installId']).toBe('id-1');
+
+    expect(await t.deleteData()).toBe(true);
+    expect(state.data['tokalator.telemetry.installId']).toBeUndefined();
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(String(fetchMock.mock.calls[1][0])).toContain('installId=id-1');
+  });
+});
