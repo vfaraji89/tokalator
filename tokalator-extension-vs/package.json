@@ -375,5 +375,17 @@
   "galleryBanner": {
     "color": "#0c0c0f",
     "theme": "dark"
+  },
+  "overrides": {
+    "@istanbuljs/load-nyc-config": {
+      "js-yaml": "^4.3.2"
+    },
+    "test-exclude": "^8.0.0"
+  },
+  "allowScripts": {
+    "esbuild@0.28.2": true,
+    "@vscode/vsce-sign@2.1.0": true,
+    "@parcel/watcher": false,
+    "unrs-resolver": false
   }
 }

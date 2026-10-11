@@ -10,3 +10,4 @@ e2e/**
 jest.config.js
 evaluation/**
 eslint.config.mjs
+coverage/**
