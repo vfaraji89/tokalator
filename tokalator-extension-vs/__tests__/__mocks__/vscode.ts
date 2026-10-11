@@ -106,6 +106,7 @@ export const workspace = {
   onDidOpenTextDocument: jest.fn(() => ({ dispose: () => {} })),
   onDidCloseTextDocument: jest.fn(() => ({ dispose: () => {} })),
   onDidChangeConfiguration: jest.fn(() => ({ dispose: () => {} })),
+  onDidChangeWorkspaceFolders: jest.fn(() => ({ dispose: () => {} })),
   findFiles: jest.fn(async () => []),
   asRelativePath: jest.fn((uri: any) => (typeof uri === 'string' ? uri : uri.fsPath ?? uri.path)),
   fs: { readFile: jest.fn(async () => new Uint8Array()) },
@@ -127,12 +128,14 @@ export const window = {
   onDidChangeActiveTextEditor: jest.fn(() => ({ dispose: () => {} })),
   onDidChangeTextEditorSelection: jest.fn(() => ({ dispose: () => {} })),
   showInformationMessage: jest.fn(async () => undefined),
+  setStatusBarMessage: jest.fn(),
   showTextDocument: jest.fn(async () => {}),
 };
 
 // ── commands ─────────────────────────────────────────
 export const commands = {
   executeCommand: jest.fn(async () => undefined),
+  getCommands: jest.fn(async () => [] as string[]),
 };
 
 // ── env ──────────────────────────────────────────────
@@ -160,5 +163,6 @@ export const extensions = {
   onDidChange: () => ({ dispose: () => {} }),
 };
 
+export class Selection { constructor(public anchor: any, public active: any) {} }
 export class TabInputWebview { constructor(public viewType: string) {} }
 export class TabInputTerminal {}

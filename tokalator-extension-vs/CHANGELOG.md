@@ -1,5 +1,47 @@
 # Changelog
 
+## 4.2.0 (2026-10-10)
+
+### Fixed
+
+- Turns no longer stay at 0 while you use Claude Code, Copilot or Codex: the turn pill, Turn Analytics and Context Growth use the followed agent's session.
+- The budget meter shows the followed agent's real context and window instead of the open-files estimate, labels the estimate when no agent session is available, and says when a model's window is unknown. On the All tab it follows the most recent agent.
+- Claude Code usage only counts sessions from the open workspace, not sibling projects in the same folder.
+- A model picked by hand stays for 30 minutes and is labelled "Chosen by you". Automatic switches no longer change the global setting, so other VS Code windows keep their own model.
+- Picking the same agent again re-focuses it.
+- `@tokalator` turn counts resync with chat history, and reset starts from the current history.
+- `tokalator.relevanceThreshold`, `tokalator.autoRefreshInterval` and `tokalator.enableSessionLogging` apply without a reload. File watchers follow workspace folder changes.
+- Generated files keep blank lines between sections and end with a newline; the SKILL.md preview no longer breaks its code block.
+- Telemetry reports today's cache hit rate and CLI and VS Code split instead of all-time values. Delete keeps the anonymous ID until the server confirms, so a failed delete can be retried.
+
+### Added
+
+- All tab: every active agent side by side in the sidebar, with today's usage, turns today, context used, model and a live marker. `Tokalator: Compare Agents` opens it, also from the sidebar title bar.
+- `Tokalator: Get Started`: a five-step walkthrough (open the sidebar, tokens or dollars, compare agents, secure the workspace, code maps).
+- `Tokalator: Open Dashboard in Editor`: the dashboard as an editor tab you can pin, split or move to another window. It stays in sync with the sidebar.
+- Session facts: context used and turns left at current growth, subagent share, output including thinking, input served from cache, and tokens in the last 5 hours across agents with the change from the 5 hours before. Measured from the logs only; no advice.
+- Agent memory and instructions: the files each agent loads for this workspace (CLAUDE.md files from the project, parent folders and home, Claude Code memory, subagents, commands, skills and settings; AGENTS.md and Codex config; Copilot instructions and prompts), with scope, when they load and their token count. Click a file to open and edit it. MCP servers are counted by name only. Everything is read locally; nothing is uploaded.
+- Context Breakdown for the followed agent, next to the open-files estimate.
+- Pin to your agent: pinning a file also adds it to your agent's next message, through that agent's own command (Claude Code @-mention of the whole file, Copilot Chat Add File to Chat, Codex Add File to Codex Thread). Claude Code is used when no agent tab is selected, and Claude Code opens if it is not already. `Tokalator: Pin File` and `Tokalator: Unpin File` are on the editor tab and Explorer right-click menus.
+- Pinned files that are no longer open are listed under Files and can be unpinned there. The pin button is now a pin icon.
+- The status bar shows the followed agent's real context (for example `Tokalator 182K / 1M · Claude Code`) and opens the dashboard. Without a recent agent session it says it is an open-files estimate.
+- Supported by Kariyer.net chip in the dashboard header.
+- Workspace tools work by click, without VS Code chat:
+  - Agent Instructions creates `AGENTS.md` from your project files (package manager and scripts, Python, Go, Rust, Makefile, TypeScript strictness, test and lint tools, folders) and a `CLAUDE.md` that imports it. Codex and VS Code Copilot read `AGENTS.md` directly, so no duplicate Copilot file is written.
+  - Checks Skill writes a SKILL.md that runs your type check, lint, tests and build in order, to `.agents/skills` (Codex, VS Code) and `.claude/skills` (Claude Code).
+  - Price Watch opens a report that prices each rate change on your agents' last 7 days of tokens.
+  - Secure Workspace has a Show Details report and says what Codex can and cannot block.
+  - Existing files are never overwritten. The same generators back `/settings-gen` and `/skill-gen`.
+- The header icon replays the abacus, calculator and Tokalator mark every 5 minutes while visible (off with reduced motion).
+
+### Beta
+
+These work and are tested, and may change as we hear how people use them.
+
+- Dependency Check: reads every lockfile in the workspace (npm, pnpm, yarn, bun, uv, poetry, Pipfile, pinned requirements, go.mod, Cargo, Gemfile, composer), finds known vulnerabilities through OSV.dev with the lowest fixed version, lists outdated direct dependencies from each registry, and checks Node.js, Python, Go, Ruby and PHP against endoflife.date. Safe update commands run in a visible terminal only after you pick one; nothing is force-applied. Runs when you click it, or once a day with `tokalator.dependencyCheck.auto` (off by default).
+- Claude Code hooks: every hook from managed, user, project and local settings in one list, with checks for unknown events, old tool names in matchers, matchers that run on every tool call, relative or missing scripts, scripts that are not executable, unquoted paths, inline secrets, download-and-run commands and duplicates across scopes. Click a hook to open it, remove one with confirmation, or pause all hooks for yourself (`disableAllHooks` in settings.local.json). Review hooks opens a report with good practice.
+- What Claude Code runs: tool calls, command-line programs (names and subcommands only, never arguments), MCP servers and hook outputs from the last 7 days of sessions in this workspace.
+
 ## 4.1.2 (2026-10-10)
 
 ### Added

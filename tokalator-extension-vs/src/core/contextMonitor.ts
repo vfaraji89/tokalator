@@ -72,6 +72,9 @@ export class ContextMonitor implements vscode.Disposable {
 
   private pinnedFiles = new Set<string>();
   private chatTurnCount = 0;
+  private historyBaseline = 0;
+  private resetPending = false;
+  private historySynced = false;
   private turnHistory: TurnSnapshot[] = [];
   private lastEditTimestamps = new Map<string, number>();
   private disposables: vscode.Disposable[] = [];
@@ -99,6 +102,7 @@ export class ContextMonitor implements vscode.Disposable {
     if (workspaceState) {
       const saved = workspaceState.get<string[]>(PINNED_FILES_KEY, []);
       this.pinnedFiles = new Set(saved.map(u => this.normalizeUri(u)));
+      this.syncPinContext();
     }
 
     // Load persisted model selection
@@ -168,19 +172,30 @@ export class ContextMonitor implements vscode.Disposable {
       }),
     );
 
-    // Periodic refresh for time-based scoring (recency decay)
-    const config = vscode.workspace.getConfiguration('tokalator');
-    const interval = config.get<number>('autoRefreshInterval', 2000);
-    this.refreshTimer = setInterval(() => this.refresh(), interval);
-
-    // Opt-in session logging for research studies
-    if (config.get<boolean>('enableSessionLogging', false)) {
-      this.sessionLogger = new SessionLogger();
-      this.sessionLogger.startSession(this.activeModel.id);
-    }
+    this.applyRuntimeSettings();
+    this.disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('tokalator.autoRefreshInterval') || e.affectsConfiguration('tokalator.enableSessionLogging')) {
+        this.applyRuntimeSettings();
+      }
+    }));
 
     // Initial snapshot
     this.refresh();
+  }
+
+  /** Periodic refresh (recency decay) and opt-in session logging, re-read when their settings change. */
+  private applyRuntimeSettings(): void {
+    const config = vscode.workspace.getConfiguration('tokalator');
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.refreshTimer = setInterval(() => this.refresh(), config.get<number>('autoRefreshInterval', 2000));
+    const logging = config.get<boolean>('enableSessionLogging', false);
+    if (logging && !this.sessionLogger) {
+      this.sessionLogger = new SessionLogger();
+      this.sessionLogger.startSession(this.activeModel.id);
+    } else if (!logging && this.sessionLogger) {
+      this.sessionLogger.endSession(this.latestSnapshot ?? undefined);
+      this.sessionLogger = null;
+    }
   }
 
   /**
@@ -265,6 +280,12 @@ export class ContextMonitor implements vscode.Disposable {
     if (this.workspaceState) {
       this.workspaceState.update(PINNED_FILES_KEY, Array.from(this.pinnedFiles));
     }
+    this.syncPinContext();
+  }
+
+  private syncPinContext(): void {
+    const paths = Array.from(this.pinnedFiles).map(u => vscode.Uri.parse(u).fsPath);
+    void vscode.commands.executeCommand('setContext', 'tokalator.pinnedPaths', paths);
   }
 
   /**
@@ -366,10 +387,21 @@ export class ContextMonitor implements vscode.Disposable {
    * consumers can catch their ledgers up.
    */
   syncChatTurns(historyTurns: number): void {
-    const delta = historyTurns - this.chatTurnCount;
+    if (this.resetPending) {
+      this.historyBaseline = historyTurns;
+      this.resetPending = false;
+      this.historySynced = true;
+      return;
+    }
+    const delta = historyTurns - this.historyBaseline - this.chatTurnCount;
     if (delta <= 0) { return; }
 
-    this.chatTurnCount = historyTurns;
+    this.chatTurnCount += delta;
+    if (!this.historySynced) {
+      this.historySynced = true;
+      this.refresh();
+      return;
+    }
 
     const snapshot = this.latestSnapshot;
     if (snapshot) {
@@ -394,6 +426,7 @@ export class ContextMonitor implements vscode.Disposable {
   resetChatTurns(): void {
     this.chatTurnCount = 0;
     this.turnHistory = [];
+    this.resetPending = true;
     this.refresh();
   }
 
@@ -737,10 +770,10 @@ export class ContextMonitor implements vscode.Disposable {
     if (this.workspaceState) {
       this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
     }
-    // Sync the VS Code setting so the Settings UI stays in sync
+    // Only a user's own choice updates the global setting; automatic syncs stay in this window.
     const cfg = vscode.workspace.getConfiguration('tokalator');
     const currentSetting = cfg.get<string>('model');
-    if (currentSetting !== modelId) {
+    if (source === 'manual' && currentSetting !== modelId) {
       await cfg.update('model', modelId, vscode.ConfigurationTarget.Global);
     }
     // Rescan workspace with new tokenizer ratios, then refresh dashboard

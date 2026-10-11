@@ -1,11 +1,11 @@
 import * as fs from 'fs';
-import * as os from 'os';
 import * as path from 'path';
 import { StringDecoder } from 'string_decoder';
 import * as vscode from 'vscode';
 import { getActiveCatalog } from './catalogStore';
 import { ClaudeCodeUsageCollector } from './claudeCodeUsage.pure';
 import { AgentSummary, summarizeAgent } from './agents/summary.pure';
+import { ToolUsageCollector, summarizeToolUsage, type ToolUsageSummary } from './agents/toolUsage.pure';
 
 const WINDOW_DAYS = 7;
 const MIN_REFRESH_MS = 15_000;
@@ -18,16 +18,13 @@ interface FileCursor {
   partial: string;
 }
 
-export function claudeProjectsDir(): string {
-  return path.join(process.env.CLAUDE_CONFIG_DIR || path.join(os.homedir(), '.claude'), 'projects');
-}
-
-export function encodeProjectDir(fsPath: string): string {
-  return fsPath.replace(/[^a-zA-Z0-9]/g, '-');
-}
+import { claudeProjectsDir, encodeProjectDir } from './claudePaths';
+export { claudeProjectsDir, encodeProjectDir };
 
 export class ClaudeCodeTracker {
   private collector = new ClaudeCodeUsageCollector();
+  private tools = new ToolUsageCollector();
+  private toolUsage: ToolUsageSummary | null = null;
   private cursors = new Map<string, FileCursor>();
   private lastRefresh = 0;
   private refreshing: Promise<void> | null = null;
@@ -37,6 +34,11 @@ export class ClaudeCodeTracker {
 
   getSummary(): ClaudeCodeSummary | null {
     return this.summary;
+  }
+
+  /** Tools, shell programs, MCP servers and hook outputs from the last 7 days of sessions in this workspace. */
+  getToolUsage(): ToolUsageSummary | null {
+    return this.toolUsage;
   }
 
   async refresh(force = false): Promise<ClaudeCodeSummary | null> {
@@ -73,11 +75,12 @@ export class ClaudeCodeTracker {
         this.cursors.delete(file);
       }
     }
+    if (!logDirs.length) this.toolUsage = null;
     this.setSummary(logDirs.length ? this.summarize(logDirs, cutoff) : null);
   }
 
   private setSummary(next: ClaudeCodeSummary | null): void {
-    const serialized = JSON.stringify(next);
+    const serialized = JSON.stringify([next, this.toolUsage]);
     if (serialized === this.serialized) return;
     this.serialized = serialized;
     this.summary = next;
@@ -99,7 +102,7 @@ export class ClaudeCodeTracker {
         offset += bytesRead;
         const lines = (partial + decoder.write(buffer.subarray(0, bytesRead))).split('\n');
         partial = lines.pop() ?? '';
-        for (const line of lines) this.collector.addLine(line);
+        for (const line of lines) { this.collector.addLine(line); this.tools.addLine(line); }
       }
       this.cursors.set(file, { offset, partial });
     } finally {
@@ -108,7 +111,17 @@ export class ClaudeCodeTracker {
   }
 
   private summarize(logDirs: string[], cutoff: number): ClaudeCodeSummary {
-    return summarizeAgent(this.collector.records, this.collector.turns, getActiveCatalog(), cutoff, logDirs);
+    const roots = (vscode.workspace.workspaceFolders ?? []).map(f => path.resolve(f.uri.fsPath));
+    const inWorkspace = (cwd: string) => {
+      if (!cwd) return true;
+      const c = path.resolve(cwd);
+      return roots.some(r => c === r || c.startsWith(r + path.sep));
+    };
+    this.toolUsage = summarizeToolUsage(this.tools, cutoff, inWorkspace);
+    const records = this.collector.records.filter(r => inWorkspace(r.cwd));
+    const sessions = new Set(records.map(r => r.sessionId));
+    const turns = this.collector.turns.filter(t => sessions.has(t.sessionId));
+    return summarizeAgent(records, turns, getActiveCatalog(), cutoff, logDirs);
   }
 }
 
