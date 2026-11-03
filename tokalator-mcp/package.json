@@ -17,7 +17,7 @@
     "@anthropic-ai/tokenizer": "^0.0.4",
     "@modelcontextprotocol/sdk": "^1.32.1",
     "js-tiktoken": "^1.0.21",
-    "zod": "^4.6.5"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
     "@types/node": "^24.12.0",
