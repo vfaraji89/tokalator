@@ -6,6 +6,16 @@ updates:
     schedule: { interval: monthly }
     groups:
       npm: { patterns: ["*"], update-types: ["minor", "patch"] }
+    ignore:
+      # TypeScript 7 has no compiler API yet: ts-jest and typescript-eslint cannot run on it.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
+      # Node types follow the Node major that VS Code ships, not the newest.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Must not pass engines.vscode (^1.99.0) or the .vsix cannot be packaged.
+      - dependency-name: "@types/vscode"
+        update-types: ["version-update:semver-minor", "version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: monthly }
