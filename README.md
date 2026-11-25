@@ -53,7 +53,7 @@ claude mcp add --transport stdio tokalator -- node "$PWD/build/index.js"
 ```
 cd tokalator-extension-vs
 npm install
-npm test
+npm run lint && npm test
 npm run package
 ```
 
@@ -63,4 +63,4 @@ Issues and pull requests are welcome. Please read [LICENSING.md](LICENSING.md) f
 
 ## License
 
-AGPL-3.0-or-later, with commercial licences available. "Tokalator" and its logo are trademarks of the copyright holder.
+AGPL-3.0-or-later, with commercial licences available; the Claude Code plugin is MIT. See [LICENSING.md](LICENSING.md). "Tokalator" and its logo are trademarks of the copyright holder.

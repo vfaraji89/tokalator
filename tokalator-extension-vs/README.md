@@ -51,6 +51,7 @@ Type `@tokalator` in chat:
 | `/codemap` | Generate code maps |
 | `/settings-gen`, `/skill-gen` | AGENTS.md with a CLAUDE.md that imports it, and a checks skill for Codex, VS Code and Claude Code |
 | `/pricewatch` | Price changes priced on your agents' last 7 days |
+| `/reset`, `/exit` | Reset the turn counter; end the session and save its summary |
 
 ## Privacy
 

@@ -1,97 +1,50 @@
-# tokalator-mcp
+# Tokalator MCP server and CLI
 
-Real Claude BPE token counting for Claude Code — as an MCP server and CLI.
-
-**Requires:** Node.js 18+
-
----
+Real Claude BPE token counts, context budgets and Claude Code usage, in Claude Code and your terminal.
+Requires Node.js 18 or later.
 
 ## Build
 
 ```bash
 cd tokalator-mcp
 npm install
-npm run build
+npm run build        # also syncs the model catalog from the extension
 ```
 
----
-
-## CLI
-
-### Install globally
-
-```bash
-cd tokalator-mcp
-npm install -g .
-```
-
-### Usage
-
-```bash
-# Count tokens in a file (real Claude BPE)
-tokalator count src/main.ts
-tokalator count --model claude-sonnet-4.5 src/index.ts src/utils.ts
-
-# Count tokens in raw text
-tokalator count --text "your prompt here"
-
-# Full budget breakdown: files + system overhead + conversation
-tokalator budget src/index.ts src/utils.ts
-tokalator budget --model claude-haiku-4.5 --turns 10 --instructions 2 src/**/*.ts
-
-# Preview next-turn token cost
-tokalator preview 42000
-tokalator preview --model claude-sonnet-4.5 18000
-
-# List all Claude model profiles
-tokalator models
-```
-
-### Options
-
-| Option | Description | Default |
-|---|---|---|
-| `--model <id>` | Claude model ID | `claude-opus-4.6` |
-| `--turns <n>` | Chat turns so far (for budget overhead) | `0` |
-| `--instructions <n>` | Instruction files attached | `0` |
-| `--text "<text>"` | Count tokens in a string instead of a file | — |
-
----
-
-## MCP Server (Claude Code)
-
-The `.mcp.json` at the repo root registers the server automatically when you open this workspace in Claude Code.
-
-### Manual registration
+## In Claude Code
 
 ```bash
 claude mcp add --transport stdio tokalator -- node /path/to/tokalator-mcp/build/index.js
 ```
 
-### Tools exposed
+Run `/mcp` in Claude Code: `tokalator` should show as connected.
 
-| Tool | Description |
+| Tool | What it does |
 |---|---|
-| `count_tokens` | Count tokens in text or a file |
-| `estimate_budget` | Full budget breakdown for a list of files |
-| `preview_turn` | Preview next-turn token cost and turns remaining |
-| `list_models` | Show all Claude model profiles |
+| `count_tokens` | Tokens in text or a file |
+| `estimate_budget` | Budget breakdown for a list of files |
+| `preview_turn` | Next-turn cost and turns left |
+| `list_models` | Claude models with context window, max output and rot threshold |
+| `claude_code_usage` | Claude Code turns, tokens, cache hits and API-equivalent cost from local logs |
 
-### Verify in Claude Code
+## In the terminal
 
+```bash
+npm install -g .     # from tokalator-mcp/
 ```
-/mcp
-```
 
-The `tokalator` server should appear as connected.
+| Command | What it does |
+|---|---|
+| `tokalator count <file>...` or `--text "..."` | Tokens in files or text |
+| `tokalator budget <file>...` | Files + system overhead + conversation |
+| `tokalator preview <current_tokens>` | Next-turn cost |
+| `tokalator models` | Every Claude model and its limits |
+| `tokalator usage` | Claude Code usage; `--days`, `--all`, `--project`, `--watch`, `--json` |
 
----
+Every command takes `--model <id>`. `tokalator --help` shows the default model and every option.
 
-## Models
+Models and prices come from [`../tokalator-extension-vs/models.json`](../tokalator-extension-vs/models.json), the same catalog the extension uses.
 
-| Model | Context | Max Output | Rot threshold |
-|---|---|---|---|
-| `claude-opus-4.6` | 1M | 32K | 40 turns |
-| `claude-sonnet-4.5` | 200K | 16K | 20 turns |
-| `claude-sonnet-4` | 200K | 16K | 20 turns |
-| `claude-haiku-4.5` | 200K | 64K | 15 turns |
+## License
+
+AGPL-3.0-or-later. See [LICENSING.md](../LICENSING.md).

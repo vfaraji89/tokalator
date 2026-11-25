@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes go to the latest release of the VS Code extension and the Claude Code plugin.
+Security fixes go to the latest release of the VS Code extension, the MCP server and the Claude Code plugin.
 
 ## Reporting a vulnerability
 
