@@ -4,7 +4,9 @@ Tokalator is dual-licensed.
 
 ## Open source
 
-Everything in this repository is licensed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See [LICENSE](LICENSE).
+The VS Code extension, the MCP server and everything else in this repository are licensed under the GNU Affero General Public License v3.0 or later (AGPL-3.0-or-later). See [LICENSE](LICENSE).
+
+The one exception is the Claude Code plugin in [`claude-plugin/`](claude-plugin), which is MIT-licensed. See [claude-plugin/LICENSE](claude-plugin/LICENSE).
 
 ## Commercial licence
 
