@@ -1,0 +1,928 @@
+import * as vscode from 'vscode';
+import type { AgentId } from '../agents/types';
+import { TabInfo, ContextSnapshot, TurnSnapshot, SessionSummary, CostEstimate } from '../types';
+import { TabRelevanceScorer } from './tabRelevanceScorer';
+import { TokenBudgetEstimator } from './tokenBudgetEstimator';
+import { TokenizerService } from './tokenizerService';
+import type { ModelProfile } from '../pricing/modelProfiles';
+import {
+  DEFAULT_MODEL_ID,
+  getModel,
+  findModel,
+  getActiveCatalog,
+  onDidChangeCatalog,
+} from '../pricing/catalogStore';
+import { SessionLogger } from './sessionLogger';
+import { UsageAnalytics, UsageInsights } from '../pricing/usageAnalytics';
+
+const PINNED_FILES_KEY = 'tokalator.pinnedFiles';
+const SELECTED_MODEL_KEY = 'tokalator.selectedModel';
+const SESSION_KEY = 'tokalator.lastSession';
+const USAGE_ANALYTICS_KEY = 'tokalator.usageAnalytics';
+const MODEL_USAGE_LOG_KEY = 'tokalator.modelUsageLog';
+const MAX_MODEL_LOG_ENTRIES = 200;
+
+/** Where a model switch originated. */
+export type ModelSwitchSource = 'chat-api' | 'detected' | 'available-lms' | 'manual' | AgentId;
+
+/** One entry in the chronological model-switch log. */
+export interface ModelUsageEntry {
+  modelId: string;
+  label: string;
+  timestamp: number;
+  source: ModelSwitchSource;
+}
+
+/**
+ * Core engine that tracks all editor state and produces real-time ContextSnapshots.
+ *
+ * Subscribes to:
+ *  - Active editor changes
+ *  - Tab open/close events
+ *  - Text document changes
+ *  - Diagnostics changes
+ *
+ * Emits:
+ *  - onDidUpdateSnapshot: fires with a fresh ContextSnapshot after each state change
+ */
+export class ContextMonitor implements vscode.Disposable {
+
+  private readonly _onDidUpdateSnapshot = new vscode.EventEmitter<ContextSnapshot>();
+  readonly onDidUpdateSnapshot = this._onDidUpdateSnapshot.event;
+
+  /**
+   * Fires when turns are discovered that happened while Tokalator was not
+   * counting (chat history longer than our own tally). Consumers backfill
+   * their own ledgers by `count`. Turns counted live through
+   * `incrementChatTurns` do NOT fire this event.
+   */
+  private readonly _onDidInferTurn = new vscode.EventEmitter<{
+    count: number;
+    costEstimate: CostEstimate | null;
+  }>();
+  readonly onDidInferTurn = this._onDidInferTurn.event;
+
+  private usageAnalytics: UsageAnalytics | null = null;
+  private modelUsageLog: ModelUsageEntry[] = [];
+  private detectedModels: string[] = [];
+
+  private readonly scorer = new TabRelevanceScorer();
+  private readonly tokenizer = new TokenizerService();
+  private readonly estimator = new TokenBudgetEstimator(this.tokenizer);
+
+  private pinnedFiles = new Set<string>();
+  private chatTurnCount = 0;
+  private historyBaseline = 0;
+  private resetPending = false;
+  private historySynced = false;
+  private turnHistory: TurnSnapshot[] = [];
+  private lastEditTimestamps = new Map<string, number>();
+  private disposables: vscode.Disposable[] = [];
+  private refreshTimer: ReturnType<typeof setInterval> | undefined;
+
+  private latestSnapshot: ContextSnapshot | null = null;
+  private debounceTimer: ReturnType<typeof setTimeout> | undefined;
+  private isRefreshing = false;
+  private pendingRefresh = false;
+
+  private activeModel: ModelProfile;
+  private workspaceFileTokens = 0;
+  private workspaceFileCount = 0;
+
+  // Session tracking
+  private peakTokens = 0;
+  private peakPercent = 0;
+  private fileEditCounts = new Map<string, number>();
+
+  // Opt-in session logger for research studies
+  private sessionLogger: SessionLogger | null = null;
+
+  constructor(private readonly workspaceState?: vscode.Memento) {
+    // Load persisted pinned files (normalize URIs for consistent matching)
+    if (workspaceState) {
+      const saved = workspaceState.get<string[]>(PINNED_FILES_KEY, []);
+      this.pinnedFiles = new Set(saved.map(u => this.normalizeUri(u)));
+      this.syncPinContext();
+    }
+
+    // Load persisted model selection
+    const savedModelId = workspaceState?.get<string>(SELECTED_MODEL_KEY, DEFAULT_MODEL_ID) || DEFAULT_MODEL_ID;
+    this.activeModel = getModel(savedModelId);
+    this.estimator.setProvider(this.activeModel.provider);
+
+    if (workspaceState) {
+      this.usageAnalytics = new UsageAnalytics(
+        {
+          get: <T>(key: string, fallback: T) => workspaceState.get<T>(key, fallback),
+          update: (key: string, value: unknown) => workspaceState.update(key, value),
+        },
+        USAGE_ANALYTICS_KEY,
+      );
+      this.modelUsageLog = workspaceState.get<ModelUsageEntry[]>(MODEL_USAGE_LOG_KEY, []);
+    }
+
+    // Scan workspace files on startup
+    this.scanWorkspaceFiles();
+
+    // Debounced refresh to avoid perf issues from rapid event firing
+    const debouncedRefresh = () => {
+      if (this.debounceTimer) { clearTimeout(this.debounceTimer); }
+      this.debounceTimer = setTimeout(() => this.refresh(), 300);
+    };
+
+    // Subscribe to VS Code events
+    this.disposables.push(
+      vscode.window.onDidChangeActiveTextEditor(() => debouncedRefresh()),
+      vscode.window.onDidChangeTextEditorSelection(() => debouncedRefresh()),
+      vscode.window.tabGroups.onDidChangeTabs(() => debouncedRefresh()),
+      vscode.workspace.onDidChangeTextDocument(e => {
+        const uri = e.document.uri.toString();
+        this.lastEditTimestamps.set(uri, Date.now());
+        this.fileEditCounts.set(uri, (this.fileEditCounts.get(uri) || 0) + 1);
+        debouncedRefresh();
+      }),
+      vscode.workspace.onDidOpenTextDocument(() => debouncedRefresh()),
+      // Clean up caches when documents close (memory leak fix)
+      vscode.workspace.onDidCloseTextDocument(doc => {
+        const uri = doc.uri.toString();
+        this.lastEditTimestamps.delete(uri);
+        this.estimator.clearCacheFor(uri);
+        debouncedRefresh();
+      }),
+      vscode.languages.onDidChangeDiagnostics(() => debouncedRefresh()),
+      // Sync model when settings change (skip if already on that model to avoid loop)
+      vscode.workspace.onDidChangeConfiguration(e => {
+        if (e.affectsConfiguration('tokalator.model')) {
+          const cfg = vscode.workspace.getConfiguration('tokalator');
+          const modelId = cfg.get<string>('model', DEFAULT_MODEL_ID);
+          if (modelId !== this.activeModel.id) {
+            this.setModel(modelId);
+          }
+        }
+      }),
+      // Sync when VS Code's available chat model set changes (e.g. provider rollout,
+      // deprecation, or user installs a new Copilot extension)
+      vscode.lm.onDidChangeChatModels(() => {
+        void this.syncModelFromAvailableLMs();
+      }),
+      // Refresh when the remote pricing catalog updates
+      onDidChangeCatalog(() => {
+        this.activeModel = getModel(this.activeModel.id);
+        this.refresh();
+      }),
+    );
+
+    this.applyRuntimeSettings();
+    this.disposables.push(vscode.workspace.onDidChangeConfiguration(e => {
+      if (e.affectsConfiguration('tokalator.autoRefreshInterval') || e.affectsConfiguration('tokalator.enableSessionLogging')) {
+        this.applyRuntimeSettings();
+      }
+    }));
+
+    // Initial snapshot
+    this.refresh();
+  }
+
+  /** Periodic refresh (recency decay) and opt-in session logging, re-read when their settings change. */
+  private applyRuntimeSettings(): void {
+    const config = vscode.workspace.getConfiguration('tokalator');
+    if (this.refreshTimer) clearInterval(this.refreshTimer);
+    this.refreshTimer = setInterval(() => this.refresh(), config.get<number>('autoRefreshInterval', 2000));
+    const logging = config.get<boolean>('enableSessionLogging', false);
+    if (logging && !this.sessionLogger) {
+      this.sessionLogger = new SessionLogger();
+      this.sessionLogger.startSession(this.activeModel.id);
+    } else if (!logging && this.sessionLogger) {
+      this.sessionLogger.endSession(this.latestSnapshot ?? undefined);
+      this.sessionLogger = null;
+    }
+  }
+
+  /**
+   * Build a fresh snapshot and emit it.
+   */
+  async refresh(): Promise<void> {
+    if (this.isRefreshing) {
+      // Queue one pending refresh so the final state after rapid switching is captured
+      this.pendingRefresh = true;
+      return;
+    }
+    this.isRefreshing = true;
+    this.pendingRefresh = false;
+    try {
+      const snapshot = await this.buildSnapshot();
+      this.latestSnapshot = snapshot;
+      this._onDidUpdateSnapshot.fire(snapshot);
+
+      // Log snapshot to session logger if enabled
+      if (this.sessionLogger) {
+        this.sessionLogger.logSnapshot(snapshot);
+      }
+    } finally {
+      this.isRefreshing = false;
+      // If events arrived while we were refreshing, run one more pass
+      if (this.pendingRefresh) {
+        this.pendingRefresh = false;
+        void this.refresh();
+      }
+    }
+  }
+
+  /**
+   * Get the most recent snapshot without triggering a refresh.
+   */
+  getLatestSnapshot(): ContextSnapshot | null {
+    return this.latestSnapshot;
+  }
+
+  /**
+   * Normalize a URI string for consistent Set matching.
+   */
+  private normalizeUri(uri: string): string {
+    try {
+      return vscode.Uri.parse(uri).toString();
+    } catch {
+      return uri;
+    }
+  }
+
+  /**
+   * Pin a file URI so it's always scored as maximum relevance.
+   */
+  pinFile(uri: string): void {
+    this.pinnedFiles.add(this.normalizeUri(uri));
+    this.persistPins();
+    this.refresh();
+  }
+
+  /**
+   * Unpin a file.
+   */
+  unpinFile(uri: string): void {
+    this.pinnedFiles.delete(this.normalizeUri(uri));
+    this.persistPins();
+    this.refresh();
+  }
+
+  /**
+   * Clear all pins.
+   */
+  clearPins(): void {
+    this.pinnedFiles.clear();
+    this.persistPins();
+    this.refresh();
+  }
+
+  /**
+   * Persist pinned files to workspace state.
+   */
+  private persistPins(): void {
+    if (this.workspaceState) {
+      this.workspaceState.update(PINNED_FILES_KEY, Array.from(this.pinnedFiles));
+    }
+    this.syncPinContext();
+  }
+
+  private syncPinContext(): void {
+    const paths = Array.from(this.pinnedFiles).map(u => vscode.Uri.parse(u).fsPath);
+    void vscode.commands.executeCommand('setContext', 'tokalator.pinnedPaths', paths);
+  }
+
+  /**
+   * Increment the conversation turn counter and capture a turn snapshot.
+   * Only call this for actual user interactions, not status checks.
+   */
+  async incrementChatTurns(): Promise<void> {
+    this.chatTurnCount++;
+
+    // Capture a turn snapshot for compaction tracking
+    const snapshot = this.latestSnapshot;
+    if (snapshot) {
+      this.usageAnalytics?.recordTurn(
+        this.activeModel.id,
+        snapshot.costEstimate.inputTokens,
+        snapshot.costEstimate.outputTokens,
+        snapshot.costEstimate.effectiveCost,
+        'chat-api',
+      );
+      const fileTokens = snapshot.tabs.reduce((s, t) => s + t.estimatedTokens, 0);
+      const overheadTokens = snapshot.totalEstimatedTokens - fileTokens;
+      this.turnHistory.push({
+        turn: this.chatTurnCount,
+        timestamp: Date.now(),
+        inputTokens: snapshot.totalEstimatedTokens,
+        outputReserved: this.activeModel.maxOutput,
+        fileTokens,
+        overheadTokens,
+        tabCount: snapshot.tabs.length,
+        pinnedCount: this.pinnedFiles.size,
+      });
+    }
+
+    this.refresh();
+  }
+
+  /**
+   * Estimate the token cost of the *next* chat turn before sending.
+   * This gives users a preview of what will be consumed.
+   */
+  async previewNextTurn(): Promise<{
+    currentInput: number;
+    nextTurnEstimate: number;
+    conversationGrowth: number;
+    outputReserved: number;
+    remainingCapacity: number;
+    percentAfterTurn: number;
+    windowCapacity: number;
+    warning: string | null;
+  }> {
+    await this.refresh();
+    const snapshot = this.latestSnapshot;
+    if (!snapshot) {
+      return {
+        currentInput: 0, nextTurnEstimate: 0, conversationGrowth: 800,
+        outputReserved: this.activeModel.maxOutput, remainingCapacity: this.activeModel.contextWindow,
+        percentAfterTurn: 0, windowCapacity: this.activeModel.contextWindow, warning: null,
+      };
+    }
+
+    // Each turn adds ~800 tokens (user message + assistant response)
+    const perTurnCost = 800;
+    const nextTurnInput = snapshot.totalEstimatedTokens + perTurnCost;
+    const nextPercent = Math.min((nextTurnInput / snapshot.windowCapacity) * 100, 100);
+    const remaining = Math.max(snapshot.windowCapacity - nextTurnInput - this.activeModel.maxOutput, 0);
+
+    let warning: string | null = null;
+    if (nextPercent >= 90) {
+      warning = 'Next turn will push you past 90% — high risk of context overflow';
+    } else if (nextPercent >= 75) {
+      warning = 'Approaching context limit — consider closing tabs or resetting';
+    }
+
+    // Check if next turn crosses the rot threshold
+    if (this.chatTurnCount + 1 >= this.activeModel.rotThreshold) {
+      const rotMsg = `Turn ${this.chatTurnCount + 1} will cross context rot threshold (${this.activeModel.rotThreshold})`;
+      warning = warning ? `${warning}. ${rotMsg}` : rotMsg;
+    }
+
+    return {
+      currentInput: snapshot.totalEstimatedTokens,
+      nextTurnEstimate: nextTurnInput,
+      conversationGrowth: perTurnCost,
+      outputReserved: this.activeModel.maxOutput,
+      remainingCapacity: remaining,
+      percentAfterTurn: nextPercent,
+      windowCapacity: snapshot.windowCapacity,
+      warning,
+    };
+  }
+
+  /**
+   * Reset conversation turn counter and clear turn history.
+   */
+  /**
+   * Reconcile our turn tally with the chat history when the host reports more
+   * turns than we counted (Tokalator started mid-conversation, or the window
+   * reloaded). Fires `onDidInferTurn` once with the backfilled delta so
+   * consumers can catch their ledgers up.
+   */
+  syncChatTurns(historyTurns: number): void {
+    if (this.resetPending) {
+      this.historyBaseline = historyTurns;
+      this.resetPending = false;
+      this.historySynced = true;
+      return;
+    }
+    const delta = historyTurns - this.historyBaseline - this.chatTurnCount;
+    if (delta <= 0) { return; }
+
+    this.chatTurnCount += delta;
+    if (!this.historySynced) {
+      this.historySynced = true;
+      this.refresh();
+      return;
+    }
+
+    const snapshot = this.latestSnapshot;
+    if (snapshot) {
+      for (let i = 0; i < delta; i++) {
+        this.usageAnalytics?.recordTurn(
+          this.activeModel.id,
+          snapshot.costEstimate.inputTokens,
+          snapshot.costEstimate.outputTokens,
+          snapshot.costEstimate.effectiveCost,
+          'burst',
+        );
+      }
+    }
+
+    this._onDidInferTurn.fire({
+      count: delta,
+      costEstimate: this.latestSnapshot?.costEstimate ?? null,
+    });
+    this.refresh();
+  }
+
+  resetChatTurns(): void {
+    this.chatTurnCount = 0;
+    this.turnHistory = [];
+    this.resetPending = true;
+    this.refresh();
+  }
+
+  /**
+   * Get current chat turn count.
+   */
+  getChatTurnCount(): number {
+    return this.chatTurnCount;
+  }
+
+  /**
+   * Get the per-turn snapshot history for compaction analysis.
+   */
+  getTurnHistory(): TurnSnapshot[] {
+    return [...this.turnHistory];
+  }
+
+  /**
+   * Close tabs below relevance threshold.
+   * Returns the list of closed tab labels.
+   */
+  async optimizeTabs(): Promise<string[]> {
+    const config = vscode.workspace.getConfiguration('tokalator');
+    const threshold = config.get<number>('relevanceThreshold', 0.3);
+
+    const snapshot = await this.buildSnapshot();
+    const toClose = snapshot.tabs.filter(
+      t => t.relevanceScore < threshold && !t.isActive && !t.isPinned
+    );
+
+    const closed: string[] = [];
+    for (const tab of toClose) {
+      const allTabs = vscode.window.tabGroups.all.flatMap(g => g.tabs);
+      const vsTab = allTabs.find(t => {
+        if (t.input instanceof vscode.TabInputText) {
+          return t.input.uri.toString() === tab.uri.toString();
+        }
+        return false;
+      });
+      if (vsTab) {
+        await vscode.window.tabGroups.close(vsTab);
+        closed.push(tab.label);
+      }
+    }
+
+    // Log optimize action to session logger if enabled
+    if (this.sessionLogger && closed.length > 0) {
+      this.sessionLogger.logOptimize(snapshot.tabs.length, snapshot.totalEstimatedTokens, closed.length);
+    }
+
+    return closed;
+  }
+
+  /**
+   * Build the full context snapshot.
+   */
+  private async buildSnapshot(): Promise<ContextSnapshot> {
+    const config = vscode.workspace.getConfiguration('tokalator');
+    const configWindowSize = config.get<number>('windowSize', 0);
+    const windowCapacity = configWindowSize > 0 ? configWindowSize : this.activeModel.contextWindow;
+    const rotWarning = this.activeModel.rotThreshold;
+
+    // 1. Gather all open tabs
+    let tabs = this.gatherTabs();
+
+    // 2. Estimate tokens for each tab
+    tabs = await this.estimator.estimateAllTabs(tabs);
+
+    // 3. Score relevance
+    tabs = this.scorer.scoreAll(tabs, vscode.window.activeTextEditor);
+
+    // 4. Sort by relevance (highest first)
+    tabs.sort((a, b) => b.relevanceScore - a.relevanceScore);
+
+    // 5. Gather diagnostics summary
+    const diagnosticsSummary = this.gatherDiagnosticsSummary();
+
+    // 6. Count instruction files in workspace
+    const instructionFiles = await this.countInstructionFiles();
+
+    // 7. Compute budget
+    const budget = this.estimator.computeBudget(
+      tabs,
+      this.chatTurnCount,
+      instructionFiles,
+      windowCapacity
+    );
+
+    // Track peak usage for session summary
+    if (budget.used > this.peakTokens) {
+      this.peakTokens = budget.used;
+      this.peakPercent = budget.percent;
+    }
+
+    // 8. Determine budget level (simplified from percentage)
+    let budgetLevel: 'low' | 'medium' | 'high';
+    if (budget.percent > 85) {
+      budgetLevel = 'high';
+    } else if (budget.percent > 60) {
+      budgetLevel = 'medium';
+    } else {
+      budgetLevel = 'low';
+    }
+
+    // 9. Determine health and reasons
+    const healthReasons: string[] = [];
+    let contextHealth: ContextSnapshot['contextHealth'] = 'healthy';
+
+    if (budgetLevel === 'high') {
+      contextHealth = 'critical';
+      healthReasons.push('Token budget is high — context overflow risk');
+    } else if (budgetLevel === 'medium') {
+      contextHealth = 'warning';
+      healthReasons.push('Token budget is medium — consider closing unused tabs');
+    }
+
+    if (this.chatTurnCount >= rotWarning) {
+      contextHealth = contextHealth === 'critical' ? 'critical' : 'warning';
+      healthReasons.push(`${this.chatTurnCount} chat turns — context may be stale`);
+    }
+
+    const distractors = tabs.filter(t => {
+      const threshold = config.get<number>('relevanceThreshold', 0.3);
+      return t.relevanceScore < threshold && !t.isActive && !t.isPinned;
+    });
+    if (distractors.length > 3) {
+      contextHealth = contextHealth === 'critical' ? 'critical' : 'warning';
+      healthReasons.push(`${distractors.length} low-relevance tabs open`);
+    }
+
+    if (healthReasons.length === 0) {
+      healthReasons.push('Token budget looks good');
+    }
+
+    const activeFile = tabs.find(t => t.isActive) || null;
+
+    // 10. Estimate cost (input only: output tokens and cache hits are not observable from the editor)
+    const inputTokens = budget.used;
+    const lc = this.activeModel.longContext;
+    const longRequest = lc !== undefined && inputTokens > lc.threshold;
+    const inputRate = this.activeModel.inputCostPerMTok * (longRequest ? lc.inputMultiplier : 1);
+    const outputRate = this.activeModel.outputCostPerMTok * (longRequest ? lc.outputMultiplier : 1);
+    const cachedRate = (this.activeModel.cachedInputCostPerMTok ?? this.activeModel.inputCostPerMTok) * (longRequest ? lc.inputMultiplier : 1);
+    const inputCost = (inputTokens / 1_000_000) * inputRate;
+    const costEstimate: CostEstimate = {
+      inputTokens,
+      outputTokens: 0,
+      inputCost,
+      outputCost: 0,
+      totalCost: inputCost,
+      effectiveCost: inputCost,
+      inputCostPerMTok: inputRate,
+      outputCostPerMTok: outputRate,
+      cachedInputCostPerMTok: cachedRate,
+    };
+
+    return {
+      timestamp: Date.now(),
+      activeFile,
+      tabs,
+      pinnedFiles: this.pinnedFiles,
+      totalEstimatedTokens: budget.used,
+      windowCapacity,
+      usagePercent: budget.percent,
+      budgetLevel,
+      diagnosticsSummary,
+      chatTurnCount: this.chatTurnCount,
+      contextHealth,
+      healthReasons,
+      modelId: this.activeModel.id,
+      modelLabel: this.activeModel.label,
+      workspaceFileCount: this.workspaceFileCount,
+      workspaceFileTokens: this.workspaceFileTokens,
+      tokenizerType: this.tokenizer.getTokenizerType(this.activeModel.provider),
+      tokenizerLabel: this.tokenizer.getTokenizerLabel(this.activeModel.provider),
+      turnHistory: [...this.turnHistory],
+      budgetBreakdown: budget.breakdown,
+      costEstimate,
+    };
+  }
+
+  /**
+   * Gather TabInfo from all open tab groups.
+   */
+  private gatherTabs(): TabInfo[] {
+    const tabs: TabInfo[] = [];
+    const seenUris = new Set<string>();
+    const workspaceFolders = vscode.workspace.workspaceFolders || [];
+
+    for (const group of vscode.window.tabGroups.all) {
+      for (const tab of group.tabs) {
+        if (!(tab.input instanceof vscode.TabInputText)) { continue; }
+
+        const uri = tab.input.uri;
+        const uriKey = uri.toString();
+
+        // Skip duplicate URIs (same file open in split panes)
+        if (seenUris.has(uriKey)) { continue; }
+        seenUris.add(uriKey);
+
+        const fsPath = uri.fsPath;
+
+        // Find the matching workspace folder for correct relative path in multi-root workspaces
+        const matchingFolder = workspaceFolders.find(f => fsPath.startsWith(f.uri.fsPath));
+        const relativePath = matchingFolder
+          ? fsPath.replace(matchingFolder.uri.fsPath, '').replace(/^[/\\]/, '')
+          : fsPath;
+
+        // Get language ID from open documents
+        const openDoc = vscode.workspace.textDocuments.find(
+          d => d.uri.toString() === uri.toString()
+        );
+        const languageId = openDoc?.languageId || this.guessLanguage(fsPath);
+
+        // Get diagnostics for this file
+        const diagnostics = vscode.languages.getDiagnostics(uri);
+        const diagnosticCount = diagnostics.length;
+
+        // Get last edit timestamp
+        const lastEdit = this.lastEditTimestamps.get(uri.toString()) || 0;
+
+        tabs.push({
+          uri,
+          label: tab.label,
+          languageId,
+          relativePath,
+          estimatedTokens: 0,   // filled later by estimator
+          relevanceScore: 0,     // filled later by scorer
+          relevanceReason: '',
+          isActive: tab.isActive,
+          isDirty: tab.isDirty,
+          isPinned: this.pinnedFiles.has(uri.toString()),
+          diagnosticCount,
+          lastEditTimestamp: lastEdit,
+        });
+      }
+    }
+
+    return tabs;
+  }
+
+  /**
+   * Aggregate diagnostics across all open files.
+   */
+  private gatherDiagnosticsSummary(): { errors: number; warnings: number; info: number } {
+    const allDiags = vscode.languages.getDiagnostics();
+    let errors = 0, warnings = 0, info = 0;
+
+    for (const [, diags] of allDiags) {
+      for (const d of diags) {
+        switch (d.severity) {
+          case vscode.DiagnosticSeverity.Error: errors++; break;
+          case vscode.DiagnosticSeverity.Warning: warnings++; break;
+          default: info++; break;
+        }
+      }
+    }
+
+    return { errors, warnings, info };
+  }
+
+  /**
+   * Count .instructions.md files in the workspace (they consume context budget).
+   */
+  private async countInstructionFiles(): Promise<number> {
+    try {
+      const exclude = '**/node_modules/**';
+      const counts = await Promise.all([
+        vscode.workspace.findFiles('**/*.instructions.md', exclude, 20),
+        vscode.workspace.findFiles('.github/copilot-instructions.md', undefined, 1),
+        vscode.workspace.findFiles('**/{CLAUDE,CLAUDE.local,AGENTS,AGENTS.override,GEMINI}.md', exclude, 10),
+        vscode.workspace.findFiles('**/.claude/rules/*.md', exclude, 10),
+        vscode.workspace.findFiles('**/{.cursorrules,.cursor/rules/*.mdc}', exclude, 10),
+      ]);
+      return counts.reduce((n, files) => n + files.length, 0);
+    } catch {
+      return 0;
+    }
+  }
+
+  /**
+   * Guess language from file extension.
+   */
+  private guessLanguage(fsPath: string): string {
+    const ext = fsPath.split('.').pop()?.toLowerCase() || '';
+    const map: Record<string, string> = {
+      ts: 'typescript', tsx: 'typescriptreact', js: 'javascript', jsx: 'javascriptreact',
+      py: 'python', go: 'go', rs: 'rust', java: 'java', rb: 'ruby',
+      md: 'markdown', json: 'json', yml: 'yaml', yaml: 'yaml',
+      css: 'css', html: 'html', sh: 'shellscript', sql: 'sql',
+    };
+    return map[ext] || ext;
+  }
+
+  /**
+   * Called when vscode.lm.onDidChangeChatModels fires.
+   * If the current model is no longer available, switches to the best known
+   * alternative and notifies the user.
+   */
+  async syncModelFromAvailableLMs(): Promise<void> {
+    const available = await vscode.lm.selectChatModels();
+    if (!available.length) { return; }
+
+    this.detectedModels = Array.from(new Set(
+      available
+        .map(lm => (findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name))?.id)
+        .filter((id): id is string => Boolean(id)),
+    ));
+
+    const current = this.activeModel;
+
+    // Check if any available model maps to our current profile — still good
+    const stillPresent = available.some(lm =>
+      (findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name))?.id === current.id
+    );
+    if (stillPresent) { return; }
+
+    // Current model gone — find the best available substitute
+    for (const lm of available) {
+      const match = findModel(lm.family) ?? findModel(lm.id) ?? findModel(lm.name);
+      if (match) {
+        await this.setModel(match.id, 'available-lms');
+        vscode.window.showInformationMessage(
+          `Tokalator: "${current.label}" is no longer available. Switched to "${match.label}".`
+        );
+        return;
+      }
+    }
+  }
+
+  /**
+   * Set the active model and persist it.
+   */
+  async setModel(modelId: string, source: ModelSwitchSource = 'manual'): Promise<void> {
+    const previousId = this.activeModel.id;
+    this.activeModel = getModel(modelId);
+    this.estimator.setProvider(this.activeModel.provider);
+    if (previousId !== this.activeModel.id) {
+      this.recordModelUsage(source);
+    }
+    if (this.workspaceState) {
+      this.workspaceState.update(SELECTED_MODEL_KEY, modelId);
+    }
+    // Only a user's own choice updates the global setting; automatic syncs stay in this window.
+    const cfg = vscode.workspace.getConfiguration('tokalator');
+    const currentSetting = cfg.get<string>('model');
+    if (source === 'manual' && currentSetting !== modelId) {
+      await cfg.update('model', modelId, vscode.ConfigurationTarget.Global);
+    }
+    // Rescan workspace with new tokenizer ratios, then refresh dashboard
+    await this.scanWorkspaceFiles();
+    await this.refresh();
+  }
+
+  /**
+   * Get the current active model.
+   */
+  getActiveModel(): ModelProfile {
+    return this.activeModel;
+  }
+
+  /**
+   * Get all available models from the active (possibly remote-overlaid) catalog.
+   */
+  getModels(): ModelProfile[] {
+    return getActiveCatalog();
+  }
+
+  /**
+   * Model IDs the host currently offers, resolved to our catalog.
+   */
+  getDetectedModels(): string[] {
+    return [...this.detectedModels];
+  }
+
+  /**
+   * Chronological log of model switches, oldest first.
+   */
+  getModelUsageLog(): ModelUsageEntry[] {
+    return [...this.modelUsageLog];
+  }
+
+  /**
+   * Persisted spend analytics, or null when no workspace storage is available.
+   */
+  getUsageAnalytics(): UsageAnalytics | null {
+    return this.usageAnalytics;
+  }
+
+  /**
+   * Aggregated spend insights for the dashboard.
+   */
+  getUsageInsights(): UsageInsights | null {
+    return this.usageAnalytics ? this.usageAnalytics.analyze() : null;
+  }
+
+  private recordModelUsage(source: ModelSwitchSource): void {
+    this.modelUsageLog.push({
+      modelId: this.activeModel.id,
+      label: this.activeModel.label,
+      timestamp: Date.now(),
+      source,
+    });
+    if (this.modelUsageLog.length > MAX_MODEL_LOG_ENTRIES) {
+      this.modelUsageLog.splice(0, this.modelUsageLog.length - MAX_MODEL_LOG_ENTRIES);
+    }
+    this.workspaceState?.update(MODEL_USAGE_LOG_KEY, this.modelUsageLog);
+  }
+
+  /**
+   * Get the tokenizer service for direct token counting.
+   */
+  getTokenizer(): TokenizerService {
+    return this.tokenizer;
+  }
+
+  /**
+   * Scan workspace files to estimate total project token count.
+   * This runs once on startup and on workspace change.
+   */
+  private async scanWorkspaceFiles(): Promise<void> {
+    try {
+      const files = await vscode.workspace.findFiles(
+        '**/*.{ts,tsx,js,jsx,py,go,rs,java,rb,md,json,yml,yaml,css,html,sh,sql,c,cpp,h,cs,swift,kt}',
+        '{**/node_modules/**,**/dist/**,**/build/**,**/.next/**,**/vendor/**,**/.git/**}',
+        5000
+      );
+      this.workspaceFileCount = files.length;
+
+      // Estimate total workspace tokens using provider-specific byte ratios
+      let totalBytes = 0;
+      for (const uri of files) {
+        try {
+          const stat = await vscode.workspace.fs.stat(uri);
+          totalBytes += stat.size;
+        } catch {
+          // skip unreadable files
+        }
+      }
+      this.workspaceFileTokens = this.tokenizer.estimateFromBytes(totalBytes, this.activeModel.provider);
+    } catch {
+      this.workspaceFileCount = 0;
+      this.workspaceFileTokens = 0;
+    }
+  }
+
+  /**
+   * Save a session summary to workspace state for next activation.
+   */
+  saveSessionSummary(): void {
+    const snapshot = this.latestSnapshot;
+    if (!snapshot || !this.workspaceState) return;
+
+    const topFiles = [...this.fileEditCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 5)
+      .map(([uri]) => {
+        try {
+          return vscode.workspace.asRelativePath(vscode.Uri.parse(uri));
+        } catch {
+          return uri;
+        }
+      });
+
+    const summary: SessionSummary = {
+      endedAt: new Date().toISOString(),
+      modelId: this.activeModel.id,
+      modelLabel: this.activeModel.label,
+      totalTurns: this.chatTurnCount,
+      peakTokens: this.peakTokens,
+      peakPercent: this.peakPercent,
+      tabCount: snapshot.tabs.length,
+      pinnedCount: this.pinnedFiles.size,
+      filesWorkedOn: topFiles,
+      budgetLevel: snapshot.budgetLevel,
+      healthStatus: snapshot.contextHealth,
+    };
+
+    this.workspaceState.update(SESSION_KEY, summary);
+  }
+
+  /**
+   * Get last session summary (if any).
+   */
+  getLastSession(): SessionSummary | undefined {
+    return this.workspaceState?.get<SessionSummary>(SESSION_KEY);
+  }
+
+  dispose(): void {
+    this._onDidInferTurn.dispose();
+    this.saveSessionSummary();
+    if (this.sessionLogger) { this.sessionLogger.endSession(); }
+    if (this.refreshTimer) { clearInterval(this.refreshTimer); }
+    if (this.debounceTimer) { clearTimeout(this.debounceTimer); }
+    this._onDidUpdateSnapshot.dispose();
+    this.tokenizer.dispose();
+    this.disposables.forEach(d => d.dispose());
+  }
+}

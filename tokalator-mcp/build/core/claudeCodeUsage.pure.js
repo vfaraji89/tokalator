@@ -1,4 +1,4 @@
-// Copied from tokalator-extension-vs/src/core/claudeCodeUsage.pure.ts by scripts/sync.mjs. Do not edit.
+// Copied from tokalator-extension-vs/src/agents/claude/claudeCodeUsage.pure.ts by scripts/sync.mjs. Do not edit.
 /**
  * Token usage from Claude Code session logs (~/.claude/projects/<project>/<session>.jsonl
  * and <session>/subagents/*.jsonl), written by both the CLI and the VS Code extension.

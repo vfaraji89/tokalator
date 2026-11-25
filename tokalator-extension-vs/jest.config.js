@@ -17,11 +17,11 @@ module.exports = {
     }],
   },
   testMatch: [
-    '<rootDir>/__tests__/**/*.test.ts',
+    '<rootDir>/test/unit/**/*.test.ts',
   ],
   moduleFileExtensions: ['ts', 'js', 'json'],
   // Mock the vscode module since it's only available inside VS Code
   moduleNameMapper: {
-    '^vscode$': '<rootDir>/__tests__/__mocks__/vscode.ts',
+    '^vscode$': '<rootDir>/test/mocks/vscode.ts',
   },
 };
