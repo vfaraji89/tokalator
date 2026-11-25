@@ -4,9 +4,8 @@ src/**
 tsconfig.json
 .gitignore
 **/*.map
-__tests__/**
+test/**
 scripts/**
-e2e/**
 jest.config.js
 evaluation/**
 eslint.config.mjs

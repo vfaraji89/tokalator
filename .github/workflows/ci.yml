@@ -31,7 +31,9 @@ jobs:
           cache-dependency-path: tokalator-extension-vs/package-lock.json
       - run: npm ci
       - run: npx tsc --noEmit
+      - run: npm run lint
       - run: npm test
+      - run: npm run compile
 
   mcp:
     runs-on: ubuntu-latest

@@ -531,7 +531,7 @@
     "package": "npm run compile && npx @vscode/vsce package --no-dependencies",
     "lint": "eslint src",
     "test": "jest --verbose",
-    "test:e2e": "npm run compile && node e2e/run.js"
+    "test:e2e": "npm run compile && node test/e2e/run.js"
   },
   "devDependencies": {
     "@types/jest": "^30.0.0",
@@ -539,9 +539,11 @@
     "@types/vscode": "^1.99.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
+    "eslint": "^10.15.0",
     "jest": "^30.5.2",
     "ts-jest": "^29.4.14",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "typescript-eslint": "^8.74.0"
   },
   "dependencies": {
     "@anthropic-ai/tokenizer": "^0.0.4",

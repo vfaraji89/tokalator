@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url';
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const ext = join(root, '..', 'tokalator-extension-vs');
 const modelsJson = join(ext, 'models.json');
-const parser = join(ext, 'src', 'core', 'claudeCodeUsage.pure.ts');
+const parser = join(ext, 'src', 'agents', 'claude', 'claudeCodeUsage.pure.ts');
 
 if (!existsSync(modelsJson) || !existsSync(parser)) {
   console.log('sync: extension sources not found, keeping committed copies');
@@ -37,5 +37,5 @@ export const DEFAULT_MODEL_ID = ${JSON.stringify(defaultId)};
 export const CLAUDE_CATALOG = ${JSON.stringify(claude, null, 2)} as const;
 `);
 writeFileSync(join(root, 'src', 'core', 'claudeCodeUsage.pure.ts'),
-  '// Copied from tokalator-extension-vs/src/core/claudeCodeUsage.pure.ts by scripts/sync.mjs. Do not edit.\n' + readFileSync(parser, 'utf8'));
+  '// Copied from tokalator-extension-vs/src/agents/claude/claudeCodeUsage.pure.ts by scripts/sync.mjs. Do not edit.\n' + readFileSync(parser, 'utf8'));
 console.log(`sync: ${claude.length} Claude models, parser copied`);
